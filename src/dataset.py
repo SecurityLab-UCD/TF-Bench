@@ -117,7 +117,6 @@ def main(
         failed_types = ["repo not found", "function not found", "skipped"]
         failed_dict = {key: val for key, val in zip(failed_types, failed) if val != 0}
         logging.warning(f"Failed: {failed_dict}")
-
     logging.info(
         f"Collected {num_func} functions from {len(repo_id_list)} repositories."
     )

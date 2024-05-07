@@ -6,11 +6,19 @@ returns[compatible-mypy]==0.22.0
 pathos
 dacite
 types-requests>=2.31.0
+<<<<<<< HEAD
+=======
+tree-sitter==0.21.3
+>>>>>>> fdef097 (init files)
 pytest>=8.0.0 
 hypothesis>=6.98.6
 matplotlib>=3.8.3
 numpy>=1.26.4
 seaborn==0.13.2 
+<<<<<<< HEAD
 tree-sitter==0.22.3
 tree_sitter_haskell==0.21.0
 dacite==1.8.1
+=======
+tree_sitter_haskell
+>>>>>>> fdef097 (init files)
