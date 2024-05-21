@@ -1,5 +1,5 @@
 from enum import Enum
-from tree_sitter.binding import Node
+from tree_sitter import Node
 from .ast_util import AST
 
 
@@ -19,6 +19,12 @@ class PolymorphicType(str, Enum):
     RANK_N = "Arbitrary-rank"
 
 
+def to_type_node(type_signature: Node) -> Node:
+    type_nodes = type_signature.children_by_field_name("type")
+    assert len(type_nodes) == 1, "each type signature should has only 1 `type` child"
+    return type_nodes[0]
+
+
 def get_polymorphic_type(type_signature: Node) -> PolymorphicType:
     """Determine the polymorphic type of a given type signature node.
 
@@ -30,11 +36,14 @@ def get_polymorphic_type(type_signature: Node) -> PolymorphicType:
     """
     assert type_signature.type == "signature", "Node must be of type 'signature'."
 
-    if AST.has_any_child_of_type(type_signature, "forall"):
-        return PolymorphicType.RANK_N
-    if AST.has_any_child_of_type(type_signature, "constraint"):
-        return PolymorphicType.AD_HOC
-    if AST.has_any_child_of_type(type_signature, "type_variable"):
-        return PolymorphicType.PARAMETRIC
+    type_node = to_type_node(type_signature)
+    match type_node.type:
+        case "forall":
+            return PolymorphicType.RANK_N
+        case "context":
+            return PolymorphicType.AD_HOC
+        case "function":
+            if AST.has_any_child_of_type(type_node, "variable"):
+                return PolymorphicType.PARAMETRIC
 
     return PolymorphicType.MONO
