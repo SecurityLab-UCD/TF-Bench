@@ -100,7 +100,9 @@ class AST:
         return pairs
 
     @staticmethod
-    def get_all_nodes_of_type(root: Node, node_type: str | None, max_level=50) -> list[Node]:
+    def get_all_nodes_of_type(
+        root: Node, node_type: str | None, max_level=50
+    ) -> list[Node]:
         """walk on AST and collect all nodes of the given type
 
         Args:
@@ -118,11 +120,15 @@ class AST:
         for child in root.children:
             if type is None or child.type == node_type:
                 nodes.append(child)
-            nodes += AST.get_all_nodes_of_type(child, node_type, max_level=max_level - 1)
+            nodes += AST.get_all_nodes_of_type(
+                child, node_type, max_level=max_level - 1
+            )
         return nodes
 
     @staticmethod
-    def has_any_child_of_type(root: Node, node_type: str | None, max_level: int = 50) -> bool:
+    def has_any_child_of_type(
+        root: Node, node_type: str | None, max_level: int = 50
+    ) -> bool:
         """walk on AST and check if a node of `node_type` exists
 
         Args:
@@ -140,5 +146,7 @@ class AST:
         for child in root.children:
             if type is None or child.type == node_type:
                 return True
-            has_child |= AST.has_any_child_of_type(child, node_type, max_level=max_level - 1)
+            has_child |= AST.has_any_child_of_type(
+                child, node_type, max_level=max_level - 1
+            )
         return has_child
