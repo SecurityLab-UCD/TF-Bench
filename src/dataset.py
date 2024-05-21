@@ -9,7 +9,6 @@ from returns.io import IOResult, IOSuccess, IOFailure
 from funcy_chain import Chain
 import os
 import logging
-from common import wrap_repo
 from enum import IntEnum
 import json
 from pathos.multiprocessing import ProcessPool
@@ -30,9 +29,7 @@ def collect_hs_files(root: str):
     """
     for dirpath, _, filenames in os.walk(root):
         for filename in filenames:
-            if filename.endswith(".hs") and os.path.isfile(
-                p := os.path.join(dirpath, filename)
-            ):
+            if filename.endswith(".hs") and os.path.isfile(p := os.path.join(dirpath, filename)):
                 yield p
 
 
@@ -54,9 +51,7 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
     return fs
 
 
-def collect_from_repo(
-    repo_id: str, repo_root: str, source_root: str
-) -> IOResult[int, CollectionErrorCode]:
+def collect_from_repo(repo_id: str, repo_root: str, source_root: str) -> IOResult[int, CollectionErrorCode]:
     repo_path = os.path.join(repo_root, wrap_repo(repo_id))
     if not os.path.exists(repo_path) or not os.path.isdir(repo_path):
         return IOFailure(CollectionErrorCode.REPO_NOT_FOUND)
@@ -68,12 +63,7 @@ def collect_from_repo(
         return IOFailure(CollectionErrorCode.SKIPPED)
 
     # collect potential functions
-    all_functions = (
-        Chain(collect_hs_files(repo_path))
-        .mapcat(collect_from_file)
-        .map(json.dumps)
-        .value
-    )
+    all_functions = Chain(collect_hs_files(repo_path)).mapcat(collect_from_file).map(json.dumps).value
 
     if not all_functions:
         return IOFailure(CollectionErrorCode.FUNC_NOT_FOUND)
@@ -106,9 +96,7 @@ def main(
         failed_types = ["repo not found", "function not found", "skipped"]
         failed_dict = {key: val for key, val in zip(failed_types, failed) if val != 0}
         logging.warning(f"Failed: {failed_dict}")
-    logging.info(
-        f"Collected {num_func} functions from {len(repo_id_list)} repositories."
-    )
+    logging.info(f"Collected {num_func} functions from {len(repo_id_list)} repositories.")
 
 
 if __name__ == "__main__":
