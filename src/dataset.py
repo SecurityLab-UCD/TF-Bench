@@ -24,6 +24,13 @@ def wrap_repo(s: str) -> str:
     return s
 
 
+def wrap_repo(s):
+    # NOTE: this is a placeholder function
+    # the implementation depends on how the repo is downloaded
+    # please refer to HMTypes4Py repo
+    return s
+
+
 class CollectionErrorCode(IntEnum):
     REPO_NOT_FOUND = 0
     FUNC_NOT_FOUND = 1
