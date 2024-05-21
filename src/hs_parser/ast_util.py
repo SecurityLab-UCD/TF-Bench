@@ -1,7 +1,6 @@
 """Helper Class and Functions for tree-sitter AST"""
 
-from tree_sitter import Language, Parser, Tree
-from tree_sitter.binding import Node
+from tree_sitter import Language, Parser, Tree, Node
 from returns.maybe import Maybe, Nothing, Some
 from dataclasses import dataclass
 from funcy_chain import Chain
