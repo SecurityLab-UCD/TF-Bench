@@ -21,6 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run Unit Tests
-        run: export PYTHONPATH=$PYTHONPATH:`pwd`
+        run: |
+          export PYTHONPATH=$PYTHONPATH:`pwd`
           python3 tests/test_ast.py
           python3 tests/test_polymorphism.py
