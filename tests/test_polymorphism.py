@@ -18,7 +18,7 @@ f1 :: forall a b. a -> b -> a
     ast = AST(types, HASKELL_LANGUAGE)
     fn_addInt, fn_map, fn_id, fn_elem, fn_f1 = ast.get_functions()
 
-    assert get_polymorphic_type(fn_addInt.type_signature) == PolymorphicType.NO
+    assert get_polymorphic_type(fn_addInt.type_signature) == PolymorphicType.MONO
     assert get_polymorphic_type(fn_map.type_signature) == PolymorphicType.PARAMETRIC
     assert get_polymorphic_type(fn_id.type_signature) == PolymorphicType.PARAMETRIC
     assert get_polymorphic_type(fn_elem.type_signature) == PolymorphicType.AD_HOC
