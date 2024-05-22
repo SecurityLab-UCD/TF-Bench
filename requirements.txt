@@ -12,4 +12,4 @@ hypothesis>=6.98.6
 matplotlib>=3.8.3
 numpy>=1.26.4
 seaborn==0.13.2 
-tree_sitter_haskell
+tree_sitter_haskell==0.21.0

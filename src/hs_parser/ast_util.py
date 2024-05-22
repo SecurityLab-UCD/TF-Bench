@@ -1,7 +1,6 @@
 """Helper Class and Functions for tree-sitter AST"""
 
-from tree_sitter import Language, Parser, Tree
-from tree_sitter.binding import Node
+from tree_sitter import Language, Parser, Tree, Node
 from returns.maybe import Maybe, Nothing, Some
 from dataclasses import dataclass
 from funcy_chain import Chain
@@ -76,7 +75,7 @@ class AST:
         signatures = AST.get_all_nodes_of_type(self.root, "signature")
         functions: dict[str, list[Node]] = (
             Chain(AST.get_all_nodes_of_type(self.root, "function"))
-            .group_by_keys(lambda node: self.get_fn_name(node))
+            .group_by_keys(self.get_fn_name)
             .value
         )
 
