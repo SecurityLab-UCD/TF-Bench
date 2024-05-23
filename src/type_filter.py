@@ -24,7 +24,7 @@ def filter_functions(result_file_path: str) -> list[dict[str, str]]:
 def main(
     input_repo_list_path: str = "data/meta/haskell.txt",
     source_root: str = "data/source/",
-    output_root: str = "data/filtered"
+    output_root: str = "data/filtered/"
 ):
     with open(input_repo_list_path) as fp:
         repo_id_list = [l.strip() for l in fp.readlines()]
