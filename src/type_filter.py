@@ -1,12 +1,7 @@
 import os
 import json
 from tqdm import tqdm
-
-def wrap_repo(s):
-    # NOTE: this is a placeholder function
-    # the implementation depends on how the repo is downloaded
-    # please refer to HMTypes4Py repo
-    return s
+from dataset import wrap_repo
 
 
 def filter_func_type(func: dict[str, str]) -> bool:
