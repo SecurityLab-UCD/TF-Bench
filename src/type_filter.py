@@ -1,3 +1,4 @@
+import fire
 import os
 import json
 from tqdm import tqdm
@@ -38,4 +39,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(main)
