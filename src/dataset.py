@@ -23,6 +23,8 @@ def wrap_repo(s: str) -> str:
     # please refer to HMTypes4Py repo
     return s
 
+from config import DATA_FILE_PATH, REPO_ROOT_PATH, SOURCE_ROOT_PATH
+# import this to tackle the path problem
 
 def wrap_repo(s):
     # NOTE: this is a placeholder function
@@ -107,7 +109,10 @@ def main(
     repo_root: str = "data/repos",
     oroot: str = "data/source",
 ):
+    print(DATA_FILE_PATH)
+    print("This is inside.")
     with open(input_repo_list_path) as fp:
+        print(input_repo_list_path)
         repo_id_list = [l.strip() for l in fp.readlines()]
 
     logging.info(f"Loaded {len(repo_id_list)} repos to be processed")
