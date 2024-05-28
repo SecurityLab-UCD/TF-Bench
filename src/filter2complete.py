@@ -38,7 +38,7 @@ def main(
         repo_id_list = [l.strip() for l in fp.readlines()]
 
     for repo_id in tqdm(repo_id_list):
-        input_file_path = os.path.join(filter_root, wrap_repo(repo_id) + "_filtered.jsonl")
+        input_file_path = os.path.join(filter_root, wrap_repo(repo_id) + ".jsonl")
         filtered_functions = filter_functions(input_file_path)
     
         output_file_path = os.path.join(output_root, wrap_repo(repo_id) + "_complete.jsonl")

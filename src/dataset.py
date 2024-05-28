@@ -13,6 +13,7 @@ from enum import IntEnum
 import json
 from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
+from filter2complete import is_valid_entry
 
 
 def wrap_repo(s: str) -> str:
@@ -77,6 +78,7 @@ def collect_from_repo(
     all_functions = (
         Chain(collect_hs_files(repo_path))
         .mapcat(collect_from_file)
+        .filter(is_valid_entry)
         .map(json.dumps)
         .value
     )
