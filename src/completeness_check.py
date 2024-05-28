@@ -20,6 +20,7 @@ class FilterErrorCode(IntEnum):
     INVALID_CODE = 1
 
 
+# ToDo: check if parsed AST contains error
 def is_valid_code(code_fragment: str) -> bool:
     try:
         ast = AST(code_fragment, HASKELL_LANGUAGE)
