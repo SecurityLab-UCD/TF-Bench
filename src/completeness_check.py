@@ -8,21 +8,17 @@ from funcy_chain import Chain
 from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
 
-# Add the src directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 
-from hs_parser.ast_util import AST
-from hs_parser import HASKELL_LANGUAGE
+from src.hs_parser.ast_util import AST
+from src.hs_parser import HASKELL_LANGUAGE
 from returns.io import IOResult, IOSuccess, IOFailure
 from returns.result import Success, Failure
 
-# Define paths
-FILTERED_ROOT_PATH = "data/filtered"
-COMPLETE_ROOT_PATH = "data/complete"
 
 class FilterErrorCode(IntEnum):
     FILE_NOT_FOUND = 0
     INVALID_CODE = 1
+
 
 def is_valid_code(code_fragment: str) -> bool:
     try:
@@ -31,32 +27,36 @@ def is_valid_code(code_fragment: str) -> bool:
     except Exception as e:
         return False  # If any error occurs, code is invalid
 
-def filter_code_entries(input_file: str, output_file: str) -> IOResult[int, FilterErrorCode]:
+
+def filter_code_entries(
+    input_file: str, output_file: str
+) -> IOResult[int, FilterErrorCode]:
     if not os.path.exists(input_file):
         return IOFailure(FilterErrorCode.FILE_NOT_FOUND)
-    
+
     valid_entries = []
-    with open(input_file, 'r') as infile:
+    with open(input_file, "r") as infile:
         for line in infile:
             entry = json.loads(line)
             code = entry.get("code", "")
             if is_valid_code(code):
                 valid_entries.append(entry)
-    
+
     if not valid_entries:
         return IOFailure(FilterErrorCode.INVALID_CODE)
-    
-    with open(output_file, 'w') as outfile:
+
+    with open(output_file, "w") as outfile:
         for entry in valid_entries:
             json.dump(entry, outfile)
-            outfile.write('\n')
-    
+            outfile.write("\n")
+
     return IOSuccess(len(valid_entries))
+
 
 def main(
     input_repo_list_path: str = "data/meta/haskell.txt",
-    filtered_root: str = FILTERED_ROOT_PATH,
-    complete_root: str = COMPLETE_ROOT_PATH
+    filtered_root: str = "data/filtered",
+    complete_root: str = "data/complete",
 ):
     with open(input_repo_list_path) as fp:
         repo_id_list = [l.strip() for l in fp.readlines()]
@@ -68,13 +68,13 @@ def main(
         input_file = os.path.join(filtered_root, f"{repo_id}_filtered.jsonl")
         output_file = os.path.join(complete_root, f"{repo_id}_complete.jsonl")
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
+
         result = filter_code_entries(input_file, output_file)
         if isinstance(result, IOSuccess):
             num_valid_entries += result.unwrap()
         elif isinstance(result, IOFailure):
             failed[result.failure()] += 1
-    
+
     if sum(failed):
         failed_types = ["file not found", "invalid code"]
         failed_dict = {key: val for key, val in zip(failed_types, failed) if val != 0}
@@ -82,6 +82,7 @@ def main(
     logging.info(
         f"Filtered {num_valid_entries} valid code entries from {len(repo_id_list)} repositories."
     )
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

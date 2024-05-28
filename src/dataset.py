@@ -14,8 +14,6 @@ import json
 from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
 
-from config import DATA_FILE_PATH, REPO_ROOT_PATH, SOURCE_ROOT_PATH
-
 
 def wrap_repo(s):
     # NOTE: this is a placeholder function
@@ -93,9 +91,9 @@ def collect_from_repo(
 
 
 def main(
-    input_repo_list_path: str = DATA_FILE_PATH,
-    repo_root: str = REPO_ROOT_PATH,
-    oroot: str = SOURCE_ROOT_PATH,
+    input_repo_list_path: str = "data/meta/haskell.txt",
+    repo_root: str = "data/repos",
+    oroot: str = "data/source",
 ):
     with open(input_repo_list_path) as fp:
         print(input_repo_list_path)
@@ -115,6 +113,7 @@ def main(
         failed_types = ["repo not found", "function not found", "skipped"]
         failed_dict = {key: val for key, val in zip(failed_types, failed) if val != 0}
         logging.warning(f"Failed: {failed_dict}")
+
     logging.info(
         f"Collected {num_func} functions from {len(repo_id_list)} repositories."
     )
