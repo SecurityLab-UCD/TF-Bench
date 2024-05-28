@@ -15,7 +15,7 @@ from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
 
 
-def wrap_repo(s):
+def wrap_repo(s: str) -> str:
     # NOTE: this is a placeholder function
     # the implementation depends on how the repo is downloaded
     # please refer to HMTypes4Py repo
