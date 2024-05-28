@@ -96,7 +96,6 @@ def main(
     oroot: str = "data/source",
 ):
     with open(input_repo_list_path) as fp:
-        print(input_repo_list_path)
         repo_id_list = [l.strip() for l in fp.readlines()]
 
     logging.info(f"Loaded {len(repo_id_list)} repos to be processed")
