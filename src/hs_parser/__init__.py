@@ -1,5 +1,5 @@
 from tree_sitter import Language
-from tree_sitter_haskell import language
+import tree_sitter_haskell as ts_haskell
 
 
-HASKELL_LANGUAGE = Language(language(), "haskell")
+HASKELL_LANGUAGE = Language(ts_haskell.language())

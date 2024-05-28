@@ -13,9 +13,10 @@ from enum import IntEnum
 import json
 from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
+from filter2complete import is_valid_entry
 
 
-def wrap_repo(s):
+def wrap_repo(s: str) -> str:
     # NOTE: this is a placeholder function
     # the implementation depends on how the repo is downloaded
     # please refer to HMTypes4Py repo
@@ -77,6 +78,7 @@ def collect_from_repo(
     all_functions = (
         Chain(collect_hs_files(repo_path))
         .mapcat(collect_from_file)
+        .filter(is_valid_entry)
         .map(json.dumps)
         .value
     )
@@ -93,7 +95,7 @@ def collect_from_repo(
 def main(
     input_repo_list_path: str = "data/meta/haskell.txt",
     repo_root: str = "data/repos",
-    oroot: str = "data/source/",
+    oroot: str = "data/source",
 ):
     with open(input_repo_list_path) as fp:
         repo_id_list = [l.strip() for l in fp.readlines()]
@@ -112,6 +114,7 @@ def main(
         failed_types = ["repo not found", "function not found", "skipped"]
         failed_dict = {key: val for key, val in zip(failed_types, failed) if val != 0}
         logging.warning(f"Failed: {failed_dict}")
+
     logging.info(
         f"Collected {num_func} functions from {len(repo_id_list)} repositories."
     )
