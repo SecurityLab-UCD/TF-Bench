@@ -18,7 +18,7 @@ class HaskellFunction:
     functions: list[Node]
 
     @staticmethod
-    def from_pair(p: tuple[Node, list[Node]]):
+    def from_pair(p: tuple[Node, list[Node]]):              
         return HaskellFunction(*p)
 
 
@@ -38,7 +38,9 @@ class AST:
     def get_src_from_node(self, node: Node) -> str:
         start = node.start_byte
         end = node.end_byte
-        return self.src[start:end]
+        src_bytes = self.src.encode()
+        node_bytes = src_bytes[start:end]
+        return node_bytes.decode()
 
     def get_fn_name(self, node: Node) -> Maybe[str]:
         fn_name: str
