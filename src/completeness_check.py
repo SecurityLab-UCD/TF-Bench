@@ -69,11 +69,11 @@ def main(
         output_file = os.path.join(complete_root, f"{repo_id}_complete.jsonl")
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        result = filter_code_entries(input_file, output_file)
-        if isinstance(result, IOSuccess):
-            num_valid_entries += result.unwrap()
-        elif isinstance(result, IOFailure):
-            failed[result.failure()] += 1
+        match filter_code_entries(input_file, output_file):
+            case IOSuccess(Success(n)):
+                num_valid_entries += n
+            case IOFailure(Failure(error_code)):
+                failed[error_code] += 1
 
     if sum(failed):
         failed_types = ["file not found", "invalid code"]

@@ -27,7 +27,8 @@ def main(
         repo_id_list = [l.strip() for l in fp.readlines()]
 
     def to_jsonl_file_name(repo_id: str) -> str:
-        return wrap_repo(repo_id) + ".jsonl"
+        file_name: str = wrap_repo(repo_id) + ".jsonl"
+        return file_name
 
     # todo: parallelize this if we move on to multiple repos
     for repo_id in tqdm(repo_id_list):
