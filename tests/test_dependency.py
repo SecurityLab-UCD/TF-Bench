@@ -1,4 +1,4 @@
-from src.add_dependency import BenchmarkTask, get_func_calls, get_dependencies
+from src.add_dependency import BenchmarkTask, get_func_calls
 from dacite import from_dict
 
 if __name__ == "__main__":
