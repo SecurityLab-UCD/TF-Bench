@@ -14,6 +14,7 @@ import json
 from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
 from filter2complete import is_valid_entry
+from funcy import lmap
 
 
 def wrap_repo(s: str) -> str:
@@ -51,13 +52,15 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
 
     def _to_json(func: HaskellFunction) -> dict[str, str]:
         func_id = f"{file_path}--{ast.get_fn_name(func.type_signature).value_or(None)}"
+        signature, code = ast.func2src(func)
         return {
             "id": func_id,
-            "code": ast.func2src(func),
+            "signature": signature,
+            "code": code,
             "type": get_polymorphic_type(func.type_signature),
         }
 
-    fs: list[dict[str, str]] = Chain(ast.get_functions()).map(_to_json).value
+    fs: list[dict[str, str]] = lmap(_to_json, ast.get_functions())
     return fs
 
 
