@@ -6,6 +6,8 @@ import json
 from dacite import from_dict
 from dataclasses import dataclass
 from src.filter2complete import extract_function_name
+from src.hs_parser import HASKELL_LANGUAGE
+from src.hs_parser.ast_util import AST
 
 
 @dataclass
@@ -25,11 +27,38 @@ def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
     }
 
 
-def get_dependencies(dependency_dict: dict[str, str]):
-    def get_for_task(task: BenchmarkTask) -> list[str]:
-        return []
+def get_func_calls(task: BenchmarkTask) -> set[str]:
+    """extract function calls and operators as string"""
+    fn_name = extract_function_name(task.task_id)
+    assert fn_name is not None
 
-    return get_for_task
+    ast = AST(task.code, HASKELL_LANGUAGE)
+    root = ast.root
+
+    calls: list[str] = (
+        Chain(ast.get_all_nodes_of_type(root, "variable"))
+        .map(ast.get_src_from_node)
+        .filter(lambda x: x != fn_name)
+        .value
+    )
+    operators: list[str] = (
+        Chain(ast.get_all_nodes_of_type(root, "operator"))
+        .map(ast.get_src_from_node)
+        .map(lambda x: f"({x})")  # infix operator . \equiv function (.)
+        .value
+    )
+
+    return set(calls + operators)
+
+
+def add_dependencies(dependency_dict: dict[str, str]):
+    def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
+        calls = get_func_calls(task)
+        type_deps = [dependency_dict[f] for f in calls if f in dependency_dict]
+        task.dependencies = "\n".join(type_deps)
+        return task
+
+    return add_for_task
 
 
 def main(
@@ -46,7 +75,11 @@ def main(
 
     dependency_dict = build_dependency_dict(tasks)
     tasks_w_dep = (
-        Chain(tasks).map(get_dependencies(dependency_dict)).map(json.dumps).value
+        Chain(tasks)
+        .map(add_dependencies(dependency_dict))
+        .map(lambda x: x.__dict__)
+        .map(json.dumps)
+        .value
     )
     with open(output_file, "w") as fp:
         fp.write("\n".join(tasks_w_dep))
