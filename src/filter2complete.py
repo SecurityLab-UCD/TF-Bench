@@ -12,9 +12,16 @@ def extract_function_name(id_str: str) -> str | None:
 
 
 def is_valid_entry(entry: dict[str, str]) -> bool:
-    """Check if the entry is valid based on the criteria."""
-    if "id" not in entry or "signature" not in entry:
+    """Check if the entry is valid based on the criteria.
+    1. `id` should be `path`--`func_name`
+    2. `code` should not be empty
+    """
+    if "id" not in entry or "signature" not in entry or "code" not in entry:
         return False
+
+    if entry["code"] == "":
+        return False
+
     func_name = extract_function_name(entry["id"])
     signature: str = entry["signature"]
     return func_name is not None and signature.startswith(f"{func_name} ::")
