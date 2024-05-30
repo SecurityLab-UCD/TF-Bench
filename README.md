@@ -30,8 +30,9 @@ pip install -r requirements.txt
 ## Building Benchmark-F
 
 ```sh
-mkdir -p data/source data/filtered
+mkdir -p data/source data/added data/filtered
 source ./env.sh
 python3 src/dataset.py -o data/source # get raw function dataset
-python3 src/type_filter -s data/source -o data/filtered # get functions with type we want :)
+python3 src/add_dependency.py -o data/added/base-4.20.0.0.jsonl # add type dependencies
+python3 src/type_filter.py -s data/added -o data/filtered # get functions with type we want :)
 ```
