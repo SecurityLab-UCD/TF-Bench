@@ -7,7 +7,7 @@ import logging
 
 
 def is_valid_func_type(func: dict[str, str]) -> bool:
-    return func["type"] in ["Monomorphic", "Parametric"]
+    return func["poly_type"] in ["Monomorphic", "Parametric"]
 
 
 def filter_functions(result_file_path: str) -> list[dict[str, str]]:

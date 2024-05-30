@@ -4,6 +4,7 @@ from src.hs_parser.ast_util import AST, ASTLoc
 from hypothesis import given
 import hypothesis.strategies as st
 from funcy_chain import Chain
+from operator import add
 
 
 def test_function_extract():
@@ -36,7 +37,12 @@ scanl f z = B.scanl (\a b -> c2w (f (w2c a) (w2c b))) (c2w z)
     def haskell_lines_in_any_order(lines):
         code = "\n".join(lines)
         ast = AST(code, HASKELL_LANGUAGE)
-        fs = Chain(ast.get_functions()).map(ast.func2src).value
+        fs = (
+            Chain(ast.get_functions())
+            .map(ast.func2src)
+            .map(lambda xs: "\n".join(xs))
+            .value
+        )
         fs.sort()
 
         assert fs[0] == fn_add.strip("\n")

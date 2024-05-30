@@ -4,6 +4,7 @@ from tree_sitter import Language, Parser, Tree, Node
 from returns.maybe import Maybe, Nothing, Some
 from dataclasses import dataclass
 from funcy_chain import Chain
+from funcy import lmap
 
 
 @dataclass
@@ -18,7 +19,7 @@ class HaskellFunction:
     functions: list[Node]
 
     @staticmethod
-    def from_pair(p: tuple[Node, list[Node]]):              
+    def from_pair(p: tuple[Node, list[Node]]):
         return HaskellFunction(*p)
 
 
@@ -59,11 +60,12 @@ class AST:
         # todo: implement docstring finder
         raise NotImplementedError
 
-    def func2src(self, func: HaskellFunction) -> str:
+    def func2src(self, func: HaskellFunction) -> tuple[str, str]:
         type_src = self.get_src_from_node(func.type_signature)
-        code_src = Chain(func.functions).map(self.get_src_from_node).value
+        # code_src = Chain(func.functions).map(self.get_src_from_node).value
+        code_src = lmap(self.get_src_from_node, func.functions)
         code_src.sort()
-        return "\n".join([type_src, *code_src])
+        return type_src, "\n".join(code_src)
 
     def get_functions(self) -> list[HaskellFunction]:
         """extract functions from an AST

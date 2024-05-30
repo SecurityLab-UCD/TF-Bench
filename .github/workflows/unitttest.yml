@@ -22,6 +22,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Unit Tests
         run: |
-          export PYTHONPATH=$PYTHONPATH:`pwd`
+          source ./env.sh
           python3 tests/test_ast.py
           python3 tests/test_polymorphism.py
+          python3 tests/test_dependency.py
