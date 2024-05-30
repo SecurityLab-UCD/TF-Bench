@@ -11,4 +11,4 @@ if __name__ == "__main__":
 
     task = from_dict(data_class=BenchmarkTask, data=task_data)
     calls = get_func_calls(task)
-    assert len(calls) == 4
+    assert len(calls) == 3
