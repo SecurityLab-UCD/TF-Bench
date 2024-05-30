@@ -16,13 +16,13 @@ def is_valid_entry(entry: dict[str, str]) -> bool:
     1. `id` should be `path`--`func_name`
     2. `code` should not be empty
     """
-    if "id" not in entry or "signature" not in entry or "code" not in entry:
+    if "task_id" not in entry or "signature" not in entry or "code" not in entry:
         return False
 
     if entry["code"] == "":
         return False
 
-    func_name = extract_function_name(entry["id"])
+    func_name = extract_function_name(entry["task_id"])
     signature: str = entry["signature"]
     return func_name is not None and signature.startswith(f"{func_name} ::")
 

@@ -54,10 +54,10 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
         func_id = f"{file_path}--{ast.get_fn_name(func.type_signature).value_or(None)}"
         signature, code = ast.func2src(func)
         return {
-            "id": func_id,
+            "task_id": func_id,
             "signature": signature,
             "code": code,
-            "type": get_polymorphic_type(func.type_signature),
+            "poly_type": get_polymorphic_type(func.type_signature),
         }
 
     fs: list[dict[str, str]] = lmap(_to_json, ast.get_functions())
