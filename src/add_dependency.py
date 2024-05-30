@@ -5,6 +5,7 @@ import logging
 import json
 from dacite import from_dict
 from dataclasses import dataclass
+from src.filter2complete import extract_function_name
 
 
 @dataclass
@@ -17,7 +18,11 @@ class BenchmarkTask:
 
 
 def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
-    return {}
+    return {
+        fn_name: t.signature
+        for t in tasks
+        if (fn_name := extract_function_name(t.task_id)) is not None
+    }
 
 
 def get_dependencies(dependency_dict: dict[str, str]):
@@ -27,7 +32,10 @@ def get_dependencies(dependency_dict: dict[str, str]):
     return get_for_task
 
 
-def main(input_file: str, output_file: str):
+def main(
+    input_file: str = "data/source/base-4.20.0.0.jsonl",
+    output_file: str = "out.jsonl",
+):
     with open(input_file, "r") as fp:
         tasks: list[BenchmarkTask] = (
             Chain(fp.readlines())
