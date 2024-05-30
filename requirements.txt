@@ -13,3 +13,4 @@ numpy>=1.26.4
 seaborn==0.13.2 
 tree-sitter==0.22.3
 tree_sitter_haskell==0.21.0
+dacite==1.8.1
