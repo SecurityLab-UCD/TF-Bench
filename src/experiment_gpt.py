@@ -55,7 +55,11 @@ def generate_type_signature(prompt: str, seed: int, temperature: float, top_p: f
         top_p=top_p
     )
 
-    return completion.choices[0].message.content
+    answer = completion.choices[0].message.content
+    if not isinstance(answer, str):
+        return TypeError("Expected a string response from the API.")
+    
+    return answer
 
 
 # Replace '[Char]' with 'String' in the generated type signature
