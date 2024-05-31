@@ -16,7 +16,7 @@ OPEN_API_KEY= os.getenv("OPENAI_API_KEY")
 
 
 # Extract information for generating prompt
-def extract_information(entry: dict) -> str:
+def extract_information(entry: dict) -> tuple[str, str, str]:
     task_id = entry["task_id"]
     func_name = extract_function_name(task_id)
     code = entry["code"]
