@@ -8,6 +8,7 @@ from dataset import wrap_repo
 from filter2complete import extract_function_name
 from returns.io import IOResult, IOSuccess, IOFailure
 import logging
+from typing import Any
 
 
 # Load the API key from enviroment variables
@@ -42,7 +43,7 @@ where
 
 
 # Call OpenAI API to generate type signature
-def generate_type_signature(prompt: str, seed: int, temperature: float, top_p: float) -> str:
+def generate_type_signature(prompt: str, seed: int, temperature: float, top_p: float) -> Any:
     client = OpenAI()
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -56,8 +57,6 @@ def generate_type_signature(prompt: str, seed: int, temperature: float, top_p: f
     )
 
     answer = completion.choices[0].message.content
-    if not isinstance(answer, str):
-        return TypeError("Expected a string response from the API.")
     
     return answer
 
