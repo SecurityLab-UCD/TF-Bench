@@ -20,7 +20,7 @@ groq_api_key = os.getenv("GROQ_API_KEY")
 if groq_api_key is None:
     raise ValueError("GROQ_API_KEY environment variable not set")
 
-def get_prompt(task: BenchmarkTask) -> str:
+def get_prompt(task: BenchmarkTask) -> Any:
     fn_name = extract_function_name(task.task_id)
     code = task.code
     dependencies = task.dependencies
