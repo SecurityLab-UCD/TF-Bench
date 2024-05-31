@@ -8,9 +8,10 @@ Towards Sound Evaluation of Program Logic Understanding with System F
 
 ```sh
 cd data/ && mkdir -p repos
+cd repos
 wget https://hackage.haskell.org/package/base-4.20.0.0/base-4.20.0.0.tar.gz
 tar xvf base-4.20.0.0.tar.gz
-cd ..
+cd ../..
 ```
 
 ### Loading Env
@@ -35,4 +36,19 @@ source ./env.sh
 python3 src/dataset.py -o data/source # get raw function dataset
 python3 src/add_dependency.py -o data/added/base-4.20.0.0.jsonl # add type dependencies
 python3 src/type_filter.py -s data/added -o data/filtered # get functions with type we want :)
+```
+
+## Experiments
+
+### GPT 3.5
+
+### Setup OpenAI API key
+
+1. Create a file named ".env" in the project root directory
+2. Add your OpenAI API key to the ".env" file: OPENAI_API_KEY=your-api-key
+
+### Run the experiment
+```sh
+mkdir -p data/experiment/gpt
+python3 src/experiment_gpt.py -o data/experiment/gpt/base-4.20.0.0.jsonl # call OpenAI API to generate type signature
 ```
