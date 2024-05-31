@@ -61,22 +61,20 @@ def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
     output_file: str = "data/experiment/gpt/base-4.20.0.0.jsonl",
 ):
-    
-    with open(input_file, "r") as fp:
+    with open(input_file, "r") as file:
         results: list[str] = (
-            Chain(fp.readlines())
+            Chain(file.readlines())
             .map(json.loads)
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(get_prompt)
-            .map(lambda prompt: generate_type_signature(prompt))
+            .map(generate_type_signature)
             .map(postprocess)
             .map(json.dumps)
             .value
         )
 
     with open(output_file, "w") as file:
-        file.write("\n".join(results))
-            
+        file.write("\n".join(results))        
     logging.info(
         f"Get {len(results)} results from GPT 3.5."
     )
