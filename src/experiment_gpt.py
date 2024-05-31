@@ -6,7 +6,6 @@ import json
 from tqdm import tqdm
 from dataset import wrap_repo
 from filter2complete import extract_function_name
-from returns.io import IOResult, IOSuccess, IOFailure
 import logging
 from typing import Any
 
