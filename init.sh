@@ -1,3 +1,4 @@
+#!/bin/bash
 # Processing command options
 OPTSTRING=":venv"
 # To create venv
