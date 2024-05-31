@@ -68,8 +68,7 @@ def replace_char_with_string(file_path: str) -> None:
 
     content = content.replace("[Char]", "String")
 
-    output_file_path = file_path.replace(".jsonl", "_replaced.jsonl")
-    with open(output_file_path, "w") as file:
+    with open(file_path, "w") as file:
         file.write(content)
 
 
