@@ -50,5 +50,5 @@ python3 src/type_filter.py -s data/added -o data/filtered # get functions with t
 ### Run the experiment
 ```sh
 mkdir -p data/experiment/gpt
-python3 src/experiment_gpt.py -s data/filtered -o data/experiment/gpt # call OpenAI API to generate type signature
+python3 src/experiment_gpt.py -o data/experiment/gpt/base-4.20.0.0.jsonl # call OpenAI API to generate type signature
 ```
