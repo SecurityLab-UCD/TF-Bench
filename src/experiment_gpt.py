@@ -3,11 +3,12 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import json
-from tqdm import tqdm
-from dataset import wrap_repo
 from filter2complete import extract_function_name
 import logging
 from typing import Any
+from add_dependency import BenchmarkTask
+from funcy_chain import Chain
+from dacite import from_dict
 
 
 # Load the API key from enviroment variables
@@ -15,34 +16,26 @@ load_dotenv()
 OPEN_API_KEY= os.getenv("OPENAI_API_KEY")
 
 
-# Extract information for generating prompt
-def extract_information(entry: dict) -> tuple[str, str, str]:
-    task_id = entry["task_id"]
-    func_name = extract_function_name(task_id)
-    code = entry["code"]
-    dependencies = entry["dependencies"]
-    return func_name, code, dependencies
+# Get the prompt for the OpenAI API
+def get_prompt(task: BenchmarkTask) -> str:
+    fn_name = extract_function_name(task.task_id)
+    code = task.code
+    dependencies = task.dependencies
 
-
-# Generate the prompt for the OpenAI API
-def generate_prompt(entry: dict) -> str:
-    func_name, code, dependencies = extract_information(entry)
-
-    prompt = f"""
+    if fn_name is not None:
+        prompt = f"""
 {code}
-
 where
 {dependencies}
-
---complete the following type signature for '{func_name}'
+--complete the following type signature for '{fn_name}'
 --if there is type mismatch, output 'Error'
-{func_name}:: 
+{fn_name}:: 
 """
     return prompt
 
 
 # Call OpenAI API to generate type signature
-def generate_type_signature(prompt: str, seed: int, temperature: float, top_p: float) -> Any:
+def generate_type_signature(prompt: str) -> Any:
     client = OpenAI()
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -50,77 +43,43 @@ def generate_type_signature(prompt: str, seed: int, temperature: float, top_p: f
             {"role": "system", "content": "Act as a static analysis tool for type inference. Only output the type signature."},
             {"role": "user", "content": prompt}
         ],
-        seed=seed,
-        temperature=temperature,
-        top_p=top_p
+        # Set parameters to ensure reproducibility
+        seed = 123,
+        temperature = 0.0,
+        top_p = 1.0
     )
 
-    answer = completion.choices[0].message.content
-    
-    return answer
+    return completion.choices[0].message.content
 
 
-# Replace '[Char]' with 'String' in the generated type signature
-def replace_char_with_string(file_path: str) -> None:
-    with open(file_path, "r") as file:
-        content = file.read()
-
-    content = content.replace("[Char]", "String")
-
-    with open(file_path, "w") as file:
-        file.write(content)
+# Replace "[Char]" with "String" and remove the markdown symbols
+def postprocess(result: str) -> str:
+    return result.replace("[Char]", "String").replace("```haskell\n", "").replace("\n```", "")
 
 
 def main(
-    input_repo_list_path: str = "data/meta/haskell.txt",
-    source_root: str = "data/filtered/",
-    output_root: str = "data/experiment/gpt",
+    input_file: str = "data/filtered/base-4.20.0.0.jsonl",
+    output_file: str = "data/experiment/gpt/base-4.20.0.0.jsonl",
 ):
     
-    with open(input_repo_list_path) as fp:
-        repo_id_list = [l.strip() for l in fp.readlines()]
-
-    def to_jsonl_file_name(repo_id: str) -> str:
-        file_name: str = wrap_repo(repo_id) + ".jsonl"
-        return file_name
-
-    for repo_id in tqdm(repo_id_list):
-        source_path = os.path.join(source_root, to_jsonl_file_name(repo_id))
-        output_path = os.path.join(output_root, to_jsonl_file_name(repo_id))
-
-        with open(source_path, "r") as file:
-            dataset = [json.loads(line) for line in file]
-        
-        logging.info(f"Loaded {len(dataset)} functions to be processed")
-
-        with open(output_path, "w") as file:
-            file.write("")
-        
-        # Set parameters to ensure reproducibility
-        seed: int = 123
-        temperature: float = 0.0
-        top_p: float = 1.0
-
-        num_ans = 0
-        num_err = 0
-        for entry in tqdm(dataset):
-            prompt = generate_prompt(entry)
-            answer = generate_type_signature(prompt, seed, temperature, top_p)
-            
-            with open(output_path, "a") as file:
-                file.write(answer + "\n")
-
-            match answer:
-                case 'Error':
-                    num_err += 1
-                case _:
-                    num_ans += 1
- 
-        replace_char_with_string(output_path)
-            
-        logging.info(
-            f"Get {num_ans} answers and {num_err} 'Error' from {len(dataset)} functions."
+    with open(input_file, "r") as fp:
+        results: list[str] = (
+            Chain(fp.readlines())
+            .map(json.loads)
+            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
+            .map(get_prompt)
+            .map(lambda prompt: generate_type_signature(prompt))
+            .map(postprocess)
+            .map(json.dumps)
+            .value
         )
+
+    with open(output_file, "w") as file:
+        file.write("\n".join(results))
+            
+    logging.info(
+        f"Get {len(results)} results from GPT 3.5."
+    )
 
 
 if __name__ == "__main__":
