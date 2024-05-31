@@ -1,14 +1,13 @@
 import fire
-from dotenv import load_dotenv
 import os
 import json
-from tqdm import tqdm
 from dataset import wrap_repo
 from filter2complete import extract_function_name
 import logging
 from typing import Any
 from add_dependency import BenchmarkTask
 from itertools import starmap
+from dotenv import load_dotenv
 from funcy_chain import Chain
 from dacite import from_dict
 from groq import Groq
@@ -42,7 +41,8 @@ def generate_type_signature(prompt: str, fn_name:str ) -> Any:
         messages=[
             {
                 "role": "system",
-                "content": "Act as a static analysis tool for type inference. Only output the type signature.",
+                "content":
+                "Act as a static analysis tool for type inference. Only output the type signature.",
             },
             {
                 "role": "user",
@@ -74,12 +74,13 @@ def main(
             .map(json.loads)
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(get_prompt)
-            # .map(lambda prompt, fn_name: generate_type_signature(prompt, fn_name))
-            # .map(postprocess)
             .value
         )
+
     prompts, fn_names = zip(*results)
+
     type_signatures = list(starmap(generate_type_signature, zip(prompts, fn_names)))
+
     final_results = list(map(postprocess, type_signatures))
 
     with open(output_file, "w") as out_fp:
