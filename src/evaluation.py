@@ -1,9 +1,11 @@
 import fire
 import json
 import logging
-from add_dependency import BenchmarkTask
+from src.add_dependency import BenchmarkTask
+from src.experiment import postprocess
 from funcy_chain import Chain
 from dacite import from_dict
+from itertools import starmap
 
 
 def get_function_name(id_str: str) -> str | None:
@@ -13,29 +15,17 @@ def get_function_name(id_str: str) -> str | None:
     return None
 
 
-def evaluation(benchmark_f: list[BenchmarkTask], results: list[str]):
-    num_match = 0
-    num_mismatch = 0
-
-    for benchmark, result in zip(benchmark_f, results):
-        benchmark_func_name = get_function_name(benchmark.signature)
-        result_func_name = get_function_name(result)
-        if benchmark_func_name == result_func_name:
-            if benchmark.signature == result:
-                num_match += 1
-            else:
-                num_mismatch += 1
-    total = num_match + num_mismatch
-    accuracy = num_match / total if total > 0 else 0
-
-    print(f"Match: {num_match}, Mismatch: {num_mismatch}")
-    print(f"Accuracy: {accuracy:.2f}")
+def evaluate(task: BenchmarkTask, result: str) -> bool:
+    ground_truth = postprocess(task.signature)
+    result = postprocess(result)
+    return ground_truth == result
 
 
 def main(
     benchmark_file: str = "data/filtered/base-4.20.0.0.jsonl",
     results_file: str = "data/experiment/gpt/base-4.20.0.0.jsonl",
-): 
+    output_file: str = "evaluation_result.json",
+):
     with open(benchmark_file, "r") as file:
         benchmark_f: list[BenchmarkTask] = (
             Chain(file.readlines())
@@ -44,13 +34,21 @@ def main(
             .value
         )
     with open(results_file, "r") as file:
-        results: list[str] = (
-            Chain(file.readlines())
-            .map(json.loads)
-            .value
-        )
+        results: list[str] = Chain(file.readlines()).map(json.loads).value
 
-    evaluation(benchmark_f, results)
+    assert len(benchmark_f) == len(results)
+    eval_results = starmap(evaluate, zip(benchmark_f, results))
+    n_correct = sum(eval_results)
+    acc = n_correct / len(benchmark_f)
+
+    d = {
+        "total": len(benchmark_f),
+        "n_correct": n_correct,
+        "accuracy": acc,
+    }
+    logging.info(d)
+    with open(output_file, "w") as fp:
+        fp.write(json.dumps(d))
 
 
 if __name__ == "__main__":
