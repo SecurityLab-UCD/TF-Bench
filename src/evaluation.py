@@ -8,13 +8,6 @@ from dacite import from_dict
 from itertools import starmap
 
 
-def get_function_name(id_str: str) -> str | None:
-    """Extract the function name from the signature field."""
-    if "::" in id_str:
-        return id_str.split("::")[0].strip()
-    return None
-
-
 def evaluate(task: BenchmarkTask, result: str) -> bool:
     ground_truth = postprocess(task.signature)
     result = postprocess(result)
@@ -23,8 +16,8 @@ def evaluate(task: BenchmarkTask, result: str) -> bool:
 
 def main(
     benchmark_file: str = "data/filtered/base-4.20.0.0.jsonl",
-    results_file: str = "data/experiment/gpt/base-4.20.0.0.jsonl",
-    output_file: str = "evaluation_result.json",
+    results_file: str = "data/experiment/gpt_enerated_responses.jsonl",
+    output_file: str = "data/evaluate/gpt_evaluation_result.jsonl",
 ):
     with open(benchmark_file, "r") as file:
         benchmark_f: list[BenchmarkTask] = (
