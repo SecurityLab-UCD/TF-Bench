@@ -42,12 +42,13 @@ python3 src/type_filter.py -s data/added -o data/filtered # get functions with t
 
 ### GPT 3.5
 
-### Setup OpenAI API key
+#### Setup OpenAI API key
 
 1. Create a file named ".env" in the project root directory
 2. Add your OpenAI API key to the ".env" file: OPENAI_API_KEY=your-api-key
 
-### Run the experiment
+#### Run the experiment
+
 ```sh
 mkdir -p data/experiment/gpt
 python3 src/experiment_gpt.py -o data/experiment/gpt/base-4.20.0.0.jsonl # call OpenAI API to generate type signature
@@ -63,4 +64,9 @@ python3 src/experiment_gpt.py -o data/experiment/gpt/base-4.20.0.0.jsonl # call 
 ```sh
 mkdir -p data/experiment/llama
 python3 src/experiment_llama.py -o data/experiment/llama/base-4.20.0.0.jsonl # call Groq API to generate type signature
+```
+## Evaluation
+
+```sh
+python3 src/evaluation.py -r data/experiment/gpt/base-4.20.0.0.jsonl # evaluate the results of GPT 3.5
 ```

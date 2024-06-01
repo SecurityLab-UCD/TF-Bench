@@ -94,11 +94,15 @@ def postprocess(result: str) -> str:
             text = text.split("::")[1]
         return text
 
+    def rm_new_line(text: str) -> str:
+        return text.replace("\n", "")
+
     strategies: list[Callable[[str], str]] = [
         char_list_to_str,
         rm_md_block,
         rm_func_name,
         str.strip,
+        rm_new_line,
     ]
     # NOTE: Python `reduce` is a `foldl`
     # so the left most function is executed first
