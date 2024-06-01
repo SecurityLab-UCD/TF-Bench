@@ -52,3 +52,15 @@ python3 src/type_filter.py -s data/added -o data/filtered # get functions with t
 mkdir -p data/experiment/gpt
 python3 src/experiment_gpt.py -o data/experiment/gpt/base-4.20.0.0.jsonl # call OpenAI API to generate type signature
 ```
+
+### LLAMA 3
+
+### Setup Groq API key
+
+1. Add your Groq API key to the created ".env" file: GROQ_API_KEY=your-api-key
+
+### Run the experiment
+```sh
+mkdir -p data/experiment/llama
+python3 src/experiment_llama.py -o data/experiment/llama/base-4.20.0.0.jsonl # call Groq API to generate type signature
+```
