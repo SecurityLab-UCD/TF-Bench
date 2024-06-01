@@ -20,13 +20,11 @@ def evaluation(benchmark_f: list[BenchmarkTask], results: list[str]):
     for benchmark, result in zip(benchmark_f, results):
         benchmark_func_name = get_function_name(benchmark.signature)
         result_func_name = get_function_name(result)
-        
         if benchmark_func_name == result_func_name:
             if benchmark.signature == result:
                 num_match += 1
             else:
                 num_mismatch += 1
-    
     total = num_match + num_mismatch
     accuracy = num_match / total if total > 0 else 0
 
@@ -45,7 +43,6 @@ def main(
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .value
         )
-    
     with open(results_file, "r") as file:
         results: list[str] = (
             Chain(file.readlines())
