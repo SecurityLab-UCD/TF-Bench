@@ -16,7 +16,6 @@ def get_function_name(id_str: str) -> str | None:
 def evaluation(benchmark_f: list[BenchmarkTask], results: list[str]):
     num_match = 0
     num_mismatch = 0
-    total_levenshtein_distance = 0
 
     for benchmark, result in zip(benchmark_f, results):
         benchmark_func_name = get_function_name(benchmark.signature)
@@ -38,8 +37,7 @@ def evaluation(benchmark_f: list[BenchmarkTask], results: list[str]):
 def main(
     benchmark_file: str = "data/filtered/base-4.20.0.0.jsonl",
     results_file: str = "data/experiment/gpt/base-4.20.0.0.jsonl",
-):
-    
+): 
     with open(benchmark_file, "r") as file:
         benchmark_f: list[BenchmarkTask] = (
             Chain(file.readlines())
