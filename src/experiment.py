@@ -11,6 +11,7 @@ from add_dependency import BenchmarkTask
 from funcy_chain import Chain
 from dacite import from_dict
 from typing import Callable
+from functools import reduce
 
 
 # Load the API key from environment variables
@@ -42,7 +43,7 @@ where
 {dependencies}
 --complete the following type signature for '{fn_name}'
 --if there is type mismatch, output 'Error'
-{fn_name}:: 
+{fn_name} :: 
 """
     return prompt
 
@@ -75,9 +76,33 @@ def get_model(
     return generate_type_signature
 
 
-# Replace "[Char]" with "String" and remove the markdown symbols
 def postprocess(result: str) -> str:
-    return result.replace("[Char]", "String").replace("```haskell\n", "").replace("\n```", "")
+    """
+    1. Replace "[Char]" with "String" and remove the markdown symbols
+    2. remove Markdown code block
+    3. remove `{func_name} ::` if included
+    """
+
+    def char_list_to_str(text: str) -> str:
+        return text.replace("[Char]", "String")
+
+    def rm_md_block(text: str) -> str:
+        return text.replace("```haskell\n", "").replace("\n```", "")
+
+    def rm_func_name(text: str) -> str:
+        if "::" in text:
+            text = text.split("::")[1]
+        return text
+
+    strategies: list[Callable[[str], str]] = [
+        char_list_to_str,
+        rm_md_block,
+        rm_func_name,
+        str.strip,
+    ]
+    # NOTE: Python `reduce` is a `foldl`
+    # so the left most function is executed first
+    return reduce(lambda acc, f: f(acc), strategies, result)
 
 
 def main(
@@ -109,8 +134,8 @@ def main(
             .map(json.loads)
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(get_prompt)
-            .map(generate)
-            .map(str)  # generate : str -> str | None,  covert all to str
+            .map(generate)  # generate : str -> str | None
+            .map(str)  # covert all to str
             .map(postprocess)
             .map(json.dumps)
             .value
@@ -119,7 +144,7 @@ def main(
     with open(output_file, "w") as file:
         file.write("\n".join(results))
 
-    logging.info(f"Get {len(results)} results from.")
+    logging.info(f"Get {len(results)} results from {model}.")
 
 
 if __name__ == "__main__":
