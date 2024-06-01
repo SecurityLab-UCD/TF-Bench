@@ -101,7 +101,6 @@ def main(
     oroot: str = "data/source",
 ):
     with open(input_repo_list_path) as fp:
-        print(input_repo_list_path)
         repo_id_list = [l.strip() for l in fp.readlines()]
 
     logging.info(f"Loaded {len(repo_id_list)} repos to be processed")
@@ -118,6 +117,7 @@ def main(
         failed_types = ["repo not found", "function not found", "skipped"]
         failed_dict = {key: val for key, val in zip(failed_types, failed) if val != 0}
         logging.warning(f"Failed: {failed_dict}")
+
     logging.info(
         f"Collected {num_func} functions from {len(repo_id_list)} repositories."
     )
