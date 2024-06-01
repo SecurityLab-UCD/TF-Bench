@@ -14,3 +14,6 @@ seaborn==0.13.2
 tree-sitter==0.22.3
 tree_sitter_haskell==0.21.0
 dacite==1.8.1
+groq==0.8.0
+python-dotenv==1.0.1
+openai==1.30.5
