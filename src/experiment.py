@@ -14,14 +14,6 @@ from typing import Callable
 from functools import reduce
 
 
-# Load the API key from environment variables
-load_dotenv()
-OPEN_API_KEY = os.getenv("OPENAI_API_KEY")
-assert OPEN_API_KEY is not None, "OPENAI_API_KEY not in env"
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-assert GROQ_API_KEY is not None, "GROQ_API_KEY not in env"
-
-
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
 Only output the type signature.
@@ -50,7 +42,7 @@ where
 
 def get_model(
     client: OpenAI | Groq,
-    model: str = "gpt3.5-turbo",
+    model: str = "gpt-3.5-turbo",
     seed=123,
     temperature=0.0,
     top_p=1.0,
@@ -112,13 +104,13 @@ def postprocess(result: str) -> str:
 def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
     output_file: str = "data/generated_responses.jsonl",
-    model: str = "gpt3.5",
+    model: str = "gpt-3.5-turbo",
     api_key: str | None = None,
     seed: int = 123,
     temperature: float = 0.0,
     top_p: float = 0.0,
 ):
-    assert model in ["gpt3.5-turbo", "llama3-8b-8192"], f"{model} is not supported."
+    assert model in ["gpt-3.5-turbo", "llama3-8b-8192"], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
 
     client: OpenAI | Groq
