@@ -1,0 +1,790 @@
+[
+    {
+        "benchmark_signature": "splitVersion :: String -> [String]",
+        "result_signature": "splitVersion :: String -> [String]"
+    },
+    {
+        "benchmark_signature": "timeout :: Int -> IO a -> IO (Maybe a)",
+        "result_signature": "timeout :: Int -> IO a -> IO (Maybe a)"
+    },
+    {
+        "benchmark_signature": "unsafeFixIO :: (a -> IO a) -> IO a",
+        "result_signature": "unsafeFixIO :: (a -> IO a) -> IO a"
+    },
+    {
+        "benchmark_signature": "cClockToInteger :: CClock -> Integer",
+        "result_signature": "cClockToInteger :: CClock -> Integer"
+    },
+    {
+        "benchmark_signature": "cTimeToInteger :: CTime -> Integer",
+        "result_signature": "cTimeToInteger :: CTime -> Integer"
+    },
+    {
+        "benchmark_signature": "csuSecondsToInteger :: CSUSeconds -> Integer",
+        "result_signature": "csuSecondsToInteger :: CSUSeconds -> Integer"
+    },
+    {
+        "benchmark_signature": "mkWeakPtr :: k -> Maybe (IO ()) -> IO (Weak k)",
+        "result_signature": "mkWeakPtr :: key -> IO () -> IO (Weak key)"
+    },
+    {
+        "benchmark_signature": "addFinalizer :: key -> IO () -> IO ()",
+        "result_signature": "addFinalizer :: k -> Maybe (IO ()) -> IO ()"
+    },
+    {
+        "benchmark_signature": "mkWeakPair :: k -> v -> Maybe (IO ()) -> IO (Weak (k,v))",
+        "result_signature": "mkWeakPair :: k -> v -> IO () -> IO (Weak (k, v))"
+    },
+    {
+        "benchmark_signature": "usageInfo :: String                    -- header\n          -> [OptDescr a]              -- option descriptors\n          -> String",
+        "result_signature": "usageInfo :: [String] -> [OptDescr a] -> String"
+    },
+    {
+        "benchmark_signature": "fmtOpt :: OptDescr a -> [(String,String,String)]",
+        "result_signature": "fmtOpt :: Option a b c -> [(String, String, String)]"
+    },
+    {
+        "benchmark_signature": "fmtShort :: ArgDescr a -> Char -> String",
+        "result_signature": "fmtShort :: Flag -> Char -> String"
+    },
+    {
+        "benchmark_signature": "fmtLong :: ArgDescr a -> String -> String",
+        "result_signature": "fmtLong :: FlagType -> String -> String"
+    },
+    {
+        "benchmark_signature": "getOpt :: ArgOrder a                   -- non-option handling\n       -> [OptDescr a]                 -- option descriptors\n       -> [String]                     -- the command-line arguments\n       -> ([a],[String],[String])",
+        "result_signature": "getOpt :: ArgOrder a -> [OptDescr a] -> [String] -> ([a], [String], [String], [String])"
+    },
+    {
+        "benchmark_signature": "getOpt' :: ArgOrder a                         -- non-option handling\n        -> [OptDescr a]                       -- option descriptors\n        -> [String]                           -- the command-line arguments\n        -> ([a],[String], [String] ,[String])",
+        "result_signature": "getOpt' :: Ordering -> [OptDescr a] -> [String] -> ([a], [String], [a], [String])"
+    },
+    {
+        "benchmark_signature": "getNext :: String -> [String] -> [OptDescr a] -> (OptKind a,[String])",
+        "result_signature": "getNext :: String -> [String] -> [OptDescr a] -> (OptKind a, [String])"
+    },
+    {
+        "benchmark_signature": "longOpt :: String -> [String] -> [OptDescr a] -> (OptKind a,[String])",
+        "result_signature": "longOpt :: Eq a => String -> [String] -> [OptDescr a] -> (OptKind a, [String])"
+    },
+    {
+        "benchmark_signature": "shortOpt :: Char -> String -> [String] -> [OptDescr a] -> (OptKind a,[String])",
+        "result_signature": "shortOpt :: Eq a => Char -> [String] -> [String] -> [OptDescr a] -> (OptKind a, [String])"
+    },
+    {
+        "benchmark_signature": "errAmbig :: [OptDescr a] -> String -> OptKind a",
+        "result_signature": "errAmbig :: String -> String -> OptDescr a -> OptErr a"
+    },
+    {
+        "benchmark_signature": "errReq :: String -> String -> OptKind a",
+        "result_signature": "errReq :: String -> String -> OptErr"
+    },
+    {
+        "benchmark_signature": "errUnrec :: String -> String",
+        "result_signature": "errUnrec :: String -> String"
+    },
+    {
+        "benchmark_signature": "errNoArg :: String -> OptKind a",
+        "result_signature": "errNoArg :: String -> OptDescr a"
+    },
+    {
+        "benchmark_signature": "spr :: String -> [UPrintf] -> t",
+        "result_signature": "spr :: String -> [(ModifierParser, k)] -> NonEmpty c"
+    },
+    {
+        "benchmark_signature": "hspr :: Handle -> String -> [UPrintf] -> t",
+        "result_signature": "hspr :: Handle -> String -> [(a -> ModifierParser, a)] -> IO ()"
+    },
+    {
+        "benchmark_signature": "parseFormat :: a -> ModifierParser",
+        "result_signature": "parseFormat :: (a -> String -> FormatParse) -> a -> String -> FormatParse"
+    },
+    {
+        "benchmark_signature": "toChar :: c -> Char",
+        "result_signature": "toChar :: Char -> Char"
+    },
+    {
+        "benchmark_signature": "fromChar :: Char -> c",
+        "result_signature": "fromChar :: Char -> Char"
+    },
+    {
+        "benchmark_signature": "parseIntFormat :: a -> String -> FormatParse",
+        "result_signature": "parseIntFormat :: [(String, a)] -> String -> FormatParse"
+    },
+    {
+        "benchmark_signature": "vFmt :: Char -> FieldFormat -> FieldFormat",
+        "result_signature": "vFmt :: Char -> FieldFormat -> FieldFormat"
+    },
+    {
+        "benchmark_signature": "formatChar :: Char -> FieldFormatter",
+        "result_signature": "formatChar :: Char -> FieldFormat -> FieldFormat"
+    },
+    {
+        "benchmark_signature": "fixupMods :: FieldFormat -> Maybe Integer -> Maybe Integer",
+        "result_signature": "fixupMods :: String -> Maybe a -> Maybe a"
+    },
+    {
+        "benchmark_signature": "formatInteger :: Integer -> FieldFormatter",
+        "result_signature": "formatInteger :: Integer -> FieldFormat -> FieldFormatter"
+    },
+    {
+        "benchmark_signature": "formatIntegral :: Maybe Integer -> Integer -> FieldFormatter",
+        "result_signature": "formatIntegral :: Maybe Int -> Integer -> FieldFormat -> (String -> String)"
+    },
+    {
+        "benchmark_signature": "uprintf :: String -> [UPrintf] -> String",
+        "result_signature": "uprintf :: String -> [UPrintf] -> ShowS -> ShowS"
+    },
+    {
+        "benchmark_signature": "uprintfs :: String -> [UPrintf] -> ShowS",
+        "result_signature": "uprintfs :: String -> [UPrintf] -> ShowS"
+    },
+    {
+        "benchmark_signature": "fmt :: String -> [UPrintf] -> ShowS",
+        "result_signature": "fmt :: Bool -> Bool -> Maybe FormatSign -> Bool -> String -> [UPrintf] -> (FieldFormat, String, [UPrintf]) -> ShowS"
+    },
+    {
+        "benchmark_signature": "adjust :: FieldFormat -> (String, String) -> String",
+        "result_signature": "adjust :: (FmtAdjust, FmtWidth) -> (String, String) -> String"
+    },
+    {
+        "benchmark_signature": "adjustSigned :: FieldFormat -> (String, String) -> String",
+        "result_signature": "adjustSigned :: FieldFormat -> (String, String) -> String"
+    },
+    {
+        "benchmark_signature": "fmti :: Maybe Int -> Integer -> (String, String)",
+        "result_signature": "fmti :: Maybe Int -> Int -> (String, String)"
+    },
+    {
+        "benchmark_signature": "fmtu :: Integer -> Maybe String -> Maybe Int -> Maybe Integer -> Integer\n     -> (String, String)",
+        "result_signature": "fmtu :: Integral a => a -> Maybe String -> String -> Maybe Integer -> Integer -> (String, String)"
+    },
+    {
+        "benchmark_signature": "fmtu' :: Maybe Int -> Maybe Integer -> Integer -> Maybe String",
+        "result_signature": "fmtu' :: Maybe Int -> Maybe Int -> Int -> Maybe String"
+    },
+    {
+        "benchmark_signature": "integral_prec :: Maybe Int -> String -> String",
+        "result_signature": "integral_prec :: Maybe Int -> String -> String"
+    },
+    {
+        "benchmark_signature": "stoi :: String -> (Int, String)",
+        "result_signature": "stoi :: NonEmpty Char -> (Int, String)"
+    },
+    {
+        "benchmark_signature": "adjustment :: Maybe Int -> Maybe a -> Bool -> Bool\n           -> Maybe FormatAdjustment",
+        "result_signature": "adjustment :: Maybe Int -> Bool -> Bool -> Bool -> Maybe Adjustment"
+    },
+    {
+        "benchmark_signature": "getSpecs :: Bool -> Bool -> Maybe FormatSign -> Bool -> String -> [UPrintf]\n         -> (FieldFormat, String, [UPrintf])",
+        "result_signature": "getSpecs :: Bool -> Bool -> Maybe Sign -> Bool -> String -> [UPrintf] -> (FieldFormat, String, [UPrintf])"
+    },
+    {
+        "benchmark_signature": "getStar :: [UPrintf] -> ([UPrintf], Int)",
+        "result_signature": "getStar :: [(a -> FieldFormat -> String) -> b] -> ([a -> FieldFormat -> String], b)"
+    },
+    {
+        "benchmark_signature": "perror :: String -> a",
+        "result_signature": "perror :: String -> a"
+    },
+    {
+        "benchmark_signature": "errorBadFormat :: Char -> a",
+        "result_signature": "errorBadFormat :: Char -> String"
+    },
+    {
+        "benchmark_signature": "realPart :: Complex a -> a",
+        "result_signature": "realPart :: Num a => Complex a -> a"
+    },
+    {
+        "benchmark_signature": "imagPart :: Complex a -> a",
+        "result_signature": "imagPart :: Num a => Complex a -> a"
+    },
+    {
+        "benchmark_signature": "bimap :: (a -> b) -> (c -> d) -> p a c -> p b d",
+        "result_signature": "bimap :: (a -> c) -> (b -> d) -> (e, f) -> (c, d)"
+    },
+    {
+        "benchmark_signature": "first :: (a -> b) -> p a c -> p b c",
+        "result_signature": "first :: (a -> b) -> p a c -> p b c"
+    },
+    {
+        "benchmark_signature": "toNonEmpty :: t a -> NonEmpty a",
+        "result_signature": "toNonEmpty :: (a :| b) -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "head :: t a -> a",
+        "result_signature": "head :: (a, b) -> b"
+    },
+    {
+        "benchmark_signature": "last :: t a -> a",
+        "result_signature": "last :: (Functor f, Functor g) => f a -> a"
+    },
+    {
+        "benchmark_signature": "foldrMap1 :: (a -> b) -> (a -> b -> b) -> t a -> b",
+        "result_signature": "foldrMap1 :: (a -> b -> b) -> (a -> b -> b) -> t a -> b"
+    },
+    {
+        "benchmark_signature": "foldlMap1' :: (a -> b) -> (b -> a -> b) -> t a -> b",
+        "result_signature": "foldlMap1' :: (a -> SMaybe b -> b) -> (a -> (SMaybe b -> b) -> SMaybe b -> b) -> SMaybe a -> b"
+    },
+    {
+        "benchmark_signature": "foldlMap1 :: (a -> b) -> (b -> a -> b) -> t a -> b",
+        "result_signature": "foldlMap1 :: (b -> c) -> (c -> a -> c) -> NonEmpty a -> c"
+    },
+    {
+        "benchmark_signature": "foldrMap1' :: (a -> b) -> (a -> b -> b) -> t a -> b",
+        "result_signature": "foldrMap1' :: (a -> b -> b) -> (b -> a -> b -> b) -> t a -> b -> b"
+    },
+    {
+        "benchmark_signature": "bifoldr :: (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c",
+        "result_signature": "bifoldr :: Monoid m => (a -> m -> m) -> (b -> m -> m) -> m -> p a b -> m"
+    },
+    {
+        "benchmark_signature": "bifoldl :: (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c",
+        "result_signature": "bifoldl :: Monoid m => (m -> a -> m) -> (m -> b -> m) -> m -> p a b -> m"
+    },
+    {
+        "benchmark_signature": "bitraverse :: (a -> Identity b)\n              -> (c -> Identity d) -> t a c -> Identity (t b d)",
+        "result_signature": "bitraverse :: Applicative f => (a -> f c) -> (b -> f d) -> (Either a b) -> f (Either c d)"
+    },
+    {
+        "benchmark_signature": "bitraverse :: (a -> Const m ())\n              -> (b -> Const m ()) -> t a b -> Const m (t () ())",
+        "result_signature": "bitraverse :: Applicative f => (a -> f c) -> (b -> f d) -> (e, a, b) -> f (e, c, d)"
+    },
+    {
+        "benchmark_signature": "min :: a -> a -> a",
+        "result_signature": "min :: Ord k => Arg k a -> Arg k a -> Arg k a"
+    },
+    {
+        "benchmark_signature": "max :: a -> a -> a",
+        "result_signature": "max :: Ord k => Arg k a -> Arg k a -> Arg k a"
+    },
+    {
+        "benchmark_signature": "digitToInt :: Char -> Int",
+        "result_signature": "digitToInt :: Char -> Int"
+    },
+    {
+        "benchmark_signature": "isLetter :: Char -> Bool",
+        "result_signature": "isLetter :: Char -> Bool"
+    },
+    {
+        "benchmark_signature": "isMark :: Char -> Bool",
+        "result_signature": "isMark :: Char -> Bool"
+    },
+    {
+        "benchmark_signature": "isNumber :: Char -> Bool",
+        "result_signature": "isNumber :: Char -> Bool"
+    },
+    {
+        "benchmark_signature": "isSeparator :: Char -> Bool",
+        "result_signature": "isSeparator :: Char -> Bool"
+    },
+    {
+        "benchmark_signature": "a :: k",
+        "result_signature": "a :: a -> (b, a)"
+    },
+    {
+        "benchmark_signature": "resolution :: p a -> Integer",
+        "result_signature": "resolution :: Proxy n -> Integer"
+    },
+    {
+        "benchmark_signature": "Proxy :: Proxy n",
+        "result_signature": "Proxy :: a -> f a"
+    },
+    {
+        "benchmark_signature": "withType :: (Proxy a -> f a) -> f a",
+        "result_signature": "withType :: Proxy a -> a"
+    },
+    {
+        "benchmark_signature": "chopZeros :: Integer -> String",
+        "result_signature": "chopZeros :: Integral a => a -> String"
+    },
+    {
+        "benchmark_signature": "showIntegerZeros :: Bool -> Int -> Integer -> String",
+        "result_signature": "showIntegerZeros :: Bool -> Bool -> Int -> Integer -> String"
+    },
+    {
+        "benchmark_signature": "withDot :: String -> String",
+        "result_signature": "withDot :: String -> String"
+    },
+    {
+        "benchmark_signature": "Proxy :: Proxy a",
+        "result_signature": "Proxy :: k -> f k"
+    },
+    {
+        "benchmark_signature": "liftEq :: (a -> b -> Bool) -> f a -> f b -> Bool",
+        "result_signature": "liftEq :: (a -> a -> Bool) -> f a -> f a -> Bool"
+    },
+    {
+        "benchmark_signature": "liftCompare :: (a -> b -> Ordering) -> f a -> f b -> Ordering",
+        "result_signature": "liftCompare :: (a -> b -> Ordering) -> f a -> f b -> Ordering"
+    },
+    {
+        "benchmark_signature": "liftReadsPrec :: (Int -> ReadS a) -> ReadS [a] -> Int -> ReadS (f a)",
+        "result_signature": "liftReadsPrec :: (ReadPrec a -> ReadPrec [a] -> ReadPrec (f a)) -> (Int -> ReadS a) -> (Int -> ReadS a) -> Int -> ReadS (f a)"
+    },
+    {
+        "benchmark_signature": "liftReadList :: (Int -> ReadS a) -> ReadS [a] -> ReadS [f a]",
+        "result_signature": "liftReadList :: ReadS a -> ReadS [a] -> ReadS (f a)"
+    },
+    {
+        "benchmark_signature": "liftReadPrec :: ReadPrec a -> ReadPrec [a] -> ReadPrec (f a)",
+        "result_signature": "liftReadPrec :: ReadPrec a -> ReadPrec [a] -> ReadPrec (f a)"
+    },
+    {
+        "benchmark_signature": "liftReadListPrec :: ReadPrec a -> ReadPrec [a] -> ReadPrec [f a]",
+        "result_signature": "liftReadListPrec :: ReadPrec a -> ReadPrec [a] -> ReadPrec [f a]"
+    },
+    {
+        "benchmark_signature": "liftShowsPrec :: (Int -> a -> ShowS) -> ([a] -> ShowS) ->\n        Int -> f a -> ShowS",
+        "result_signature": "liftShowsPrec :: (Int -> a -> ShowS) -> (Int -> [a] -> ShowS) -> Int -> NonEmpty a -> ShowS"
+    },
+    {
+        "benchmark_signature": "liftShowList :: (Int -> a -> ShowS) -> ([a] -> ShowS) ->\n        [f a] -> ShowS",
+        "result_signature": "liftShowList :: (Int -> a -> ShowS) -> ([a] -> ShowS) -> f a -> ShowS"
+    },
+    {
+        "benchmark_signature": "liftEq2 :: (a -> b -> Bool) -> (c -> d -> Bool) -> f a c -> f b d -> Bool",
+        "result_signature": "liftEq2 :: (a -> a -> Bool) -> (b -> b -> Bool) -> (c, d, e, f) -> (c, d, e, f) -> Bool"
+    },
+    {
+        "benchmark_signature": "liftCompare2 :: (a -> b -> Ordering) -> (c -> d -> Ordering) ->\n        f a c -> f b d -> Ordering",
+        "result_signature": "liftCompare2 :: (a -> b -> Ordering) -> (c -> d -> Ordering) -> Either e f -> Either g h -> Ordering"
+    },
+    {
+        "benchmark_signature": "liftReadsPrec2 :: (Int -> ReadS a) -> ReadS [a] ->\n        (Int -> ReadS b) -> ReadS [b] -> Int -> ReadS (f a b)",
+        "result_signature": "liftReadsPrec2 :: ReadPrec a -> ReadPrec [a] -> ReadPrec b -> ReadPrec [b] -> ReadPrec (f a b)"
+    },
+    {
+        "benchmark_signature": "liftReadList2 :: (Int -> ReadS a) -> ReadS [a] ->\n        (Int -> ReadS b) -> ReadS [b] -> ReadS [f a b]",
+        "result_signature": "liftReadList2 :: ReadS a -> ReadS [a] -> ReadS b -> ReadS [b] -> ReadS (f a b)"
+    },
+    {
+        "benchmark_signature": "liftReadPrec2 :: ReadPrec a -> ReadPrec [a] ->\n        ReadPrec b -> ReadPrec [b] -> ReadPrec (f a b)",
+        "result_signature": "liftReadPrec2 :: ReadPrec a -> ReadPrec b -> ReadPrec c -> ReadPrec d -> ReadPrec (f a b c d)"
+    },
+    {
+        "benchmark_signature": "liftReadListPrec2 :: ReadPrec a -> ReadPrec [a] ->\n        ReadPrec b -> ReadPrec [b] -> ReadPrec [f a b]",
+        "result_signature": "liftReadListPrec2 :: ReadPrec a -> ReadPrec [a] -> ReadPrec b -> ReadPrec [b] -> ReadPrec [f a b]"
+    },
+    {
+        "benchmark_signature": "liftShowsPrec2 :: (Int -> a -> ShowS) -> ([a] -> ShowS) ->\n        (Int -> b -> ShowS) -> ([b] -> ShowS) -> Int -> f a b -> ShowS",
+        "result_signature": "liftShowsPrec2 :: (Int -> a -> ShowS) -> (Int -> b -> ShowS) -> (Int -> c -> ShowS) -> (Int -> d -> ShowS) -> Int -> Either e f -> ShowS"
+    },
+    {
+        "benchmark_signature": "liftShowList2 :: (Int -> a -> ShowS) -> ([a] -> ShowS) ->\n        (Int -> b -> ShowS) -> ([b] -> ShowS) -> [f a b] -> ShowS",
+        "result_signature": "liftShowList2 :: (Int -> a -> ShowS) -> ([a] -> ShowS) -> (Int -> b -> ShowS) -> ([b] -> ShowS) -> f a b -> ShowS"
+    },
+    {
+        "benchmark_signature": "liftEq :: (a1 -> a2 -> Bool) -> (Generically1 f a1 -> Generically1 f a2 -> Bool)",
+        "result_signature": "liftEq :: (a -> a -> Bool) -> f a -> f a -> Bool"
+    },
+    {
+        "benchmark_signature": "liftCompare :: (a1 -> a2 -> Ordering) -> (Generically1 f a1 -> Generically1 f a2 -> Ordering)",
+        "result_signature": "liftCompare :: (a -> a -> Ordering) -> f a -> f a -> Ordering"
+    },
+    {
+        "benchmark_signature": "readsData :: (String -> ReadS a) -> Int -> ReadS a",
+        "result_signature": "readsData :: (String -> String -> [(a, String)]) -> Int -> ReadS [a]"
+    },
+    {
+        "benchmark_signature": "readData :: ReadPrec a -> ReadPrec a",
+        "result_signature": "readData :: (Int -> a) -> Int -> a"
+    },
+    {
+        "benchmark_signature": "readsUnaryWith :: (Int -> ReadS a) -> String -> (a -> t) -> String -> ReadS t",
+        "result_signature": "readsUnaryWith :: (Int -> String -> [(String, a)]) -> String -> (String -> a -> b) -> String -> [(b, a)]"
+    },
+    {
+        "benchmark_signature": "readUnaryWith :: ReadPrec a -> String -> (a -> t) -> ReadPrec t",
+        "result_signature": "readUnaryWith :: Parser a -> String -> (a -> b) -> Parser b"
+    },
+    {
+        "benchmark_signature": "readsBinaryWith :: (Int -> ReadS a) -> (Int -> ReadS b) ->\n    String -> (a -> b -> t) -> String -> ReadS t",
+        "result_signature": "readsBinaryWith :: Eq a => a -> (Int -> String -> [(b, String)]) -> (Int -> String -> [(c, String)]) -> a -> b -> String -> [(c, String)]"
+    },
+    {
+        "benchmark_signature": "readBinaryWith :: ReadPrec a -> ReadPrec b ->\n    String -> (a -> b -> t) -> ReadPrec t",
+        "result_signature": "readBinaryWith :: Parser String -> Parser String -> String -> (String -> String -> a) -> Parser a"
+    },
+    {
+        "benchmark_signature": "showsUnaryWith :: (Int -> a -> ShowS) -> String -> Int -> a -> ShowS",
+        "result_signature": "showsUnaryWith :: (Int -> a -> ShowS) -> String -> Int -> a -> ShowS"
+    },
+    {
+        "benchmark_signature": "showsBinaryWith :: (Int -> a -> ShowS) -> (Int -> b -> ShowS) ->\n    String -> Int -> a -> b -> ShowS",
+        "result_signature": "showsBinaryWith :: (Int -> a -> ShowS) -> (Int -> b -> ShowS) -> String -> Int -> a -> b -> ShowS"
+    },
+    {
+        "benchmark_signature": "liftReadPrecCompose :: ReadPrec (f (g a)) -> ReadPrec (Compose f g a)",
+        "result_signature": "liftReadPrecCompose :: ReadPrec a -> ReadPrec (Compose f g a)"
+    },
+    {
+        "benchmark_signature": "liftShowsPrecCompose :: (Int -> f (g a) -> ShowS) -> Int -> Compose f g a -> ShowS",
+        "result_signature": "liftShowsPrecCompose :: (Int -> b -> ShowS) -> Int -> Compose f g b -> ShowS"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (f a -> f a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (V1 a -> V1 a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (U1 a -> U1 a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (K1 i c a -> K1 i c a')",
+        "result_signature": "contramap :: (Functor f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> ((f :*: g) a -> (f :*: g) a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> ((f :.: g) a -> (f :.: g) a')",
+        "result_signature": "contramap :: (Functor f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> ((f :+: g) a -> (f :+: g) a')",
+        "result_signature": "contramap :: (Functor f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (Sum f g a -> Sum f g a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (Product f g a -> Product f g a')",
+        "result_signature": "contramap :: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)"
+    },
+    {
+        "benchmark_signature": "contramap :: (b' -> b) -> (Const a b -> Const a b')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (Compose f g a -> Compose f g a')",
+        "result_signature": "contramap :: (Functor f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (Proxy a -> Proxy a')",
+        "result_signature": "contramap :: (Functor f, Contravariant g) => (a -> b) -> f (g b) -> f (g a)"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (Comparison a -> Comparison a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "contramap :: (a' -> a) -> (Equivalence a -> Equivalence a')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "comparisonEquivalence :: Comparison a -> Equivalence a",
+        "result_signature": "comparisonEquivalence :: (a -> a -> Ordering) -> Equivalence a"
+    },
+    {
+        "benchmark_signature": "contramap :: (b' -> b) -> (Op a b -> Op a b')",
+        "result_signature": "contramap :: (Functor f, Contravariant f) => (a -> b) -> f b -> f a"
+    },
+    {
+        "benchmark_signature": "modifySTRef :: ST.STRef s a -> (a -> a) -> ST s ()",
+        "result_signature": "modifySTRef :: STRef s a -> (a -> a) -> ST s ()"
+    },
+    {
+        "benchmark_signature": "newByteArray :: Int -> ST s (MutableByteArray s)",
+        "result_signature": "newByteArray :: Int# -> State# s -> (# State# s, MutableByteArray s #)"
+    },
+    {
+        "benchmark_signature": "unsafeFreezeByteArray :: MutableByteArray s -> ST s ByteArray",
+        "result_signature": "unsafeFreezeByteArray :: MutableByteArray# s -> ST s (ByteArray#)"
+    },
+    {
+        "benchmark_signature": "sizeofByteArray :: ByteArray -> Int",
+        "result_signature": "sizeofByteArray :: ByteArray# -> Int#"
+    },
+    {
+        "benchmark_signature": "indexByteArray :: ByteArray -> Int -> Word8",
+        "result_signature": "indexByteArray :: ByteArray# -> Int# -> Word8"
+    },
+    {
+        "benchmark_signature": "writeByteArray :: MutableByteArray s -> Int -> Word8 -> ST s ()",
+        "result_signature": "writeByteArray :: MutableByteArray# s -> Int# -> Word8# -> ST s ()"
+    },
+    {
+        "benchmark_signature": "byteArrayToList :: ByteArray -> [Word8]",
+        "result_signature": "byteArrayToList :: ByteArray -> [Word8]"
+    },
+    {
+        "benchmark_signature": "byteArrayFromListN :: Int -> [Word8] -> ByteArray",
+        "result_signature": "byteArrayFromListN :: Int -> [Word8] -> ST s ByteArray"
+    },
+    {
+        "benchmark_signature": "showW8 :: Word8 -> String -> String",
+        "result_signature": "showW8 :: (Bits a, Integral a) => a -> String -> String"
+    },
+    {
+        "benchmark_signature": "compareByteArraysFromBeginning :: ByteArray -> ByteArray -> Int -> Ordering",
+        "result_signature": "compareByteArraysFromBeginning :: ByteArray# -> ByteArray# -> Int# -> Int"
+    },
+    {
+        "benchmark_signature": "sameByteArray :: ByteArray# -> ByteArray# -> Bool",
+        "result_signature": "sameByteArray :: ByteArray# -> ByteArray# -> Bool"
+    },
+    {
+        "benchmark_signature": "appendByteArray :: ByteArray -> ByteArray -> ByteArray",
+        "result_signature": "appendByteArray :: ByteArray -> ByteArray -> ST s ByteArray"
+    },
+    {
+        "benchmark_signature": "concatByteArray :: [ByteArray] -> ByteArray",
+        "result_signature": "concatByteArray :: [ByteArray] -> ST s ByteArray"
+    },
+    {
+        "benchmark_signature": "pasteByteArrays :: MutableByteArray s -> Int -> [ByteArray] -> ST s ()",
+        "result_signature": "pasteByteArrays :: MutableByteArray RealWorld -> Int -> [ByteArray] -> IO ()"
+    },
+    {
+        "benchmark_signature": "stimesPositiveInt :: Int -> ByteArray -> ByteArray",
+        "result_signature": "stimesPositiveInt :: Int -> ByteArray -> ST s ByteArray"
+    },
+    {
+        "benchmark_signature": "sizeOverflowError :: String -> a",
+        "result_signature": "sizeOverflowError :: String -> a"
+    },
+    {
+        "benchmark_signature": "checkedIntAdd :: Int -> Int -> Maybe Int",
+        "result_signature": "checkedIntAdd :: Int# -> Int# -> Maybe Int"
+    },
+    {
+        "benchmark_signature": "checkedIntMultiply :: Int -> Int -> Maybe Int",
+        "result_signature": "checkedIntMultiply :: Int# -> Int# -> Maybe Int"
+    },
+    {
+        "benchmark_signature": "length :: NonEmpty a -> Int",
+        "result_signature": "length :: NonEmpty a -> Int"
+    },
+    {
+        "benchmark_signature": "xor :: NonEmpty Bool -> Bool",
+        "result_signature": "xor :: Bool -> [Bool] -> Bool"
+    },
+    {
+        "benchmark_signature": "unfold :: (a -> (b, Maybe a)) -> a -> NonEmpty b",
+        "result_signature": "unfold :: (k -> (b, Maybe k)) -> k -> NonEmpty b"
+    },
+    {
+        "benchmark_signature": "nonEmpty :: [a] -> Maybe (NonEmpty a)",
+        "result_signature": "nonEmpty :: [k] -> Maybe (k :| [k])"
+    },
+    {
+        "benchmark_signature": "uncons :: NonEmpty a -> (a, Maybe (NonEmpty a))",
+        "result_signature": "uncons :: NonEmpty a -> (a, Maybe (NonEmpty a))"
+    },
+    {
+        "benchmark_signature": "unfoldr :: (a -> (b, Maybe a)) -> a -> NonEmpty b",
+        "result_signature": "unfoldr :: (k -> (b, Maybe k)) -> k -> NonEmpty b"
+    },
+    {
+        "benchmark_signature": "head :: NonEmpty a -> a",
+        "result_signature": "head :: NonEmpty a -> a"
+    },
+    {
+        "benchmark_signature": "tail :: NonEmpty a -> [a]",
+        "result_signature": "tail :: NonEmpty a -> [a]"
+    },
+    {
+        "benchmark_signature": "last :: NonEmpty a -> a",
+        "result_signature": "last :: NonEmpty k -> k"
+    },
+    {
+        "benchmark_signature": "init :: NonEmpty a -> [a]",
+        "result_signature": "init :: List k -> List k"
+    },
+    {
+        "benchmark_signature": "singleton :: a -> NonEmpty a",
+        "result_signature": "singleton :: a -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "toList :: NonEmpty a -> [a]",
+        "result_signature": "toList :: NonEmpty k -> [k]"
+    },
+    {
+        "benchmark_signature": "map :: (a -> b) -> NonEmpty a -> NonEmpty b",
+        "result_signature": "map :: (a -> b) -> (a :| as) -> (b :| bs)"
+    },
+    {
+        "benchmark_signature": "scanl1 :: (a -> a -> a) -> NonEmpty a -> NonEmpty a",
+        "result_signature": "scanl1 :: (a -> a -> a) -> NonEmpty a -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "scanr1 :: (a -> a -> a) -> NonEmpty a -> NonEmpty a",
+        "result_signature": "scanr1 :: (a -> a -> a) -> NonEmpty a -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "intersperse :: a -> NonEmpty a -> NonEmpty a",
+        "result_signature": "intersperse :: k -> List k -> List k"
+    },
+    {
+        "benchmark_signature": "iterate :: (a -> a) -> a -> NonEmpty a",
+        "result_signature": "iterate :: (a -> a) -> a -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "repeat :: a -> NonEmpty a",
+        "result_signature": "repeat :: a -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "take :: Int -> NonEmpty a -> [a]",
+        "result_signature": "take :: Int -> NonEmpty a -> [a]"
+    },
+    {
+        "benchmark_signature": "drop :: Int -> NonEmpty a -> [a]",
+        "result_signature": "drop :: Int -> NonEmpty a -> [a]"
+    },
+    {
+        "benchmark_signature": "splitAt :: Int -> NonEmpty a -> ([a],[a])",
+        "result_signature": "splitAt :: Int -> NonEmpty a -> ([a], [a])"
+    },
+    {
+        "benchmark_signature": "takeWhile :: (a -> Bool) -> NonEmpty a -> [a]",
+        "result_signature": "takeWhile :: (a -> Bool) -> NonEmpty a -> [a]"
+    },
+    {
+        "benchmark_signature": "dropWhile :: (a -> Bool) -> NonEmpty a -> [a]",
+        "result_signature": "dropWhile :: (a -> Bool) -> NonEmpty a -> [a]"
+    },
+    {
+        "benchmark_signature": "span :: (a -> Bool) -> NonEmpty a -> ([a], [a])",
+        "result_signature": "span :: (a -> Bool) -> NonEmpty a -> (NonEmpty a, NonEmpty a)"
+    },
+    {
+        "benchmark_signature": "break :: (a -> Bool) -> NonEmpty a -> ([a], [a])",
+        "result_signature": "break :: (a -> Bool) -> NonEmpty a -> ([a], [a])"
+    },
+    {
+        "benchmark_signature": "filter :: (a -> Bool) -> NonEmpty a -> [a]",
+        "result_signature": "filter :: (a -> Bool) -> NonEmpty a -> [a]"
+    },
+    {
+        "benchmark_signature": "partition :: (a -> Bool) -> NonEmpty a -> ([a], [a])",
+        "result_signature": "partition :: (a -> Bool) -> NonEmpty a -> ([a], [a])"
+    },
+    {
+        "benchmark_signature": "groupBy1 :: (a -> a -> Bool) -> NonEmpty a -> NonEmpty (NonEmpty a)",
+        "result_signature": "groupBy1 :: (a -> a -> Bool) -> NonEmpty a -> NonEmpty (NonEmpty a)"
+    },
+    {
+        "benchmark_signature": "permutations1 :: NonEmpty a -> NonEmpty (NonEmpty a)",
+        "result_signature": "permutations1 :: NonEmpty a -> NonEmpty (NonEmpty a)"
+    },
+    {
+        "benchmark_signature": "zip :: NonEmpty a -> NonEmpty b -> NonEmpty (a,b)",
+        "result_signature": "zip :: [a] -> [b] -> [(a, b)]"
+    },
+    {
+        "benchmark_signature": "zipWith :: (a -> b -> c) -> NonEmpty a -> NonEmpty b -> NonEmpty c",
+        "result_signature": "zipWith :: (a -> b -> c) -> NonEmpty a -> NonEmpty b -> NonEmpty c"
+    },
+    {
+        "benchmark_signature": "nubBy :: (a -> a -> Bool) -> NonEmpty a -> NonEmpty a",
+        "result_signature": "nubBy :: (k -> k -> Bool) -> NonEmpty k -> NonEmpty k"
+    },
+    {
+        "benchmark_signature": "sortBy :: (a -> a -> Ordering) -> NonEmpty a -> NonEmpty a",
+        "result_signature": "sortBy :: Ord b => (a -> b) -> [a] -> NonEmpty b"
+    },
+    {
+        "benchmark_signature": "appendList :: NonEmpty a -> [a] -> NonEmpty a",
+        "result_signature": "appendList :: NonEmpty a -> [a] -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "prependList :: [a] -> NonEmpty a -> NonEmpty a",
+        "result_signature": "prependList :: [a] -> NonEmpty a -> NonEmpty a"
+    },
+    {
+        "benchmark_signature": "forkFinally :: IO a -> (Either SomeException a -> IO ()) -> IO ThreadId",
+        "result_signature": "forkFinally :: IO a -> (Either SomeException a -> IO ()) -> IO ThreadId"
+    },
+    {
+        "benchmark_signature": "threadWaitRead :: Fd -> IO ()",
+        "result_signature": "threadWaitRead :: Fd -> IO ()"
+    },
+    {
+        "benchmark_signature": "threadWaitWrite :: Fd -> IO ()",
+        "result_signature": "threadWaitWrite :: Fd -> IO ()"
+    },
+    {
+        "benchmark_signature": "threadWaitReadSTM :: Fd -> IO (STM (), IO ())",
+        "result_signature": "threadWaitReadSTM :: Fd -> Bool -> IO (STM (), IO ())"
+    },
+    {
+        "benchmark_signature": "threadWaitWriteSTM :: Fd -> IO (STM (), IO ())",
+        "result_signature": "threadWaitWriteSTM :: Fd -> Bool -> IO (STM (), IO ())"
+    },
+    {
+        "benchmark_signature": "withThread :: IO a -> IO a",
+        "result_signature": "withThread :: IO a -> IO a"
+    },
+    {
+        "benchmark_signature": "waitFd :: Fd -> Bool -> IO ()",
+        "result_signature": "waitFd :: CInt -> Bool -> IO CInt"
+    },
+    {
+        "benchmark_signature": "newQSemN :: Int -> IO QSemN",
+        "result_signature": "newQSemN :: Int -> IO QSemN"
+    },
+    {
+        "benchmark_signature": "waitQSemN :: QSemN -> Int -> IO ()",
+        "result_signature": "waitQSemN :: QSemN -> Int -> IO ()"
+    },
+    {
+        "benchmark_signature": "wait :: MVar () -> IO ()",
+        "result_signature": "wait :: MVar a -> QSemN -> Int -> IO ()"
+    },
+    {
+        "benchmark_signature": "signalQSemN :: QSemN -> Int -> IO ()",
+        "result_signature": "signalQSemN :: QSemN -> Int -> IO ()"
+    },
+    {
+        "benchmark_signature": "newQSem :: Int -> IO QSem",
+        "result_signature": "newQSem :: Int -> IO QSem"
+    },
+    {
+        "benchmark_signature": "waitQSem :: QSem -> IO ()",
+        "result_signature": "waitQSem :: QSem -> IO ()"
+    },
+    {
+        "benchmark_signature": "signalQSem :: QSem -> IO ()",
+        "result_signature": "signalQSem :: QSem -> IO ()"
+    },
+    {
+        "benchmark_signature": "signal :: (Int,[MVar ()],[MVar ()]) -> IO (Int,[MVar ()],[MVar ()])",
+        "result_signature": "signal :: Int -> [()] -> [()] -> IO (Int, [()], [()])"
+    },
+    {
+        "benchmark_signature": "writeChan :: Chan a -> a -> IO ()",
+        "result_signature": "writeChan :: Chan (ChItem a) -> a -> IO ()"
+    },
+    {
+        "benchmark_signature": "readChan :: Chan a -> IO a",
+        "result_signature": "readChan :: Chan a -> IO (a)"
+    },
+    {
+        "benchmark_signature": "dupChan :: Chan a -> IO (Chan a)",
+        "result_signature": "dupChan :: Chan a -> IO (Chan a)"
+    },
+    {
+        "benchmark_signature": "getChanContents :: Chan a -> IO [a]",
+        "result_signature": "getChanContents :: Chan a -> IO [a]"
+    },
+    {
+        "benchmark_signature": "writeList2Chan :: Chan a -> [a] -> IO ()",
+        "result_signature": "writeList2Chan :: Chan a -> NonEmpty a -> IO ()"
+    },
+    {
+        "benchmark_signature": "mzipWith :: (a -> b -> c) -> m a -> m b -> m c",
+        "result_signature": "mzipWith :: (a -> b -> c) -> f a -> f b -> f c"
+    },
+    {
+        "benchmark_signature": "munzip :: m (a,b) -> (m a, m b)",
+        "result_signature": "munzip :: (Monad m) => m (a, b) -> (m a, m b)"
+    }
+]
