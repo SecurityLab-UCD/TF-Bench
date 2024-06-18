@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from src.filter2complete import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
+from src.hs_parser.ast_util import ASTLoc
+import pprint
 
 
 @dataclass
@@ -60,6 +62,24 @@ def add_dependencies(dependency_dict: dict[str, str]):
 
     return add_for_task
 
+def json_map_to_task(task: dict):
+    return BenchmarkTask(
+        task_id = task['id'], 
+        signature = task['id'],
+        code = task['code'],
+        poly_type = task['type'],
+        dependencies = None
+    )
+
+# Takes global location (original location in file) and the local location of some position in reference to the global position and returns the global position of the local location
+def local_to_global_loc(global_root_loc: ASTLoc, local_loc: ASTLoc):
+    # Check if lines are the same
+    if(local_loc.lineno == 1):
+        return ASTLoc(lineno = global_root_loc.lineno, 
+                    col = global_root_loc + local_loc.col - 1)
+    else:
+        return ASTLoc(lineno = global_root_loc.lineno + local_loc.lineno - 1, 
+                    col = local_loc.col)
 
 def main(
     input_file: str = "data/source/base-4.20.0.0.jsonl",
@@ -69,9 +89,12 @@ def main(
         tasks: list[BenchmarkTask] = (
             Chain(fp.readlines())
             .map(json.loads)
-            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
+            .map(json_map_to_task)
             .value
         )
+    
+    # Test value of open
+    # pprint.pprint(list(map(lambda d: d.keys(), tasks)))
 
     dependency_dict = build_dependency_dict(tasks)
     tasks_w_dep = (
@@ -81,6 +104,10 @@ def main(
         .map(json.dumps)
         .value
     )
+
+    # with open(output_file,"w") as fp:
+    #     fp.write(tasks)
+
     with open(output_file, "w") as fp:
         fp.write("\n".join(tasks_w_dep))
 
