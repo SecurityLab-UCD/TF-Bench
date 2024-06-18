@@ -62,15 +62,6 @@ def add_dependencies(dependency_dict: dict[str, str]):
 
     return add_for_task
 
-def json_map_to_task(task: dict):
-    return BenchmarkTask(
-        task_id = task['id'], 
-        signature = task['id'],
-        code = task['code'],
-        poly_type = task['type'],
-        dependencies = None
-    )
-
 # Takes global location (original location in file) and the local location of some position in reference to the global position and returns the global position of the local location
 def local_to_global_loc(global_root_loc: ASTLoc, local_loc: ASTLoc):
     # Check if lines are the same
@@ -89,7 +80,7 @@ def main(
         tasks: list[BenchmarkTask] = (
             Chain(fp.readlines())
             .map(json.loads)
-            .map(json_map_to_task)
+            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .value
         )
     
