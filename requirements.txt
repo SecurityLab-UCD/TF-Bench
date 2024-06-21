@@ -17,3 +17,4 @@ dacite==1.8.1
 groq==0.8.0
 python-dotenv==1.0.1
 openai==1.30.5
+git+https://github.com/yeger00/pylspclient.git@bd58ae7ee5773fd3b4df8c28480a8df9279cd59a # use older version to avoid conflict with sansio-lsp-server

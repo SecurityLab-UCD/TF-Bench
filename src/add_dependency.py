@@ -19,6 +19,8 @@ class BenchmarkTask:
     code: str
     poly_type: str
     dependencies: str | None
+    locations: list[list[int]]
+    locations_src: list[str]
 
 
 def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
@@ -62,15 +64,13 @@ def add_dependencies(dependency_dict: dict[str, str]):
 
     return add_for_task
 
-# Takes global location (original location in file) and the local location of some position in reference to the global position and returns the global position of the local location
-def local_to_global_loc(global_root_loc: ASTLoc, local_loc: ASTLoc):
-    # Check if lines are the same
-    if(local_loc.lineno == 1):
-        return ASTLoc(lineno = global_root_loc.lineno, 
-                    col = global_root_loc + local_loc.col - 1)
-    else:
-        return ASTLoc(lineno = global_root_loc.lineno + local_loc.lineno - 1, 
-                    col = local_loc.col)
+def get_type_signatures(task: BenchmarkTask):
+    return
+
+# Extracts the file from where the task comes from
+def extract_file(task: BenchmarkTask):
+    end = task.task_id.find("--")
+    return task.task_id[:end]
 
 def main(
     input_file: str = "data/source/base-4.20.0.0.jsonl",

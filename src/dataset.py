@@ -13,9 +13,10 @@ from enum import IntEnum
 import json
 from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
-from filter2complete import is_valid_entry
+from filter2complete import extract_function_name, is_valid_entry
 from funcy import lmap
-
+from pprint import pprint
+from tree_sitter import Node
 
 def wrap_repo(s: str) -> str:
     # NOTE: this is a placeholder function
@@ -51,13 +52,38 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
     ast = AST(code, HASKELL_LANGUAGE)
 
     def _to_json(func: HaskellFunction) -> dict[str, str]:
-        func_id = f"{file_path}--{ast.get_fn_name(func.type_signature).value_or(None)}"
-        signature, code = ast.func2src(func)
+        fn_name = ast.get_fn_name(func.type_signature).value_or(None)
+        func_id = f"{file_path}--{fn_name}"
+        signature, code = ast.func2src(func)        
+
+        locations = []
+
+        for function in func.functions:
+            # Get all calls and operators of a function
+            root = function
+            calls: list[Node] = (
+                Chain(ast.get_all_nodes_of_type(root, "variable"))
+                .filter(lambda x: ast.get_src_from_node(x) != fn_name)
+                .value
+            )
+            operators: list[Node] = (
+                Chain(ast.get_all_nodes_of_type(root, "operator"))
+                .filter(lambda x: ast.get_src_from_node(x) != fn_name)
+                .value
+            )
+            # Print statements for debugging
+            #pprint(fn_name)
+            #pprint(lmap(lambda f: ast.get_src_from_node(f), calls + operators))
+            locations += (calls + operators)
+
         return {
             "task_id": func_id,
             "signature": signature,
             "code": code,
             "poly_type": get_polymorphic_type(func.type_signature),
+            # Locations of all possible function calls / operators
+            "locations": lmap(lambda f: f.start_point, locations),
+            "locations_src": lmap(lambda f:ast.get_src_from_node(f), locations)
         }
 
     fs: list[dict[str, str]] = lmap(_to_json, ast.get_functions())
