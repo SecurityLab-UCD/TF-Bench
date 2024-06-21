@@ -28,6 +28,7 @@ import json
 from os.path import realpath
 from src.hs_parser.ast_util import AST
 from tree_sitter import Node
+from pprint import pprint
 
 # Need to implement!
 def haskell_get_def(node: Node, lineno: int):
@@ -35,7 +36,7 @@ def haskell_get_def(node: Node, lineno: int):
         if (
             child.type == "function"
             # AST is 1-indexed, LSP is 0-indexed
-            and child.start_point[0] == lineno + 1
+            and child.start_point[0] == lineno
             # AST count from def, LSP count from function name
             # and child.col_offset == col_offset - 4
         ):
@@ -215,7 +216,6 @@ class LSPSynchronizer(Synchronizer):
                     def_location = loc
                 else:
                     return Failure(f"Unexpected response from LSP server: {loc}")
-
         file_path = uri2path(def_location.uri).value_or(str(def_location.uri))
         logging.debug(file_path)
 
@@ -247,7 +247,7 @@ class LSPSynchronizer(Synchronizer):
 def main():
     workspace_dir = os.path.abspath("data/repos/haskell_example/")
     test_file = os.path.join(workspace_dir, "main.hs")
-    func_loc = (6, 15)
+    func_loc = (8, 15)
 
     sync = LSPSynchronizer(workspace_dir, "hs")
     sync.initialize()
