@@ -282,10 +282,14 @@ class LSPSynchronizer(Synchronizer):
         self.lsp_proc.kill()
 
 
-def main():
-    workspace_dir = os.path.abspath("data/repos/base-4.20.0.0/")
-    test_file = os.path.join(workspace_dir, "src/Control/Concurrent.hs")
-    func_loc = (286, 0)
+def main(
+        repo_root: str = "data/repos/base-4.20.0.0/",
+        file_path: str = "src/Control/Concurrent.hs",
+        func_loc: tuple[int, int] = (286, 0)
+):
+    workspace_dir = os.path.abspath(repo_root)
+    test_file = os.path.join(workspace_dir, file_path)
+    
 
     sync = LSPSynchronizer(workspace_dir, "hs")
     sync.initialize()
