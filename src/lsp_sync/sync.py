@@ -29,6 +29,7 @@ from os.path import realpath
 from src.hs_parser.ast_util import AST
 from tree_sitter import Node
 from pprint import pprint
+from src.lsp_sync.lsp_client import LspClientExtended
 
 # Need to implement!
 def haskell_get_def(node: Node, lineno: int):
@@ -93,7 +94,7 @@ class Synchronizer:
     def initialize(self, timeout: int):
         raise NotImplementedError
 
-    def get_source_of_call(
+    def get_type_signature_of_call(
         self,
         focal_name: str,
         file_path: str,
@@ -117,7 +118,7 @@ class LSPSynchronizer(Synchronizer):
         workspace_name = os.path.basename(self.workspace_dir)
         self.workspace_folders = [{"name": workspace_name, "uri": self.root_uri}]
         self.lsp_proc: subprocess.Popen
-        self.lsp_client: pylspclient.LspClient
+        self.lsp_client: LspClientExtended
 
     @silence
     def start_lsp_server(self, timeout: int = 10):
@@ -135,7 +136,7 @@ class LSPSynchronizer(Synchronizer):
             self.lsp_proc.stdin, self.lsp_proc.stdout
         )
         lsp_endpoint = pylspclient.LspEndpoint(json_rpc_endpoint, timeout=timeout)
-        self.lsp_client = pylspclient.LspClient(lsp_endpoint)
+        self.lsp_client = LspClientExtended(lsp_endpoint)
 
     @silence
     def initialize(self, timeout: int = 60):
@@ -169,7 +170,7 @@ class LSPSynchronizer(Synchronizer):
             pylspclient.lsp_structs.TextDocumentItem(uri, self.langID, version, text)
         )
         return uri
-
+    
     def get_source_of_call(
         self,
         focal_name: str,
@@ -194,11 +195,11 @@ class LSPSynchronizer(Synchronizer):
             return Failure(str(e))
 
         try:
-            goto_def = self.lsp_client.definition
+            goto_sig = self.lsp_client.definition
             if not verbose:
-                goto_def = silence(goto_def)
+                goto_sig = silence(goto_sig)
 
-            response = goto_def(
+            response = goto_sig(
                 TextDocumentIdentifier(uri),
                 Position(line, col),
             )
@@ -238,6 +239,43 @@ class LSPSynchronizer(Synchronizer):
             .bind(lambda t: Failure("Empty Source Code") if t[0] == "" else Success(t))
         )
 
+    def get_type_signature_of_call(
+        self,
+        focal_name: str,
+        file_path: str,
+        line: int,
+        col: int,
+        verbose: bool = False,
+    ) -> Result[tuple[str, str | None, str | None], str]:
+        """get the source code of a function called at a specific location in a file
+
+        Args:
+            file_path (str): absolute path to file that contains the call
+            line (int): line number of the call, 0-indexed
+            col (int): column number of the call, 0-indexed
+
+        Returns:
+            Maybe[tuple[str, str | None]]: the source code and docstring of the called function
+        """
+        try:
+            uri = self.open_file(file_path)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            return Failure(str(e))
+
+        try:
+            goto_sig = self.lsp_client.getTypeSignature
+            if not verbose:
+                goto_sig = silence(goto_sig)
+
+            response = goto_sig(
+                TextDocumentIdentifier(uri),
+                Position(line, col),
+            )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            return Failure(str(e))
+
+        return response
+
     def stop(self):
         self.lsp_client.shutdown()
         self.lsp_client.exit()
@@ -245,14 +283,14 @@ class LSPSynchronizer(Synchronizer):
 
 
 def main():
-    workspace_dir = os.path.abspath("data/repos/haskell_example/")
-    test_file = os.path.join(workspace_dir, "main.hs")
-    func_loc = (8, 15)
+    workspace_dir = os.path.abspath("data/repos/base-4.20.0.0/")
+    test_file = os.path.join(workspace_dir, "src/Control/Concurrent.hs")
+    func_loc = (286, 0)
 
     sync = LSPSynchronizer(workspace_dir, "hs")
     sync.initialize()
 
-    print(sync.get_source_of_call("", test_file, *func_loc))
+    print(sync.get_type_signature_of_call("", test_file, *func_loc))
 
     sync.stop()
 
