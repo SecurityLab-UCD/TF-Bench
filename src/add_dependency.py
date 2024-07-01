@@ -37,15 +37,19 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     root = ast.root
 
     calls: list[str] = (
-        Chain(ast.get_all_nodes_of_type(root, "variable"))
+        Chain(ast.get_all_nodes_of_type(root, "apply"))
+        .map(lambda node: node.child(0))  # invoked function is the first child of apply
         .map(ast.get_src_from_node)
         .filter(lambda x: x != fn_name)
+        .filter(lambda x: " " not in x)  # eliminate curried calls
         .value
     )
+
     operators: list[str] = (
         Chain(ast.get_all_nodes_of_type(root, "operator"))
         .map(ast.get_src_from_node)
         .map(lambda x: f"({x})")  # infix operator . \equiv function (.)
+        .filter(lambda x: x != fn_name)
         .value
     )
 
@@ -55,7 +59,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 def add_dependencies(dependency_dict: dict[str, str]):
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
         fn_name = extract_function_name(task.task_id)
-        calls = filter(lambda c: c != fn_name, get_func_calls(task))
+        calls = get_func_calls(task)
         type_deps = [dependency_dict[f] for f in calls if f in dependency_dict]
         task.dependencies = "\n".join(type_deps)
         return task
