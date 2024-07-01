@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from src.filter2complete import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
+from typing import Iterable
 
 
 @dataclass
@@ -53,7 +54,8 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
 def add_dependencies(dependency_dict: dict[str, str]):
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
-        calls = get_func_calls(task)
+        fn_name = extract_function_name(task.task_id)
+        calls = filter(lambda c: c != fn_name, get_func_calls(task))
         type_deps = [dependency_dict[f] for f in calls if f in dependency_dict]
         task.dependencies = "\n".join(type_deps)
         return task

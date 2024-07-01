@@ -7,11 +7,10 @@ from funcy_chain import Chain
 from dacite import from_dict
 
 from hs_parser import HASKELL_LANGUAGE
-from hs_parser.ast_util import AST, HaskellFunction
-from hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
+from hs_parser.ast_util import AST
 
 from filter2complete import extract_function_name
-from add_dependency import BenchmarkTask, build_dependency_dict, add_dependencies
+from add_dependency import BenchmarkTask, add_dependencies
 
 
 def main(
@@ -47,13 +46,12 @@ def main(
         if (fn_name := extract_function_name(f["task_id"])) is not None
     }
 
-    valid_tasks = [
-        ghc_internal_dict[f] for f in prelude_functions if f in ghc_internal_dict
-    ]
-
     dependency_dict = {k: v["signature"] for k, v in ghc_internal_dict.items()}
+
     tasks_w_dep = (
-        Chain(valid_tasks)
+        Chain(prelude_functions)
+        .filter(lambda f: f in ghc_internal_dict)
+        .map(lambda f: ghc_internal_dict[f])
         .filter(lambda t: t["code"] != "")
         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
         .map(add_dependencies(dependency_dict))

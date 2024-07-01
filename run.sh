@@ -10,7 +10,7 @@ if [ "$1" == "-venv" ]; then
 fi
 # Run program
 echo "===== Running Extraction and Filtering ====="
-mkdir -p data/source data/filtered data/added
+mkdir -p data/source
 # Toggle below if you need a virtual environment to run
 python3 src/dataset.py -o data/source # get raw function dataset
 python3 src/prelude.py
