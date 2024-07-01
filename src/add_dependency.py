@@ -58,7 +58,6 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
 def add_dependencies(dependency_dict: dict[str, str]):
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
-        fn_name = extract_function_name(task.task_id)
         calls = get_func_calls(task)
         type_deps = [dependency_dict[f] for f in calls if f in dependency_dict]
         task.dependencies = "\n".join(type_deps)
