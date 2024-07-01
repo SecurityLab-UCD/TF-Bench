@@ -16,7 +16,7 @@ from add_dependency import BenchmarkTask, add_dependencies
 def main(
     prelude: str = "data/repos/base-4.20.0.0/src/Prelude.hs",
     ghc_internal: str = "data/source/ghc-internal-9.1001.0.jsonl",
-    output_file: str = "benchmark-f.jsonl",
+    output_file: str = "Benchmark-F.jsonl",
 ):
     ghc_internal = abspath(ghc_internal)
     prelude = abspath(prelude)
