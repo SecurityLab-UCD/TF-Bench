@@ -81,7 +81,6 @@ def collect_from_repo(
     all_functions = (
         Chain(collect_hs_files(repo_path))
         .mapcat(collect_from_file)
-        .filter(is_valid_entry)
         .map(json.dumps)
         .value
     )
