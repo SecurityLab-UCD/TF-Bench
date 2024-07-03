@@ -118,7 +118,7 @@ class AST:
             return nodes
 
         for child in root.children:
-            if type is None or child.type == node_type:
+            if node_type is None or child.type == node_type:
                 nodes.append(child)
             nodes += AST.get_all_nodes_of_type(
                 child, node_type, max_level=max_level - 1
@@ -144,7 +144,7 @@ class AST:
 
         has_child = False
         for child in root.children:
-            if type is None or child.type == node_type:
+            if node_type is None or child.type == node_type:
                 return True
             has_child |= AST.has_any_child_of_type(
                 child, node_type, max_level=max_level - 1
