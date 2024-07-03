@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from src.filter2complete import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
+from typing import Iterable
 
 
 @dataclass
@@ -36,15 +37,19 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     root = ast.root
 
     calls: list[str] = (
-        Chain(ast.get_all_nodes_of_type(root, "variable"))
+        Chain(ast.get_all_nodes_of_type(root, "apply"))
+        .map(lambda node: node.child(0))  # invoked function is the first child of apply
         .map(ast.get_src_from_node)
         .filter(lambda x: x != fn_name)
+        .filter(lambda x: " " not in x)  # eliminate curried calls
         .value
     )
+
     operators: list[str] = (
         Chain(ast.get_all_nodes_of_type(root, "operator"))
         .map(ast.get_src_from_node)
         .map(lambda x: f"({x})")  # infix operator . \equiv function (.)
+        .filter(lambda x: x != fn_name)
         .value
     )
 
