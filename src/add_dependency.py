@@ -47,9 +47,22 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     return set(calls + operators)
 
 
+def _is_input(code: str, call: str) -> bool:
+    inputs: list[list[str]] = (
+        Chain(code.splitlines())
+        .filter(lambda l: "=" in l)
+        .map(lambda l: l.split("=")[0])
+        .map(str.strip)
+        .map(str.split)
+        .value
+    )
+    return any(call in ii for ii in inputs)
+
+
 def add_dependencies(dependency_dict: dict[str, str]):
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
-        calls = get_func_calls(task)
+        calls: Iterable[str] = get_func_calls(task)
+        calls = filter(lambda c: not _is_input(task.code, c), calls)
         task.dependencies = [dependency_dict[f] for f in calls if f in dependency_dict]
         return task
 
