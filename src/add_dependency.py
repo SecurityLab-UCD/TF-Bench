@@ -4,20 +4,11 @@ from funcy_chain import Chain
 import logging
 import json
 from dacite import from_dict
-from dataclasses import dataclass
 from src.filter2complete import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
+from src.common import BenchmarkTask
 from typing import Iterable
-
-
-@dataclass
-class BenchmarkTask:
-    task_id: str
-    signature: str
-    code: str
-    poly_type: str
-    dependencies: str | None
 
 
 def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
@@ -56,11 +47,23 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     return set(calls + operators)
 
 
+def _is_input(code: str, call: str) -> bool:
+    inputs: list[list[str]] = (
+        Chain(code.splitlines())
+        .filter(lambda l: "=" in l)
+        .map(lambda l: l.split("=")[0])
+        .map(str.strip)
+        .map(str.split)
+        .value
+    )
+    return any(call in ii for ii in inputs)
+
+
 def add_dependencies(dependency_dict: dict[str, str]):
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
-        calls = get_func_calls(task)
-        type_deps = [dependency_dict[f] for f in calls if f in dependency_dict]
-        task.dependencies = "\n".join(type_deps)
+        calls: Iterable[str] = get_func_calls(task)
+        calls = filter(lambda c: not _is_input(task.code, c), calls)
+        task.dependencies = [dependency_dict[f] for f in calls if f in dependency_dict]
         return task
 
     return add_for_task

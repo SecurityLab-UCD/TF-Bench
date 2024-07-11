@@ -1,7 +1,7 @@
 import fire
 import json
 import logging
-from src.add_dependency import BenchmarkTask
+from src.common import BenchmarkTask
 from src.experiment import postprocess
 from funcy_chain import Chain
 from dacite import from_dict
