@@ -15,14 +15,13 @@ def evaluate(task: BenchmarkTask, result: str) -> bool:
 
 
 def main(
-    benchmark_file: str = "data/filtered/base-4.20.0.0.jsonl",
-    results_file: str = "data/experiment/gpt_enerated_responses.jsonl",
-    output_file: str = "data/evaluate/gpt_evaluation_result.jsonl",
+    results_file: str,
+    output_file: str | None = None,
+    benchmark_file: str = "Benchmark-F.json",
 ):
     with open(benchmark_file, "r") as file:
         benchmark_f: list[BenchmarkTask] = (
-            Chain(file.readlines())
-            .map(json.loads)
+            Chain(json.load(file))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .value
         )
@@ -40,8 +39,9 @@ def main(
         "accuracy": acc,
     }
     logging.info(d)
-    with open(output_file, "w") as fp:
-        fp.write(json.dumps(d))
+    if output_file is not None:
+        with open(output_file, "w") as fp:
+            json.dump(d, fp)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from funcy_chain import Chain
 from dacite import from_dict
 from typing import Callable
 from functools import reduce
-
+import time
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
@@ -66,6 +66,10 @@ def get_model(
             top_p=top_p,
         )
 
+        if isinstance(client, Groq):
+            # rate limit for Groq is 30	requests per minute
+            time.sleep(2)
+
         return completion.choices[0].message.content
 
     return generate_type_signature
@@ -113,7 +117,11 @@ def main(
     temperature: float = 0.0,
     top_p: float = 1.0,
 ):
-    assert model in ["gpt-3.5-turbo", "llama3-8b-8192"], f"{model} is not supported."
+    assert model in [
+        "gpt-3.5-turbo",
+        "llama3-8b-8192",
+        "gpt-4-turbo",
+    ], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
 
     client: OpenAI | Groq
