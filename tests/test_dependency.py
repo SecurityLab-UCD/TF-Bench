@@ -1,4 +1,5 @@
-from src.add_dependency import BenchmarkTask, get_func_calls
+from src.common import BenchmarkTask
+from src.add_dependency import get_func_calls
 from dacite import from_dict
 
 
