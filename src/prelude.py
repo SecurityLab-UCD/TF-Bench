@@ -6,11 +6,11 @@ from funcy import lmap
 from funcy_chain import Chain
 from dacite import from_dict
 
-from hs_parser import HASKELL_LANGUAGE
-from hs_parser.ast_util import AST
-
-from filter2complete import extract_function_name
-from add_dependency import BenchmarkTask, add_dependencies
+from src.hs_parser import HASKELL_LANGUAGE
+from src.hs_parser.ast_util import AST
+from src.filter2complete import extract_function_name
+from src.add_dependency import add_dependencies
+from src.common import clean_tab_spaces, BenchmarkTask
 
 
 def main(
@@ -55,6 +55,7 @@ def main(
         .filter(lambda t: t["code"] != "")
         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
         .map(add_dependencies(dependency_dict))
+        .map(clean_tab_spaces)
         .map(lambda x: x.__dict__)
         .value
     )
