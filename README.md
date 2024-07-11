@@ -55,11 +55,3 @@ python3 src/experiment.py -o data/experiment/gpt_generated_responses.jsonl -m gp
 ```sh
 python3 src/experiment.py -o data/experiment/llama_generated_responses.jsonl -m llama3-8b-8192 -a "please replace with your groq api key" # call Groq API to generate type signature
 ```
-
-## Evaluation
-
-```sh
-mkdir -p data/evaluate
-python3 src/evaluation.py -r data/experiment/gpt_generated_responses.jsonl -o data/evaluate/gpt_evaluation_result.jsonl # evaluate the results of GPT 3.5
-python3 src/evaluation.py -r data/experiment/llama_generated_responses.jsonl -o data/evaluate/llama_evaluation_result.jsonl # evaluate the results of GPT 3.5
-```
