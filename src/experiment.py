@@ -111,7 +111,7 @@ def main(
     api_key: str | None = None,
     seed: int = 123,
     temperature: float = 0.0,
-    top_p: float = 0.0,
+    top_p: float = 1.0,
 ):
     assert model in ["gpt-3.5-turbo", "llama3-8b-8192"], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
