@@ -26,12 +26,15 @@ def get_prompt(task: BenchmarkTask) -> str:
 
     fn_name = extract_function_name(task.task_id)
     code = task.code
-    dependencies = task.dependencies
+    dependencies = (
+        "where\n" + "\n".join(task.dependencies)
+        if task.dependencies is not None
+        else ""
+    )
 
     if fn_name is not None:
         prompt = f"""
 {code}
-where
 {dependencies}
 --complete the following type signature for '{fn_name}'
 --if there is type mismatch, output 'Error'
