@@ -13,6 +13,8 @@ from dacite import from_dict
 from typing import Callable
 from functools import reduce
 import time
+from src.evaluation import evaluate
+from src.common import postprocess
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
@@ -37,7 +39,6 @@ def get_prompt(task: BenchmarkTask) -> str:
 {code}
 {dependencies}
 --complete the following type signature for '{fn_name}'
---if there is type mismatch, output 'Error'
 {fn_name} :: 
 """
     return prompt
@@ -75,42 +76,9 @@ def get_model(
     return generate_type_signature
 
 
-def postprocess(result: str) -> str:
-    """
-    1. Replace "[Char]" with "String" and remove the markdown symbols
-    2. remove Markdown code block
-    3. remove `{func_name} ::` if included
-    """
-
-    def char_list_to_str(text: str) -> str:
-        return text.replace("[Char]", "String")
-
-    def rm_md_block(text: str) -> str:
-        return text.replace("```haskell\n", "").replace("\n```", "")
-
-    def rm_func_name(text: str) -> str:
-        if "::" in text:
-            text = text.split("::")[1]
-        return text
-
-    def rm_new_line(text: str) -> str:
-        return text.replace("\n", "")
-
-    strategies: list[Callable[[str], str]] = [
-        char_list_to_str,
-        rm_md_block,
-        rm_func_name,
-        str.strip,
-        rm_new_line,
-    ]
-    # NOTE: Python `reduce` is a `foldl`
-    # so the left most function is executed first
-    return reduce(lambda acc, f: f(acc), strategies, result)
-
-
 def main(
-    input_file: str = "data/filtered/base-4.20.0.0.jsonl",
-    output_file: str = "data/generated_responses.jsonl",
+    input_file: str = "Benchmark-F.json",
+    output_file: str = "data/generated_responses.json",
     model: str = "gpt-3.5-turbo",
     api_key: str | None = None,
     seed: int = 123,
@@ -121,6 +89,7 @@ def main(
         "gpt-3.5-turbo",
         "llama3-8b-8192",
         "gpt-4-turbo",
+        "llama3-70b-8192",
     ], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
 
@@ -134,23 +103,24 @@ def main(
         exit(1)
 
     generate = get_model(client, model, seed, temperature, top_p)
-
     with open(input_file, "r") as fp:
-        results: list[str] = (
-            Chain(json.load(fp))
-            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-            .map(get_prompt)
-            .map(generate)  # generate : str -> str | None
-            .map(str)  # covert all to str
-            .map(postprocess)
-            .map(json.dumps)
-            .value
-        )
+        tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
+
+    gen_results: list[str] = (
+        Chain(tasks)
+        .map(get_prompt)
+        .map(generate)  # generate : str -> str | None
+        .map(str)  # covert all to str
+        .map(postprocess)
+        .value
+    )
 
     with open(output_file, "w") as file:
-        file.write("\n".join(results))
+        file.write("\n".join(gen_results))
 
-    logging.info(f"Get {len(results)} results from {model}.")
+    logging.info(f"Get {len(gen_results)} results from {model}.")
+    eval_acc = evaluate(tasks, gen_results)
+    logging.info(eval_acc)
 
 
 if __name__ == "__main__":
