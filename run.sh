@@ -8,6 +8,10 @@ if [ "$1" == "-venv" ]; then
   python3.10 -m venv .venv
   source .venv/bin/activate
 fi
+
+source ./env.sh
+rm data/source/*
+
 # Run program
 echo "===== Running Extraction and Filtering ====="
 mkdir -p data/source
