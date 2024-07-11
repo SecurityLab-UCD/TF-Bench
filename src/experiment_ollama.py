@@ -14,7 +14,6 @@ from typing import Callable
 from functools import reduce
 from ollama import Client
 
-
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
 Only output the type signature.
@@ -27,12 +26,15 @@ def get_prompt(task: BenchmarkTask) -> str:
 
     fn_name = extract_function_name(task.task_id)
     code = task.code
-    dependencies = task.dependencies
+    dependencies = (
+        "where\n" + "\n".join(task.dependencies)
+        if task.dependencies is not None
+        else ""
+    )
 
     if fn_name is not None:
         prompt = f"""
 {code}
-where
 {dependencies}
 --complete the following type signature for '{fn_name}'
 --if there is type mismatch, output 'Error'
@@ -69,7 +71,6 @@ def get_model(
 
     return generate_type_signature
 
-
 def postprocess(result: str) -> str:
     """
     1. Replace "[Char]" with "String" and remove the markdown symbols
@@ -103,6 +104,7 @@ def postprocess(result: str) -> str:
     return reduce(lambda acc, f: f(acc), strategies, result)
 
 
+
 def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
     output_file: str = "data/generated_responses.jsonl",
@@ -116,10 +118,9 @@ def main(
 
     generate = get_model(client, model, seed, temperature, top_p)
 
-    with open(input_file, "r") as file:
+    with open(input_file, "r") as fp:
         results: list[str] = (
-            Chain(file.readlines())
-            .map(json.loads)
+            Chain(json.load(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(get_prompt)
             .map(generate)  # generate : str -> str | None
@@ -132,9 +133,6 @@ def main(
     with open(output_file, "w") as file:
         file.write("\n".join(results))
 
-    logging.info(f"Get {len(results)} results from {model}.")
-
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     fire.Fire(main)

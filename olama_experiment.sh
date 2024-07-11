@@ -9,12 +9,12 @@ for model in "${models[@]}"; do
   echo "Processing $model"
   # Example command using $item
   python3 src/experiment_ollama.py \
-  --input_file="data/Benchmark-F.jsonl" \
+  --input_file="data/Benchmark-F.json" \
   --model=$model \
-  --output_file="data/generated_responses_${model}.jsonl"
+  --output_file="data/generated_responses_${model}.json"
 
   python3 src/evaluation.py \
-  --benchmark_file="data/Benchmark-F.jsonl" \
-  --results_file="data/generated_responses_${model}.jsonl" \
-  --output_file="data/evaluate_${model}.jsonl" 
+  --benchmark_file="data/Benchmark-F.json" \
+  --results_file="data/generated_responses_${model}.json" \
+  --output_file="data/evaluate_${model}.json" 
 done
