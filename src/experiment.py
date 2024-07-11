@@ -26,12 +26,15 @@ def get_prompt(task: BenchmarkTask) -> str:
 
     fn_name = extract_function_name(task.task_id)
     code = task.code
-    dependencies = task.dependencies
+    dependencies = (
+        "where\n" + "\n".join(task.dependencies)
+        if task.dependencies is not None
+        else ""
+    )
 
     if fn_name is not None:
         prompt = f"""
 {code}
-where
 {dependencies}
 --complete the following type signature for '{fn_name}'
 --if there is type mismatch, output 'Error'
@@ -108,7 +111,7 @@ def main(
     api_key: str | None = None,
     seed: int = 123,
     temperature: float = 0.0,
-    top_p: float = 0.0,
+    top_p: float = 1.0,
 ):
     assert model in ["gpt-3.5-turbo", "llama3-8b-8192"], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
@@ -124,10 +127,9 @@ def main(
 
     generate = get_model(client, model, seed, temperature, top_p)
 
-    with open(input_file, "r") as file:
+    with open(input_file, "r") as fp:
         results: list[str] = (
-            Chain(file.readlines())
-            .map(json.loads)
+            Chain(json.load(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(get_prompt)
             .map(generate)  # generate : str -> str | None

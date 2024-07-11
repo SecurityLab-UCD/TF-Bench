@@ -6,17 +6,17 @@ from funcy import lmap
 from funcy_chain import Chain
 from dacite import from_dict
 
-from hs_parser import HASKELL_LANGUAGE
-from hs_parser.ast_util import AST
-
-from filter2complete import extract_function_name
-from add_dependency import BenchmarkTask, add_dependencies
+from src.hs_parser import HASKELL_LANGUAGE
+from src.hs_parser.ast_util import AST
+from src.filter2complete import extract_function_name
+from src.add_dependency import add_dependencies
+from src.common import clean_tab_spaces, BenchmarkTask
 
 
 def main(
     prelude: str = "data/repos/base-4.20.0.0/src/Prelude.hs",
     ghc_internal: str = "data/source/ghc-internal-9.1001.0.jsonl",
-    output_file: str = "Benchmark-F.jsonl",
+    output_file: str = "Benchmark-F.json",
 ):
     ghc_internal = abspath(ghc_internal)
     prelude = abspath(prelude)
@@ -55,13 +55,13 @@ def main(
         .filter(lambda t: t["code"] != "")
         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
         .map(add_dependencies(dependency_dict))
+        .map(clean_tab_spaces)
         .map(lambda x: x.__dict__)
-        .map(json.dumps)
         .value
     )
 
     with open(output_file, "w") as fp:
-        fp.write("\n".join(tasks_w_dep))
+        json.dump(tasks_w_dep, fp)
 
 
 if __name__ == "__main__":

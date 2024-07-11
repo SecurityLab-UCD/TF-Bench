@@ -163,3 +163,4 @@ cython_debug/
 data/
 *.tar.gz
 *.jsonl
+*.json
