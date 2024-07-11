@@ -124,10 +124,9 @@ def main(
 
     generate = get_model(client, model, seed, temperature, top_p)
 
-    with open(input_file, "r") as file:
+    with open(input_file, "r") as fp:
         results: list[str] = (
-            Chain(file.readlines())
-            .map(json.loads)
+            Chain(json.load(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(get_prompt)
             .map(generate)  # generate : str -> str | None
