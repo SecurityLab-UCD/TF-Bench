@@ -17,7 +17,7 @@ class BenchmarkTask:
     signature: str
     code: str
     poly_type: str
-    dependencies: str | None
+    dependencies: list[str] | None
 
 
 def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
@@ -59,8 +59,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 def add_dependencies(dependency_dict: dict[str, str]):
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
         calls = get_func_calls(task)
-        type_deps = [dependency_dict[f] for f in calls if f in dependency_dict]
-        task.dependencies = "\n".join(type_deps)
+        task.dependencies = [dependency_dict[f] for f in calls if f in dependency_dict]
         return task
 
     return add_for_task
