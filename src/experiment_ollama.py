@@ -13,12 +13,12 @@ from dacite import from_dict
 from typing import Callable
 from functools import reduce
 from ollama import Client
+from tqdm import tqdm  # Import tqdm for the progress bar
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
 Only output the type signature.
 """
-
 
 # Get the prompt for the OpenAI API
 def get_prompt(task: BenchmarkTask) -> str:
@@ -41,7 +41,6 @@ def get_prompt(task: BenchmarkTask) -> str:
 {fn_name} :: 
 """
     return prompt
-
 
 def get_model(
     client: Client = Client(host='http://localhost:11434'),
@@ -103,8 +102,6 @@ def postprocess(result: str) -> str:
     # so the left most function is executed first
     return reduce(lambda acc, f: f(acc), strategies, result)
 
-
-
 def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
     output_file: str = "data/generated_responses.jsonl",
@@ -119,20 +116,17 @@ def main(
     generate = get_model(client, model, seed, temperature, top_p)
 
     with open(input_file, "r") as fp:
-        results: list[str] = (
-            Chain(json.load(fp))
-            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-            .map(get_prompt)
-            .map(generate)  # generate : str -> str | None
-            .map(str)  # covert all to str
-            .map(postprocess)
-            .map(json.dumps)
-            .value
-        )
+        tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
+        
+    results = []
+    for task in tqdm(tasks, desc="Processing tasks"):
+        prompt = get_prompt(task)
+        generated = generate(prompt)
+        processed = postprocess(str(generated))
+        results.append(json.dumps(processed))
 
     with open(output_file, "w") as file:
         file.write("\n".join(results))
-
 
 if __name__ == "__main__":
     fire.Fire(main)
