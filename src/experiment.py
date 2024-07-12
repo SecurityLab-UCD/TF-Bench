@@ -85,26 +85,16 @@ def main(
     temperature: float = 0.0,
     top_p: float = 1.0,
 ):
-<<<<<<< HEAD
-    assert model in ["gpt-3.5-turbo", "llama3-8b-8192", "gpt-4o", "gpt-4-turbo"], f"{model} is not supported."
-=======
-    assert model in [
-        "gpt-3.5-turbo",
-        "llama3-8b-8192",
-        "gpt-4-turbo",
-        "llama3-70b-8192",
-    ], f"{model} is not supported."
->>>>>>> origin/main
+    assert model in ["gpt-3.5-turbo", "llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768"\
+    "phi3:medium", "gemma-7b-it", "gemma2-9b-it", "whisper-large-v3"], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
 
     client: OpenAI | Groq
 
     if model.startswith("gpt"):
         client = OpenAI(api_key=api_key)
-    elif model.startswith("llama"):
+    else:
         client = Groq(api_key=api_key)
-    else:  # in case there is other models in the future
-        exit(1)
 
     generate = get_model(client, model, seed, temperature, top_p)
     with open(input_file, "r") as fp:

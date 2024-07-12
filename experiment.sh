@@ -9,7 +9,7 @@ for model in "${models[@]}"; do
   echo "Processing $model"
   # Example command using $item
   python3 src/experiment.py \
-  --api_key="$GROQ_API_KEY"
+  --api_key="$GROQ_API_KEY" \
   --input_file="data/Benchmark-F.json" \
   --model=$model \
   --output_file="data/generated_responses_${model}.json"
