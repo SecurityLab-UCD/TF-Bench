@@ -1,51 +1,17 @@
 import fire
-from openai import OpenAI
-from groq import Groq
-from dotenv import load_dotenv
-import os
-import json
-from filter2complete import extract_function_name
-import logging
-from typing import Any
-from add_dependency import BenchmarkTask
-from funcy_chain import Chain
-from dacite import from_dict
-from typing import Callable
-from functools import reduce
 from ollama import Client
 from tqdm import tqdm  # Import tqdm for the progress bar
+from experiment import get_prompt, SYSTEM_PROMPT
+from add_dependency import BenchmarkTask
+from dacite import from_dict
+import json
+import logging
 from src.evaluation import evaluate
 from src.common import postprocess
 
-SYSTEM_PROMPT = """
-Act as a static analysis tool for type inference.
-Only output the type signature.
-"""
-
-# Get the prompt for the OpenAI API
-def get_prompt(task: BenchmarkTask) -> str:
-    """get prompt from a task instance"""
-
-    fn_name = extract_function_name(task.task_id)
-    code = task.code
-    dependencies = (
-        "where\n" + "\n".join(task.dependencies)
-        if task.dependencies is not None
-        else ""
-    )
-
-    if fn_name is not None:
-        prompt = f"""
-{code}
-{dependencies}
---complete the following type signature for '{fn_name}'
---if there is type mismatch, output 'Error'
-{fn_name} :: 
-"""
-    return prompt
 
 def get_model(
-    client: Client = Client(host='http://localhost:11434'),
+    client: Client = Client(host="http://localhost:11434"),
     model: str = "llama3",
     seed=123,
     temperature=0.0,
@@ -54,57 +20,72 @@ def get_model(
     def generate_type_signature(prompt: str) -> str | None:
         response = client.chat(
             messages=[
-                    {
-                        "role": "system",
-                        "content": SYSTEM_PROMPT,
-                    },
-                    {"role": "user", "content": prompt},
-                ],
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT,
+                },
+                {"role": "user", "content": prompt},
+            ],
             model=model,
-            options = {
+            options={
                 "seed": seed,
                 "top_p": top_p,
                 "temperature": temperature,
-            }
+            },
         )
-
-        return response['message']['content']
-
+        print(response["message"]["content"])
+        return response["message"]["content"]
+    
     return generate_type_signature
+
 
 def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
-    output_file: str = "data/generated_responses.jsonl",
+    output_file: str | None = None,
     model: str = "llama3",
     seed: int = 123,
     temperature: float = 0.0,
     top_p: float = 1.0,
 ):
 
-    client = Client(host='http://localhost:11434')
+    assert model in [
+        "llama3",
+        "llama3:70b",
+        "phi3",
+        "phi3:medium",
+        "gemma2",
+        "gemma2:27b",
+        "mistral",
+        "mixtral:8x22b",
+        "mixtral:8x7b",
+    ], f"{model} is not supported."
+
+    if output_file is None:
+        output_file = f"{model}.txt"
+
+    client = Client(host="http://localhost:11434")
 
     generate = get_model(client, model, seed, temperature, top_p)
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
-        
+
     gen_results = []
-    with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
-        for task in tasks:
-            prompt = get_prompt(task)
-            generated = generate(prompt)
-            processed = postprocess(str(generated))
-            gen_results.append(json.dumps(processed))
-            pbar.update(1)  # Update the progress bar for each task
+    # with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
+    for task in tasks:
+        prompt = get_prompt(task)
+        generated = generate(prompt)
+        processed = postprocess(str(generated))
+        gen_results.append(json.dumps(processed))
+        # pbar.update(1)
 
     with open(output_file, "w") as file:
         file.write("\n".join(gen_results))
-        
+
     logging.info(f"Get {len(gen_results)} results from {model}.")
     eval_acc = evaluate(tasks, gen_results)
     print(eval_acc)
-    # logging.info(eval_acc)
+
 
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.INFO)
     fire.Fire(main)
