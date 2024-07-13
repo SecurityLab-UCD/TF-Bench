@@ -14,6 +14,8 @@ from typing import Callable
 from functools import reduce
 from ollama import Client
 from tqdm import tqdm  # Import tqdm for the progress bar
+from src.evaluation import evaluate
+from src.common import postprocess
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
@@ -70,38 +72,6 @@ def get_model(
 
     return generate_type_signature
 
-def postprocess(result: str) -> str:
-    """
-    1. Replace "[Char]" with "String" and remove the markdown symbols
-    2. remove Markdown code block
-    3. remove `{func_name} ::` if included
-    """
-
-    def char_list_to_str(text: str) -> str:
-        return text.replace("[Char]", "String")
-
-    def rm_md_block(text: str) -> str:
-        return text.replace("```haskell\n", "").replace("\n```", "")
-
-    def rm_func_name(text: str) -> str:
-        if "::" in text:
-            text = text.split("::")[1]
-        return text
-
-    def rm_new_line(text: str) -> str:
-        return text.replace("\n", "")
-
-    strategies: list[Callable[[str], str]] = [
-        char_list_to_str,
-        rm_md_block,
-        rm_func_name,
-        str.strip,
-        rm_new_line,
-    ]
-    # NOTE: Python `reduce` is a `foldl`
-    # so the left most function is executed first
-    return reduce(lambda acc, f: f(acc), strategies, result)
-
 def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
     output_file: str = "data/generated_responses.jsonl",
@@ -118,15 +88,23 @@ def main(
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
         
-    results = []
-    for task in tqdm(tasks, desc="Processing tasks"):
-        prompt = get_prompt(task)
-        generated = generate(prompt)
-        processed = postprocess(str(generated))
-        results.append(json.dumps(processed))
+    gen_results = []
+    with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
+        for task in tasks:
+            prompt = get_prompt(task)
+            generated = generate(prompt)
+            processed = postprocess(str(generated))
+            gen_results.append(json.dumps(processed))
+            pbar.update(1)  # Update the progress bar for each task
 
     with open(output_file, "w") as file:
-        file.write("\n".join(results))
+        file.write("\n".join(gen_results))
+        
+    logging.info(f"Get {len(gen_results)} results from {model}.")
+    eval_acc = evaluate(tasks, gen_results)
+    print(eval_acc)
+    # logging.info(eval_acc)
 
 if __name__ == "__main__":
+    # logging.basicConfig(level=logging.INFO)
     fire.Fire(main)
