@@ -14,8 +14,8 @@ def get_model(
     client: Client = Client(host="http://localhost:11434"),
     model: str = "llama3",
     seed=123,
-    temperature=0.0,
-    top_p=1.0,
+    temperature=0.2,
+    top_p=0.95,
 ):
     def generate_type_signature(prompt: str) -> str | None:
         response = client.chat(
@@ -44,8 +44,8 @@ def main(
     output_file: str | None = None,
     model: str = "llama3",
     seed: int = 123,
-    temperature: float = 0.0,
-    top_p: float = 1.0,
+    temperature: float = 0.2,
+    top_p: float = 0.95,
 ):
 
     assert model in [
