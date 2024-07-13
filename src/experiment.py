@@ -19,6 +19,7 @@ from src.common import postprocess
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
 Only output the type signature.
+Use the lowercase alphabet [a..z] for type variables instead of numbers.
 """
 
 
@@ -78,16 +79,19 @@ def get_model(
 
 def main(
     input_file: str = "Benchmark-F.json",
-    output_file: str = "data/generated_responses.json",
+    output_file: str | None = None,
     model: str = "gpt-3.5-turbo",
     api_key: str | None = None,
     seed: int = 123,
-    temperature: float = 0.0,
-    top_p: float = 1.0,
+    temperature: float = 0.2,
+    top_p: float = 0.95,
 ):
     assert model in ["gpt-3.5-turbo", "llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768"\
     "phi3:medium", "gemma-7b-it", "gemma2-9b-it", "whisper-large-v3"], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
+
+    if output_file is None:
+        output_file = f"{model}.txt"
 
     client: OpenAI | Groq
 
