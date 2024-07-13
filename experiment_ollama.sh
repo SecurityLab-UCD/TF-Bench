@@ -10,6 +10,5 @@ for model in "${models[@]}"; do
   echo "Processing $model"
   python3 src/experiment_ollama.py \
   --input_file="data/Benchmark-F.json" \
-  --model=$model \
-  --output_file="data/generated_responses_${model}.json"
+  --model=$model
 done
