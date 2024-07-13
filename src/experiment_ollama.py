@@ -33,9 +33,9 @@ def get_model(
                 "temperature": temperature,
             },
         )
-        print(response["message"]["content"])
+
         return response["message"]["content"]
-    
+
     return generate_type_signature
 
 
@@ -71,13 +71,13 @@ def main(
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
     gen_results = []
-    # with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
-    for task in tasks:
-        prompt = get_prompt(task)
-        generated = generate(prompt)
-        processed = postprocess(str(generated))
-        gen_results.append(json.dumps(processed))
-        # pbar.update(1)
+    with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
+        for task in tasks:
+            prompt = get_prompt(task)
+            generated = generate(prompt)
+            processed = postprocess(str(generated))
+            gen_results.append(processed)
+            pbar.update(1)
 
     with open(output_file, "w") as file:
         file.write("\n".join(gen_results))
