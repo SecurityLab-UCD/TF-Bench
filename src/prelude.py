@@ -61,6 +61,8 @@ def main(
         .value
     )
 
+    print(f"Collected {len(tasks_w_dep)} for the benchmark.")
+
     with open(output_file, "w") as fp:
         json.dump(tasks_w_dep, fp)
 
