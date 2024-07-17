@@ -70,7 +70,7 @@ def rewrite_functions(task: BenchmarkTask) -> BenchmarkTask:
     ast = AST(signatures, HASKELL_LANGUAGE)
     root = ast.root
 
-    # Get both types and type classes
+    # Get only the function names called using function signatures
     functions = set(
         Chain(ast.get_all_nodes_of_type(root, "signature"))
         .map(ast.get_src_from_node)
@@ -87,11 +87,9 @@ def rewrite_functions(task: BenchmarkTask) -> BenchmarkTask:
 
     task.signature = replace_functions(task.signature, func_dictionary)
     task.code = replace_functions(task.code, func_dictionary)
-    for i in range(len(task.dependencies)):
-        task.dependencies[i] = replace_functions(task.dependencies[i], func_dictionary)
-
-    print(task.signature)
-
+    if task.dependencies:
+        for i in range(len(task.dependencies)):
+            task.dependencies[i] = replace_functions(task.dependencies[i], func_dictionary)
     return task
     
 
@@ -123,7 +121,6 @@ def rewrite_type(task: BenchmarkTask) -> BenchmarkTask:
 
     # Filter out the type classes from both types and type classes
     types = (set(types_classes) - set(applies))
-    # print(types)
 
     # Populate the dictionary with the corresponding types
     type_dictionary = {}
@@ -167,16 +164,6 @@ def main(
     dataset_path: str = "data/source/Benchmark-F.jsonl",
     output_path: str = "Benchmark-F.removed.jsonl",
 ):
-    # ast = AST("chr :: Char -> Bool -> Int", HASKELL_LANGUAGE)
-    # root = ast.root
-
-    # calls = (
-    #     Chain(ast.get_all_nodes_of_type(root, "name"))
-    #     .map(ast.get_src_from_node)
-    #     .value
-    # )
-
-    # print(calls)
     with open(dataset_path, "r") as fp:
         tasks: list[BenchmarkTask] = (
             Chain(json.loads(fp.read()))
@@ -186,8 +173,7 @@ def main(
             .value
         )
         totalTypeClassed = sum(has_type_class(task) for task in tasks)
-        # print(totalTypeClassed)
-        # print(len(tasks))
+        print("%d/%d tasks involved type classes" % (totalTypeClassed, len(tasks)))
 
     with open(output_path, "w") as fp:
         fp.write("\n".join(json.dumps(t.__dict__) for t in tasks))
