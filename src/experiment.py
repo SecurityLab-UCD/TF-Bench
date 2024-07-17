@@ -10,6 +10,7 @@ from dacite import from_dict
 import time
 from src.evaluation import evaluate
 from src.common import postprocess
+from typing import Union, Callable
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
@@ -45,13 +46,13 @@ def get_prompt(task: BenchmarkTask) -> str:
 
 
 def get_model(
-    client: OpenAI | Groq,
+    client: Union[OpenAI, Groq],
     model: str = "gpt-3.5-turbo",
     seed=123,
     temperature=0.0,
     top_p=1.0,
-):
-    def generate_type_signature(prompt: str) -> str | None:
+) -> Callable[[str], Union[str, None]]:
+    def generate_type_signature(prompt: str) -> Union[str, None]:
         completion = client.chat.completions.create(
             messages=[
                 {
@@ -68,10 +69,11 @@ def get_model(
         )
 
         if isinstance(client, Groq):
-            # rate limit for Groq is 30	requests per minute
+            # rate limit for Groq is 30 requests per minute
             time.sleep(2)
 
-        return completion.choices[0].message.content
+        content = completion.choices[0].message.content
+        return content if isinstance(content, str) else None
 
     return generate_type_signature
 
@@ -100,7 +102,7 @@ def main(
     if output_file is None:
         output_file = f"{model}.txt"
 
-    client: OpenAI | Groq
+    client: Union[OpenAI, Groq]
 
     if model.startswith("gpt"):
         client = OpenAI(api_key=api_key)
@@ -110,7 +112,7 @@ def main(
         or model.startswith("mixtral")
     ):
         client = Groq(api_key=api_key)
-    else:  # in case there is other models in the future
+    else:  # in case there are other models in the future
         exit(1)
 
     generate = get_model(client, model, seed, temperature, top_p)
@@ -120,8 +122,8 @@ def main(
     gen_results: list[str] = (
         Chain(tasks)
         .map(get_prompt)
-        .map(generate)  # generate : str -> str | None
-        .map(str)  # covert all to str
+        .map(generate)  # generate: str -> Union[str, None]
+        .map(lambda x: x if x is not None else "")  # convert None to empty string
         .map(postprocess)
         .value
     )

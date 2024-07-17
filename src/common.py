@@ -4,7 +4,6 @@ import copy
 from funcy import lmap
 from functools import reduce
 from typing import Callable
-
 from openai import OpenAI
 import os
 
@@ -51,7 +50,6 @@ def postprocess(result: str) -> str:
     def rm_new_line(text: str) -> str:
         return text.replace("\n", "")
 
-
     def trim_text(text: str, max_tokens: int = 16385) -> str:
         """
         Trims the input text to ensure it fits within the maximum token limit.
@@ -71,7 +69,7 @@ def postprocess(result: str) -> str:
             seed=123,
             temperature=0.0,
             top_p=1.0,
-        ) -> str:
+        ) -> str | None:
         prompt = (
             "Below is a piece of text that includes a Haskell type signature "
             "may be along with explanations and commentaries. \n\n"
@@ -103,8 +101,12 @@ def postprocess(result: str) -> str:
             temperature=temperature,
             top_p=top_p,
         )
-        return completion.choices[0].message.content
+        content = completion.choices[0].message.content
+        return content if isinstance(content, str) else None
 
+    def remove_extra_wrapper(text: str) -> str:
+        result = remove_extra(text)
+        return result if result is not None else ""
 
     strategies: list[Callable[[str], str]] = [
         char_list_to_str,
@@ -112,8 +114,7 @@ def postprocess(result: str) -> str:
         rm_func_name,
         str.strip,
         rm_new_line,
-        remove_extra,
+        remove_extra_wrapper,
     ]
-    # NOTE: Python `reduce` is a `foldl`
-    # so the left most function is executed first
+
     return reduce(lambda acc, f: f(acc), strategies, result)
