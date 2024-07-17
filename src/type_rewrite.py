@@ -44,6 +44,7 @@ def replace_functions(code: str, func_dictionary: dict) -> str:
     functions = ast.get_all_nodes_of_type(root, "variable")
     functions += (ast.get_all_nodes_of_type(root, "operator"))
     functions += (ast.get_all_nodes_of_type(root, "apply"))
+    functions += (ast.get_all_nodes_of_type(root, "constructor"))
 
     # Find which ones need to be replaced (to prevent if type in in a word like IntToGet)
     for func_node in functions:
