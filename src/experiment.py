@@ -57,7 +57,7 @@ def get_model(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant.",
+                    "content": SYSTEM_PROMPT,
                 },
                 {"role": "user", "content": prompt},
             ],
