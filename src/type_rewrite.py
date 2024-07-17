@@ -131,8 +131,9 @@ def rewrite_type(task: BenchmarkTask) -> BenchmarkTask:
     
     task.signature = replace_type(task.signature, type_dictionary)
     task.code = replace_type(task.code, type_dictionary)
-    for i in range(len(task.dependencies)):
-        task.dependencies[i] = replace_type(task.dependencies[i], type_dictionary)
+    if task.dependencies:
+        for i in range(len(task.dependencies)):
+            task.dependencies[i] = replace_type(task.dependencies[i], type_dictionary)
 
     return task
 
