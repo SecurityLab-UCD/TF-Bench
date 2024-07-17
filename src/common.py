@@ -64,7 +64,7 @@ def postprocess(result: str) -> str:
             "1. Remove all explanations and commentaries. ONLY output the type signature. \n\n"
             "2. If the text doesn't involve any additional explanations and commentaries and "
             "just has the type signature. Print what it is. \n\n"
-            "Do not provide any additional commentaries or explanations. \n"
+            "3. Do not provide any additional commentaries or explanations. \n"
             "TEXT starts: \n\n"
         )
         api_key = os.getenv("OPENAI_API_KEY")
