@@ -169,7 +169,7 @@ def main(
 ):
     with open(dataset_path, "r") as fp:
         tasks: list[BenchmarkTask] = (
-            Chain(json.loads(fp))
+            Chain(json.load(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(rewrite_type)
             .map(rewrite_functions)
