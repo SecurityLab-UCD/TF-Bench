@@ -162,12 +162,12 @@ def has_type_class(task: BenchmarkTask) -> bool:
 
 
 def main(
-    dataset_path: str = "data/source/Benchmark-F.jsonl",
-    output_path: str = "Benchmark-F.removed.jsonl",
+    dataset_path: str = "data/source/Benchmark-F.json",
+    output_path: str = "Benchmark-F.removed.json",
 ):
     with open(dataset_path, "r") as fp:
         tasks: list[BenchmarkTask] = (
-            Chain(json.loads(fp.read()))
+            Chain(json.loads(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(rewrite_type)
             .map(rewrite_functions)
