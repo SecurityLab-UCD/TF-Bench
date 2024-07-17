@@ -15,6 +15,7 @@ from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
 from filter2complete import is_valid_entry
 from funcy import lmap
+from src.common import remove_comments
 
 
 def wrap_repo(s: str) -> str:
@@ -55,8 +56,8 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
         signature, code = ast.func2src(func)
         return {
             "task_id": func_id,
-            "signature": signature,
-            "code": code,
+            "signature": remove_comments(signature),
+            "code": remove_comments(code),
             "poly_type": get_polymorphic_type(func.type_signature),
         }
 

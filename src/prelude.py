@@ -54,11 +54,14 @@ def main(
         .map(lambda f: ghc_internal_dict[f])
         .filter(lambda t: t["code"] != "")
         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
+        .filter(lambda t: t.poly_type in ["Monomorphic", "Parametric"])
         .map(add_dependencies(dependency_dict))
         .map(clean_tab_spaces)
         .map(lambda x: x.__dict__)
         .value
     )
+
+    print(f"Collected {len(tasks_w_dep)} for the benchmark.")
 
     with open(output_file, "w") as fp:
         json.dump(tasks_w_dep, fp)
