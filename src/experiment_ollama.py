@@ -8,6 +8,7 @@ import json
 import logging
 from src.evaluation import evaluate
 from src.common import postprocess
+from typing import Union
 
 
 def get_model(
@@ -17,7 +18,7 @@ def get_model(
     temperature=0.2,
     top_p=0.95,
 ):
-    def generate_type_signature(prompt: str) -> str | None:
+    def generate_type_signature(prompt: str) -> Union[str, None]:
         response = client.chat(
             messages=[
                 {
@@ -34,11 +35,14 @@ def get_model(
             },
         )
 
-        content = response["message"]["content"]
-        if isinstance(content, str):
-            return content
-        else:
-            return None
+        if isinstance(response, dict) and "message" in response:
+            message = response["message"]
+            if isinstance(message, dict) and "content" in message:
+                content = message["content"]
+                if isinstance(content, str):
+                    return content
+
+        return None
 
     return generate_type_signature
 
