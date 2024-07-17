@@ -55,7 +55,9 @@ def replace_functions(code: str, func_dictionary: dict) -> str:
             start_col = func_node.start_point.column
             end_col = func_node.end_point.column
             # Replace Type at llocation with chr(0) as padding to keep positions accurate
-            parsed_code[func_node.start_point.row] = curr_line[:start_col] + fill_space(func_dictionary[func], chr(0), len(func)) + curr_line[end_col:]
+            parsed_code[func_node.start_point.row] = curr_line[:start_col]
+            + fill_space(func_dictionary[func], chr(0), len(func))
+            + curr_line[end_col:]
     
     # Replace all the chr(0) characters with empty spaces
     return (("\n").join(parsed_code)).replace(chr(0), "")
