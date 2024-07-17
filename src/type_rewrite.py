@@ -66,6 +66,7 @@ def rewrite_functions(task: BenchmarkTask) -> BenchmarkTask:
 
 
 def rewrite_type(task: BenchmarkTask) -> BenchmarkTask:
+    # New commit for merging purposes
     # Get all pieces of code together to determine all types
     signatures = task.signature + "\n" + task.code + "\n"
     if task.dependencies:
