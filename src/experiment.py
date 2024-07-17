@@ -16,10 +16,17 @@ import time
 from src.evaluation import evaluate
 from src.common import postprocess
 
+# SYSTEM_PROMPT = """
+# Act as a static analysis tool for type inference.
+# Only output the type signature.
+# Use the lowercase alphabet [a..z] for type variables instead of numbers.
+# """
+
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
-Only output the type signature.
 Use the lowercase alphabet [a..z] for type variables instead of numbers.
+
+ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
 """
 
 
@@ -57,7 +64,7 @@ def get_model(
             messages=[
                 {
                     "role": "system",
-                    "content": SYSTEM_PROMPT,
+                    "content": "You are a helpful assistant.",
                 },
                 {"role": "user", "content": prompt},
             ],
@@ -88,6 +95,8 @@ def main(
 ):
     assert model in [
         "gpt-3.5-turbo",
+        "gpt-4-turbo",
+        "gpt-4o",
         "llama3-8b-8192",
         "llama3-70b-8192",
         "mixtral-8x7b-32768",
