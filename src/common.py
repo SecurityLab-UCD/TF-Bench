@@ -58,3 +58,12 @@ def postprocess(result: str) -> str:
     # NOTE: Python `reduce` is a `foldl`
     # so the left most function is executed first
     return reduce(lambda acc, f: f(acc), strategies, result)
+
+
+def remove_comments(code: str) -> str:
+    # multi-line
+    # code = re.sub(r"\{\-[\s\S]*?\-\}", "", code)
+    code = re.sub(r"\{\-.*?\-\}", "", code, flags=re.DOTALL)
+    # single-line
+    code = re.sub(r"--.*", "", code)
+    return code
