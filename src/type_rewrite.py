@@ -11,7 +11,7 @@ from src.common import BenchmarkTask
 from typing import Iterable
 
 def fill_space(c: str, fill: str, length: int) -> str:
-    return c + ((length - 1) * fill)
+    return c + ((length - len(c)) * fill)
 
 def replace_type(code: str, type_dictionary: dict) -> str:
     parsed_code = code.split("\n")
