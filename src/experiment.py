@@ -1,32 +1,24 @@
 import fire
 from openai import OpenAI
 from groq import Groq
-from dotenv import load_dotenv
-import os
 import json
 from filter2complete import extract_function_name
 import logging
-from typing import Any
 from add_dependency import BenchmarkTask
 from funcy_chain import Chain
 from dacite import from_dict
-from typing import Callable
-from functools import reduce
 import time
 from src.evaluation import evaluate
 from src.common import postprocess
 
-# SYSTEM_PROMPT = """
-# Act as a static analysis tool for type inference.
-# Only output the type signature.
-# Use the lowercase alphabet [a..z] for type variables instead of numbers.
-# """
-
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
-Use the lowercase alphabet [a..z] for type variables instead of numbers.
+"""
 
-ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
+INSTRUCT_PROMPT = """
+1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
+
+2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
 """
 
 

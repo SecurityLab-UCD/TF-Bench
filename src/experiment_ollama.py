@@ -1,7 +1,7 @@
 import fire
 from ollama import Client
 from tqdm import tqdm  # Import tqdm for the progress bar
-from experiment import get_prompt, SYSTEM_PROMPT
+from experiment import get_prompt, SYSTEM_PROMPT, INSTRUCT_PROMPT
 from add_dependency import BenchmarkTask
 from dacite import from_dict
 import json
@@ -22,10 +22,9 @@ def get_model(
             messages=[
                 {
                     "role": "system",
-                    # "content": SYSTEM_PROMPT,
-                    "content": "You are a helpful assistant.",
+                    "content": SYSTEM_PROMPT,
                 },
-                {"role": "user", "content": SYSTEM_PROMPT + "\n" + prompt},
+                {"role": "user", "content": INSTRUCT_PROMPT + "\n\n" + prompt},
             ],
             model=model,
             options={
@@ -35,7 +34,11 @@ def get_model(
             },
         )
 
-        return response["message"]["content"]
+        content = response["message"]["content"]
+        if isinstance(content, str):
+            return content
+        else:
+            return None
 
     return generate_type_signature
 

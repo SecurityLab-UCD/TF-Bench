@@ -1,5 +1,6 @@
+source ~/.zshrc
+conda activate benchmarkf
 source ./env.sh
-
 # Define a list of strings
 models=("llama2:7b" "llama2:13b" "llama2:70b" "llama3" "llama3:70b" "phi3" \
 "phi3:medium" "gemma:2b" "gemma:7b" "gemma2" "gemma2:27b" "mistral" \
@@ -16,6 +17,6 @@ for model in "${models[@]}"; do
   # Perform actions with $item
   echo "Processing $model"
   python3 src/experiment_ollama.py \
-  --input_file="data/Benchmark-F.json" \
+  --input_file="data/Benchmark-F-filtered.json" \
   --model=$model
 done
