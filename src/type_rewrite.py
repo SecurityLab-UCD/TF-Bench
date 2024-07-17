@@ -36,7 +36,28 @@ def replace_type(code: str, type_dictionary: dict) -> str:
     return (("\n").join(parsed_code)).replace(chr(0), "")
 
 def replace_functions(code: str, func_dictionary: dict) -> str:
-    pass
+    parsed_code = code.split("\n")
+    # Generate Abstract Syntax Tree
+    ast = AST(code, HASKELL_LANGUAGE)
+    root = ast.root
+    # Get both types and type classes
+    functions = ast.get_all_nodes_of_type(root, "variable")
+    functions += (ast.get_all_nodes_of_type(root, "operator"))
+    functions += (ast.get_all_nodes_of_type(root, "apply"))
+
+    # Find which ones need to be replaced (to prevent if type in in a word like IntToGet)
+    for func_node in functions:
+        func = ast.get_src_from_node(func_node)
+        if func in func_dictionary:
+            # Helper variables
+            curr_line = parsed_code[func_node.start_point.row]
+            start_col = func_node.start_point.column
+            end_col = func_node.end_point.column
+            # Replace Type at llocation with chr(0) as padding to keep positions accurate
+            parsed_code[func_node.start_point.row] = curr_line[:start_col] + fill_space(func_dictionary[func], chr(0), len(func)) + curr_line[end_col:]
+    
+    # Replace all the chr(0) characters with empty spaces
+    return (("\n").join(parsed_code)).replace(chr(0), "")
 
 def rewrite_functions(task: BenchmarkTask) -> BenchmarkTask:
     # Get all pieces of code together to determine all functions
@@ -50,18 +71,27 @@ def rewrite_functions(task: BenchmarkTask) -> BenchmarkTask:
 
     # Get both types and type classes
     functions = set(
-        Chain(ast.get_all_nodes_of_type(root, "variable"))
+        Chain(ast.get_all_nodes_of_type(root, "signature"))
         .map(ast.get_src_from_node)
+        .map(lambda d: d[:d.index("::")].strip())
         .value
     )
 
     # Populate the dictionary with the corresponding types
     func_dictionary = {}
-    curr = ord('a')
+    curr = ord('p')
     for func in functions:
         func_dictionary[func] = chr(curr)
         curr += 1
 
+    task.signature = replace_functions(task.signature, func_dictionary)
+    task.code = replace_functions(task.code, func_dictionary)
+    for i in range(len(task.dependencies)):
+        task.dependencies[i] = replace_functions(task.dependencies[i], func_dictionary)
+
+    print(task.signature)
+
+    return task
     
 
 
@@ -151,6 +181,7 @@ def main(
             Chain(json.loads(fp.read()))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .map(rewrite_type)
+            .map(rewrite_functions)
             .value
         )
         totalTypeClassed = sum(has_type_class(task) for task in tasks)
