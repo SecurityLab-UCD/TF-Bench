@@ -53,7 +53,7 @@ def test_rewrite_func():
     result = {
         "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Data/Maybe.hs--maybe",
         "signature": "q :: b -> (a -> b) -> Maybe a -> b",
-        "code": "q _ f (p x) = f x\q n _ Nothing = n",
+        "code": "q _ f (p x) = f x\nq n _ Nothing = n",
         "poly_type": "Parametric",
         "dependencies": [
             "p :: a -> Maybe a"
