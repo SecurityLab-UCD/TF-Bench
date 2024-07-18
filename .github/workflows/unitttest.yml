@@ -26,3 +26,4 @@ jobs:
           python3 tests/test_ast.py
           python3 tests/test_polymorphism.py
           python3 tests/test_dependency.py
+          python3 tests/test_rewrite.py
