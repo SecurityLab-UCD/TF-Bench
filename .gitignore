@@ -164,3 +164,8 @@ data/
 *.tar.gz
 *.jsonl
 *.json
+
+# Mac
+.DS_store
+#generated result
+*.txt

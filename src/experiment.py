@@ -1,25 +1,25 @@
 import fire
 from openai import OpenAI
 from groq import Groq
-from dotenv import load_dotenv
-import os
 import json
 from filter2complete import extract_function_name
 import logging
-from typing import Any
 from add_dependency import BenchmarkTask
 from funcy_chain import Chain
 from dacite import from_dict
-from typing import Callable
-from functools import reduce
 import time
 from src.evaluation import evaluate
 from src.common import postprocess
+from typing import Union, Callable
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
-Only output the type signature.
-Use the lowercase alphabet [a..z] for type variables instead of numbers.
+"""
+
+INSTRUCT_PROMPT = """
+1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
+
+2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
 """
 
 
@@ -46,13 +46,13 @@ def get_prompt(task: BenchmarkTask) -> str:
 
 
 def get_model(
-    client: OpenAI | Groq,
+    client: Union[OpenAI, Groq],
     model: str = "gpt-3.5-turbo",
     seed=123,
     temperature=0.0,
     top_p=1.0,
-):
-    def generate_type_signature(prompt: str) -> str | None:
+) -> Callable[[str], Union[str, None]]:
+    def generate_type_signature(prompt: str) -> Union[str, None]:
         completion = client.chat.completions.create(
             messages=[
                 {
@@ -69,10 +69,11 @@ def get_model(
         )
 
         if isinstance(client, Groq):
-            # rate limit for Groq is 30	requests per minute
+            # rate limit for Groq is 30 requests per minute
             time.sleep(2)
 
-        return completion.choices[0].message.content
+        content = completion.choices[0].message.content
+        return content if isinstance(content, str) else None
 
     return generate_type_signature
 
@@ -92,16 +93,16 @@ def main(
         "gpt-4o",
         "llama3-8b-8192",
         "llama3-70b-8192",
+        "mixtral-8x7b-32768",
         "gemma-7b-it",
         "gemma2-9b-it",
-        "mixtral-8x7b-32768",
     ], f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
 
     if output_file is None:
         output_file = f"{model}.txt"
 
-    client: OpenAI | Groq
+    client: Union[OpenAI, Groq]
 
     if model.startswith("gpt"):
         client = OpenAI(api_key=api_key)
@@ -111,7 +112,7 @@ def main(
         or model.startswith("mixtral")
     ):
         client = Groq(api_key=api_key)
-    else:  # in case there is other models in the future
+    else:  # in case there are other models in the future
         exit(1)
 
     generate = get_model(client, model, seed, temperature, top_p)
@@ -121,8 +122,8 @@ def main(
     gen_results: list[str] = (
         Chain(tasks)
         .map(get_prompt)
-        .map(generate)  # generate : str -> str | None
-        .map(str)  # covert all to str
+        .map(generate)  # generate: str -> Union[str, None]
+        .map(lambda x: x if x is not None else "")  # convert None to empty string
         .map(postprocess)
         .value
     )
