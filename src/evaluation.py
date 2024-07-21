@@ -14,7 +14,7 @@ def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
 
 
 def evaluate(
-    benchmark_f: list[BenchmarkTask], results: list[str]
+    model_name: str, benchmark_f: list[BenchmarkTask], results: list[str]
 ) -> dict[str, int | float]:
 
     assert len(benchmark_f) == len(results)
@@ -23,6 +23,7 @@ def evaluate(
     acc = n_correct / len(benchmark_f)
 
     return {
+        "model_name": model_name,
         "total": len(benchmark_f),
         "n_correct": n_correct,
         "accuracy": acc,

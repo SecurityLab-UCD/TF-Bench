@@ -1,4 +1,5 @@
 import fire
+import os
 from openai import OpenAI
 from groq import Groq
 import json
@@ -100,7 +101,7 @@ def main(
     assert api_key is not None, "API key is not provided."
 
     if output_file is None:
-        output_file = f"{model}.txt"
+        output_file = f"result/{model}.txt"
 
     client: Union[OpenAI, Groq]
 
@@ -132,8 +133,12 @@ def main(
         file.write("\n".join(gen_results))
 
     logging.info(f"Get {len(gen_results)} results from {model}.")
-    eval_acc = evaluate(tasks, gen_results)
+    eval_acc = evaluate(model, tasks, gen_results)
     logging.info(eval_acc)
+
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open("evaluation_log.txt", "a") as log_file:
+        log_file.write(f"{eval_acc}\n")
 
 
 if __name__ == "__main__":

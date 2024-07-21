@@ -6,6 +6,7 @@ from functools import reduce
 from typing import Callable
 from openai import OpenAI
 import os
+import tiktoken
 
 
 @dataclass
@@ -50,26 +51,34 @@ def postprocess(result: str) -> str:
     def rm_new_line(text: str) -> str:
         return text.replace("\n", "")
 
-    def trim_text(text: str, max_tokens: int = 16385) -> str:
+    def trim_text(text: str, max_tokens: int = 4000) -> str:
         """
         Trims the input text to ensure it fits within the maximum token limit.
         """
+        tokenizer = tiktoken.get_encoding("cl100k_base")
         # Tokenizing the text
-        tokens = text.split()
-        if len(tokens) <= max_tokens:
-            return text
-        
+        tokens = tokenizer.encode(text)
         # Trimming the text to fit within the token limit
         trimmed_tokens = tokens[:max_tokens]
-        return ' '.join(trimmed_tokens)
+        text = tokenizer.decode(trimmed_tokens)
+
+        return text
+
+    def reduce_repetition(text):
+        def replace_repetition(match):
+            pattern = match.group(1)
+            return pattern
+
+        # Find and replace patterns repeated 10 or more times
+        return re.sub(r"(.+?)\1{9,}", replace_repetition, text)
 
     def remove_extra(
-            text: str,
-            model: str = "gpt-3.5-turbo",
-            seed=123,
-            temperature=0.0,
-            top_p=1.0,
-        ) -> str | None:
+        text: str,
+        model: str = "gpt-3.5-turbo",
+        seed=123,
+        temperature=0.0,
+        top_p=1.0,
+    ) -> str | None:
         prompt = (
             "Below is a piece of text that includes a Haskell type signature "
             "may be along with explanations and commentaries. \n\n"
@@ -79,29 +88,60 @@ def postprocess(result: str) -> str:
             "3. Do not provide any additional commentaries or explanations. \n"
             "TEXT starts: \n\n"
         )
-        
+
         api_key = os.getenv("OPENAI_API_KEY")
         client = OpenAI(api_key=api_key)
-        
+
         # Trim the text to fit within the token limit
-        full_text = prompt + text
-        trimmed_text = trim_text(full_text, max_tokens=4000)
-        
-        completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant.",
-                },
-                {"role": "user", "content": trimmed_text},
-            ],
-            model=model,
-            # Set parameters to ensure reproducibility
-            seed=seed,
-            temperature=temperature,
-            top_p=top_p,
-        )
-        content = completion.choices[0].message.content
+        full_prompt = prompt + text
+        trimmed_prompt = trim_text(full_prompt, max_tokens=4000)
+
+        try:
+            completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant.",
+                    },
+                    {"role": "user", "content": trimmed_prompt},
+                ],
+                model=model,
+                seed=seed,
+                temperature=temperature,
+                top_p=top_p,
+            )
+            content = completion.choices[0].message.content
+
+        except Exception as e:
+            # Instead of trying to parse the exception as JSON, check the string representation
+            error_message = str(e)
+            if (
+                "invalid_request_error" in error_message
+                and "invalid_prompt" in error_message
+                and "repetitive patterns" in error_message
+            ):
+
+                # Apply reduce_repetition to the prompt
+                reduced_prompt = reduce_repetition(trimmed_prompt)
+
+                completion = client.chat.completions.create(
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are a helpful assistant.",
+                        },
+                        {"role": "user", "content": reduced_prompt},
+                    ],
+                    model=model,
+                    seed=seed,
+                    temperature=temperature,
+                    top_p=top_p,
+                )
+                content = completion.choices[0].message.content
+            else:
+                # If it's not the specific error we're handling, re-raise the exception
+                raise
+
         return content if isinstance(content, str) else None
 
     def remove_extra_wrapper(text: str) -> str:

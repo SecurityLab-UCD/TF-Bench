@@ -1,0 +1,2 @@
+{'model_name': 'llama2:7b', 'total': 98, 'n_correct': 8, 'accuracy': 0.08163265306122448}
+{'model_name': 'llama2:13b', 'total': 98, 'n_correct': 5, 'accuracy': 0.05102040816326531}

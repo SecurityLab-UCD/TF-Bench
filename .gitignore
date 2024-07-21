@@ -168,4 +168,4 @@ data/
 # Mac
 .DS_store
 #generated result
-*.txt
+result/

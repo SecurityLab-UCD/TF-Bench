@@ -1,4 +1,5 @@
 import fire
+import os
 from ollama import Client
 from tqdm import tqdm  # Import tqdm for the progress bar
 from experiment import get_prompt, SYSTEM_PROMPT, INSTRUCT_PROMPT
@@ -97,7 +98,7 @@ def main(
     ], f"{model} is not supported."
 
     if output_file is None:
-        output_file = f"{model}.txt"
+        output_file = f"result/{model}.txt"
 
     client = Client(host="http://localhost:11434")
 
@@ -115,12 +116,16 @@ def main(
             gen_results.append(processed)
             pbar.update(1)
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w") as file:
         file.write("\n".join(gen_results))
 
     logging.info(f"Get {len(gen_results)} results from {model}.")
-    eval_acc = evaluate(tasks, gen_results)
+    eval_acc = evaluate(model, tasks, gen_results)
     print(eval_acc)
+
+    with open("evaluation_log.txt", "a") as log_file:
+        log_file.write(f"{eval_acc}\n")
 
 
 if __name__ == "__main__":
