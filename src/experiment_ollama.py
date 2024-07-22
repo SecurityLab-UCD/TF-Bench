@@ -121,11 +121,16 @@ def main(
         file.write("\n".join(gen_results))
 
     logging.info(f"Get {len(gen_results)} results from {model}.")
-    eval_acc = evaluate(model, tasks, gen_results)
+    eval_acc = evaluate(tasks, gen_results)
     print(eval_acc)
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
-        log_file.write(f"{eval_acc}\n")
+        logging_result = {
+        "model_name": model,
+        **eval_acc
+        }
+        log_file.write(f"{logging_result}\n")
 
 
 if __name__ == "__main__":

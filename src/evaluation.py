@@ -14,8 +14,8 @@ def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
 
 
 def evaluate(
-    model_name: str, benchmark_f: list[BenchmarkTask], results: list[str]
-) -> dict[str, str | int | float]:
+    benchmark_f: list[BenchmarkTask], results: list[str]
+) -> dict[str, int | float]:
 
     assert len(benchmark_f) == len(results)
     eval_results = starmap(evaluate_one_task, zip(benchmark_f, results))
@@ -23,7 +23,6 @@ def evaluate(
     acc = n_correct / len(benchmark_f)
 
     return {
-        "model_name": model_name,
         "total": len(benchmark_f),
         "n_correct": n_correct,
         "accuracy": acc,
@@ -44,7 +43,7 @@ def main(
     with open(results_file, "r") as file:
         results: list[str] = Chain(file.readlines()).map(json.loads).value
 
-    eval_acc = evaluate(results_file, benchmark_f, results)
+    eval_acc = evaluate(benchmark_f, results)
     logging.info(eval_acc)
 
 

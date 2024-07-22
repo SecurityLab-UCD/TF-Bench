@@ -6,6 +6,7 @@ from functools import reduce
 from typing import Callable
 from openai import OpenAI
 import os
+import openai
 import tiktoken
 
 
@@ -112,7 +113,7 @@ def postprocess(result: str) -> str:
             )
             content = completion.choices[0].message.content
 
-        except Exception as e:
+        except openai.APIError as e:
             # Instead of trying to parse the exception as JSON, check the string representation
             error_message = str(e)
             if (
