@@ -91,6 +91,10 @@ def postprocess(result: str) -> str:
         )
 
         api_key = os.getenv("OPENAI_API_KEY")
+        if api_key is None:
+            raise ValueError(
+                "OPENAI_API_KEY environment variable is not set. Please set it before running this script."
+            )
         client = OpenAI(api_key=api_key)
 
         # Trim the text to fit within the token limit
