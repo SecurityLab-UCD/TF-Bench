@@ -116,6 +116,7 @@ def main(
         rm_new_line,
         remove_extra_wrapper,
         remove_space_after_comma,
+        remove_space_between_arrow,
     ]
     with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
         for task in tasks:

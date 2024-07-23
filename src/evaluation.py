@@ -15,6 +15,7 @@ def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
         str.strip,
         rm_new_line,
         remove_space_after_comma,
+        remove_space_between_arrow,
     ]
     ground_truth = postprocess(task.signature, strategies)
     return ground_truth == result

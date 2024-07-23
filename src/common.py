@@ -53,6 +53,10 @@ def remove_space_after_comma(text: str) -> str:
     return re.sub(r",\s", ",", text)
 
 
+def remove_space_between_arrow(text: str) -> str:
+    return re.sub(r"\s*->\s*", "->", text)
+
+
 def trim_text(text: str, max_tokens: int = 4000) -> str:
     """
     Trims the input text to ensure it fits within the maximum token limit.
