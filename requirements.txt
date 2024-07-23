@@ -19,4 +19,4 @@ python-dotenv==1.0.1
 openai==1.30.5
 ollama==0.2.1
 #token counting
-tiktoken
+tiktoken==0.7.0
