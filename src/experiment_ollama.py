@@ -8,7 +8,7 @@ from dacite import from_dict
 import json
 import logging
 from src.evaluation import evaluate
-from src.common import postprocess
+from src.common import *
 from typing import Union
 
 
@@ -108,11 +108,20 @@ def main(
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
     gen_results = []
+    strategies: list[Callable[[str], str]] = [
+        char_list_to_str,
+        rm_md_block,
+        rm_func_name,
+        str.strip,
+        rm_new_line,
+        remove_extra_wrapper,
+        remove_space_after_comma,
+    ]
     with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
         for task in tasks:
             prompt = get_prompt(task)
             generated = generate(prompt)
-            processed = postprocess(str(generated))
+            processed = postprocess(str(generated), strategies)
             gen_results.append(processed)
             pbar.update(1)
 
@@ -126,10 +135,7 @@ def main(
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
-        logging_result = {
-        "model_name": model,
-        **eval_acc
-        }
+        logging_result = {"model_name": model, **eval_acc}
         log_file.write(f"{logging_result}\n")
 
 

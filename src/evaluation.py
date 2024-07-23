@@ -1,15 +1,22 @@
 import fire
 import json
 import logging
-from src.common import BenchmarkTask, postprocess
+from src.common import *
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
-    ground_truth = postprocess(task.signature)
-    result = postprocess(result)
+    strategies: list[Callable[[str], str]] = [
+        char_list_to_str,
+        rm_md_block,
+        rm_func_name,
+        str.strip,
+        rm_new_line,
+        remove_space_after_comma,
+    ]
+    ground_truth = postprocess(task.signature, strategies)
     return ground_truth == result
 
 
