@@ -168,4 +168,5 @@ data/
 # Mac
 .DS_store
 #generated result
-*.txt
+result/
+evaluation_log.txt
