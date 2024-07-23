@@ -5,6 +5,7 @@ from src.common import *
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
+from typing import Callable
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:

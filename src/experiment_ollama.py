@@ -9,7 +9,7 @@ import json
 import logging
 from src.evaluation import evaluate
 from src.common import *
-from typing import Union
+from typing import Union, Callable
 
 
 def get_model(
