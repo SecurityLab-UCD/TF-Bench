@@ -43,21 +43,29 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
     depedencies = list(get_func_calls(task))
     length = len(depedencies)
-    type_signature = [None] * length
+    type_signature = [""] * length
     for i in range(length):
-        type_signature[i] = get_type_signature(depedencies[i])
-        if type_signature[i] == None:
-            task.dependencies = [None]
+        sig = get_type_signature(depedencies[i])
+        # Check type signature exists
+        if sig == None:
+            task.dependencies = None
+            # Otherwise remove the valid task
             return task
+        # Check if result is a type signature
+        if "::" not in sig or "data " in sig:
+            # Otherwise remove it as a valid task
+            task.dependencies = None
+            return task
+        type_signature[i] = sig
     task.dependencies = type_signature
     return task
 
 @lru_cache(maxsize=None)
-def get_type_signature(name: str) -> str:
+def get_type_signature(name: str) -> str | None:
     # api-endpoint
     URL = "https://hoogle.haskell.org?mode=json&format=text&hoogle={0}&start=1&count=1".format(quote(name))
 
-    # sending get request and saving the response as response object
+    # sending get request to get hoogle result
     r = requests.get(url = URL)
     
     # extracting data in json format
@@ -65,18 +73,29 @@ def get_type_signature(name: str) -> str:
 
     type_signature = None
 
+    # Check if valid result was found, if there is one, return the type signature
     if len(data) > 0:
         type_signature = data[0]["item"]
     
     return type_signature
 
 def main(
-    input_file: str = "data/source/Benchmark-F.json",
+    input_file: str = "data/source/base-4.20.0.0_complete.jsonl",
     output_file: str = "out.json",
 ):
+    # For json files
+    # with open(input_file, "r") as fp:
+    #     tasks: list[BenchmarkTask] = (
+    #         Chain(json.load(fp))
+    #         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
+    #         .value
+    #     )
+
+    # For jsonl files
     with open(input_file, "r") as fp:
         tasks: list[BenchmarkTask] = (
-            Chain(json.load(fp))
+            Chain(fp.readlines())
+            .map(json.loads)
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
             .value
         )
@@ -88,10 +107,12 @@ def main(
     )
 
     filtered = (
-        Chain(filter(lambda d: d.dependencies != [None], tasks_w_dep))
+        Chain(filter(lambda d: d.dependencies != None, tasks_w_dep))
         .map(lambda x: x.__dict__)
         .value
     )
+
+    print(len(filtered))
 
     with open(output_file, "w") as fp:
         json.dump(filtered, fp)
