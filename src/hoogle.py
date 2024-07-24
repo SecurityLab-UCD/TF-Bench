@@ -52,11 +52,12 @@ def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
             # Otherwise remove the valid task
             return task
         # Check if result is a type signature
-        if "::" not in sig or "data " in sig:
+        str_sig = str(sig)
+        if "::" not in str_sig or "data " in str_sig:
             # Otherwise remove it as a valid task
             task.dependencies = None
             return task
-        type_signature[i] = sig
+        type_signature[i] = str_sig
     task.dependencies = type_signature
     return task
 
