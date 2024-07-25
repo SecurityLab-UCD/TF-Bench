@@ -8,7 +8,17 @@ from dacite import from_dict
 import json
 import logging
 from src.evaluation import evaluate
-from src.common import *
+from src.postprocessing import (
+    postprocess,
+    char_list_to_str,
+    rm_md_block,
+    rm_func_name,
+    rm_new_line,
+    remove_extra_wrapper,
+    remove_space_after_comma,
+    remove_space_between_arrow,
+    remove_backtick,
+)
 from typing import Union, Callable
 
 
@@ -117,6 +127,7 @@ def main(
         remove_extra_wrapper,
         remove_space_after_comma,
         remove_space_between_arrow,
+        remove_backtick,
     ]
     with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
         for task in tasks:

@@ -10,7 +10,17 @@ from funcy_chain import Chain
 from dacite import from_dict
 import time
 from src.evaluation import evaluate
-from src.common import *
+from src.postprocessing import (
+    postprocess,
+    char_list_to_str,
+    rm_md_block,
+    rm_func_name,
+    rm_new_line,
+    remove_extra_wrapper,
+    remove_space_after_comma,
+    remove_space_between_arrow,
+    remove_backtick,
+)
 from typing import Union, Callable
 
 SYSTEM_PROMPT = """
@@ -128,8 +138,10 @@ def main(
         rm_new_line,
         remove_extra_wrapper,
         remove_space_after_comma,
+        remove_space_between_arrow,
+        remove_backtick,
     ]
-    
+
     gen_results: list[str] = (
         Chain(tasks)
         .map(get_prompt)
@@ -148,10 +160,7 @@ def main(
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
-        logging_result = {
-        "model_name": model,
-        **eval_acc
-        }
+        logging_result = {"model_name": model, **eval_acc}
         log_file.write(f"{logging_result}\n")
 
 
