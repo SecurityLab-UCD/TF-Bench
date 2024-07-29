@@ -13,10 +13,60 @@ from functools import lru_cache
 from tree_sitter import Node
 # Need to update requirements.txt
 
+def get_where_blacklist(task: BenchmarkTask) -> set[str]:
+    """extract function calls and operators as string"""
+    fn_name = extract_function_name(task.task_id)
+    assert fn_name is not None
+    where_index = task.code.index("where")
+    where_code = task.code[(where_index + 5):].strip()
+
+    ast = AST(where_code, HASKELL_LANGUAGE)
+    root = ast.root
+
+    # Idea, Need some way of getting only variables that are functions to be called
+    # Also these functions need to be valid
+    patterns: list[Node] = (
+        Chain(ast.get_all_nodes_of_type(root, "patterns"))
+        .value
+    )
+
+    bindings: list[Node] = (
+        Chain(ast.get_all_nodes_of_type(root, "bind"))
+        .map(lambda node: node.child(0))  # variable is first child of binding
+        .value
+    )
+
+    generators: list[Node] = (
+        Chain(ast.get_all_nodes_of_type(root, "generator"))
+        .map(lambda node: node.child(0))  # variable is first child of binding
+        .value
+    )
+
+    function_defs: list[str] = (
+        Chain(ast.get_all_nodes_of_type(root, "function"))
+        .map(lambda node: node.child(0))  # invoked function is the first child of apply
+        .map(ast.get_src_from_node)
+        .filter(lambda x: x != fn_name)
+        .filter(lambda x: " " not in x)  # eliminate curried calls
+        .value
+    )
+
+    ban_list: list[str] = []
+    for node in (patterns + bindings + generators):
+        nodes = ast.get_all_nodes_of_type(node, "variable")
+        ban_list += Chain(nodes).map(ast.get_src_from_node).value
+        if node.type == "variable":
+            ban_list += [ast.get_src_from_node(node)]
+
+    return set(ban_list + function_defs)
+
+    
+
 def get_func_calls(task: BenchmarkTask) -> set[str]:
     """extract function calls and operators as string"""
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
+    print(fn_name)
 
     ast = AST(task.code, HASKELL_LANGUAGE)
     root = ast.root
@@ -28,8 +78,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         .filter(lambda x: " " not in x)  # eliminate curried calls
         .value
     )
-    # Idea, Need some way of getting only variables that are functions to be called
-    # Also these functions need to be valid
+    # Remove variables that are already defined to leave only functions that need dependencies
     patterns: list[Node] = (
         Chain(ast.get_all_nodes_of_type(root, "patterns"))
         .value
@@ -55,7 +104,9 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
             ban_list += [ast.get_src_from_node(node)]
 
     print(ban_list)
+    # End of Generating Ban List
 
+    # Get any function calls, operator calls, or constructor operator calls
     calls: list[str] = (
         Chain(ast.get_all_nodes_of_type(root, "apply"))
         .map(lambda node: node.child(0))  # invoked function is the first child of apply
@@ -73,23 +124,46 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         .value
     )
 
-    final_list = (set(calls + operators + variables) - set(ban_list))
+    const_operators: list[str] = (
+        Chain(ast.get_all_nodes_of_type(root, "constructor_operator"))
+        .map(ast.get_src_from_node)
+        .filter(lambda d: d != ":") # filter : operator
+        .map(lambda x: f"({x})")
+        .value
+    )
 
+    # Put everything together and remove anything on the ban list
+    final_list = set(calls + operators + variables + const_operators)
+    final_list = final_list - set(ban_list)
+
+    # Filter out any functions defined in the where clause
+    if "where" in task.code:
+        where_blacklist = get_where_blacklist(task)
+        final_list = final_list - where_blacklist
+
+    # Filter out some common non-important variables like a-z, xs, return, and otherwise
     filtered_final_list = (Chain(final_list)
     .filter(lambda d: not (len(d) == 1 and d.isalnum()))
-    .filter(lambda d: d != "xs")
+    .filter(lambda d: d not in ["otherwise", "xs", "return"])
     .value)
 
     return filtered_final_list
 
 def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
+    fn_name = extract_function_name(task.task_id)
     depedencies = list(get_func_calls(task))
     length = len(depedencies)
     type_signature = [""] * length
     for i in range(length):
         sig = get_type_signature(depedencies[i])
+        # Check if functions have same name
+        if depedencies[i] == fn_name:
+            task.dependencies = None
+            # Otherwise remove the valid task
+            return task
         # Check type signature exists
         if sig == None:
+            print("Banned on task {0} finding {1}".format(task.task_id, depedencies[i]))
             task.dependencies = None
             # Otherwise remove the valid task
             return task
@@ -99,8 +173,13 @@ def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
             # Otherwise remove it as a valid task
             task.dependencies = None
             return task
+        # Change signature in List.foldr case
+        fname = str_sig.index("::")
+        if str_sig[:fname].strip() != depedencies[i]:
+            str_sig = depedencies[i] + " " + str_sig[fname:]
+        # Set the type signature
         type_signature[i] = str_sig
-    task.dependencies = type_signature
+    task.dependencies = list(set(type_signature))
     return task
 
 @lru_cache(maxsize=None)
@@ -124,7 +203,7 @@ def get_type_signature(name: str) -> str | None:
 
 def main(
     input_file: str = "Benchmark-F.json",
-    output_file: str = "outv3.json",
+    output_file: str = "out.json",
 ):
     # For json files
     with open(input_file, "r") as fp:
@@ -150,7 +229,8 @@ def main(
     )
 
     filtered = (
-        Chain(filter(lambda d: d.dependencies != None, tasks_w_dep))
+        Chain(tasks_w_dep)
+        .filter(lambda d: d.dependencies != None)
         .map(lambda x: x.__dict__)
         .value
     )
