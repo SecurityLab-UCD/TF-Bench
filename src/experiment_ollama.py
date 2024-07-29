@@ -8,17 +8,8 @@ from dacite import from_dict
 import json
 import logging
 from src.evaluation import evaluate
-from src.postprocessing import (
-    postprocess,
-    char_list_to_str,
-    rm_md_block,
-    rm_func_name,
-    rm_new_line,
-    remove_extra_wrapper,
-    remove_space_after_comma,
-    remove_space_between_arrow,
-    remove_backtick,
-)
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
+
 from typing import Union, Callable
 
 
@@ -118,22 +109,11 @@ def main(
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
     gen_results = []
-    strategies: list[Callable[[str], str]] = [
-        char_list_to_str,
-        rm_md_block,
-        rm_func_name,
-        str.strip,
-        rm_new_line,
-        remove_extra_wrapper,
-        remove_space_after_comma,
-        remove_space_between_arrow,
-        remove_backtick,
-    ]
     with tqdm(total=len(tasks), desc="Processing tasks") as pbar:
         for task in tasks:
             prompt = get_prompt(task)
             generated = generate(prompt)
-            processed = postprocess(str(generated), strategies)
+            processed = postprocess(str(generated), RESPONSE_STRATEGIES)
             gen_results.append(processed)
             pbar.update(1)
 

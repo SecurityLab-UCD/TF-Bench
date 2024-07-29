@@ -2,16 +2,7 @@ import fire
 import json
 import logging
 from src.common import BenchmarkTask
-from src.postprocessing import (
-    postprocess,
-    char_list_to_str,
-    rm_md_block,
-    rm_func_name,
-    rm_new_line,
-    remove_space_after_comma,
-    remove_space_between_arrow,
-    remove_backtick,
-)
+from src.postprocessing import postprocess, TASK_STRATEGIES
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
@@ -19,17 +10,7 @@ from typing import Callable
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
-    strategies: list[Callable[[str], str]] = [
-        char_list_to_str,
-        rm_md_block,
-        rm_func_name,
-        str.strip,
-        rm_new_line,
-        remove_space_after_comma,
-        remove_space_between_arrow,
-        remove_backtick,
-    ]
-    ground_truth = postprocess(task.signature, strategies)
+    ground_truth = postprocess(task.signature, TASK_STRATEGIES)
     return ground_truth == result
 
 

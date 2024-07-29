@@ -153,3 +153,27 @@ def postprocess(result: str, strategies: list[Callable[[str], str]]) -> str:
     """
 
     return reduce(lambda acc, f: f(acc), strategies, result)
+
+
+TASK_STRATEGIES = [
+    char_list_to_str,
+    rm_md_block,
+    rm_func_name,
+    str.strip,
+    rm_new_line,
+    remove_space_after_comma,
+    remove_space_between_arrow,
+    remove_backtick,
+]
+
+RESPONSE_STRATEGIES = [
+    char_list_to_str,
+    rm_md_block,
+    rm_func_name,
+    str.strip,
+    rm_new_line,
+    remove_extra_wrapper,
+    remove_space_after_comma,
+    remove_space_between_arrow,
+    remove_backtick,
+]
