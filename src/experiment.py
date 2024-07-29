@@ -10,7 +10,8 @@ from funcy_chain import Chain
 from dacite import from_dict
 import time
 from src.evaluation import evaluate
-from src.common import postprocess
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
+
 from typing import Union, Callable
 
 SYSTEM_PROMPT = """
@@ -125,7 +126,7 @@ def main(
         .map(get_prompt)
         .map(generate)  # generate: str -> Union[str, None]
         .map(lambda x: x if x is not None else "")  # convert None to empty string
-        .map(postprocess)
+        .map(lambda x: postprocess(x, RESPONSE_STRATEGIES))
         .value
     )
 
@@ -138,10 +139,7 @@ def main(
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
-        logging_result = {
-        "model_name": model,
-        **eval_acc
-        }
+        logging_result = {"model_name": model, **eval_acc}
         log_file.write(f"{logging_result}\n")
 
 

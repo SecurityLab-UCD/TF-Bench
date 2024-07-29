@@ -8,8 +8,9 @@ from dacite import from_dict
 import json
 import logging
 from src.evaluation import evaluate
-from src.common import postprocess
-from typing import Union
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
+
+from typing import Union, Callable
 
 
 def get_model(
@@ -112,7 +113,7 @@ def main(
         for task in tasks:
             prompt = get_prompt(task)
             generated = generate(prompt)
-            processed = postprocess(str(generated))
+            processed = postprocess(str(generated), RESPONSE_STRATEGIES)
             gen_results.append(processed)
             pbar.update(1)
 
@@ -126,10 +127,7 @@ def main(
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
-        logging_result = {
-        "model_name": model,
-        **eval_acc
-        }
+        logging_result = {"model_name": model, **eval_acc}
         log_file.write(f"{logging_result}\n")
 
 

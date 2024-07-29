@@ -12,6 +12,7 @@ models=("codegemma:2b" "codegemma:7b" "starcoder2:3b" \
 "nous-hermes2-mixtral:8x7b" "codestral:22b" "stable-code:3b" \
 "codeqwen:7b" "phind-codellama:34b" "granite-code:3b" "granite-code:8b" \
 "granite-code:20b" "granite-code:34b" "codebooga:34b")
+
 # Iterate over the list
 for model in "${models[@]}"; do
   # Perform actions with $item
