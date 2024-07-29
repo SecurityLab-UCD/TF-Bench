@@ -10,17 +10,8 @@ from funcy_chain import Chain
 from dacite import from_dict
 import time
 from src.evaluation import evaluate
-from src.postprocessing import (
-    postprocess,
-    char_list_to_str,
-    rm_md_block,
-    rm_func_name,
-    rm_new_line,
-    remove_extra_wrapper,
-    remove_space_after_comma,
-    remove_space_between_arrow,
-    remove_backtick,
-)
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
+
 from typing import Union, Callable
 
 SYSTEM_PROMPT = """
@@ -130,24 +121,12 @@ def main(
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    strategies: list[Callable[[str], str]] = [
-        char_list_to_str,
-        rm_md_block,
-        rm_func_name,
-        str.strip,
-        rm_new_line,
-        remove_extra_wrapper,
-        remove_space_after_comma,
-        remove_space_between_arrow,
-        remove_backtick,
-    ]
-
     gen_results: list[str] = (
         Chain(tasks)
         .map(get_prompt)
         .map(generate)  # generate: str -> Union[str, None]
         .map(lambda x: x if x is not None else "")  # convert None to empty string
-        .map(lambda x: postprocess(x, strategies))
+        .map(lambda x: postprocess(x, RESPONSE_STRATEGIES))
         .value
     )
 
