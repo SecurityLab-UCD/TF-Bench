@@ -1,4 +1,5 @@
 # importing the requests library
+from io import TextIOWrapper
 from src.hs_parser.ast_util import AST
 import json
 from dacite import from_dict
@@ -66,7 +67,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     """extract function calls and operators as string"""
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
-    print(fn_name)
+    print(f"Function: {fn_name}")
 
     ast = AST(task.code, HASKELL_LANGUAGE)
     root = ast.root
@@ -102,8 +103,6 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         ban_list += Chain(nodes).map(ast.get_src_from_node).value
         if node.type == "variable":
             ban_list += [ast.get_src_from_node(node)]
-
-    print(ban_list)
     # End of Generating Ban List
 
     # Get any function calls, operator calls, or constructor operator calls
@@ -147,9 +146,11 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     .filter(lambda d: d not in ["otherwise", "xs", "return"])
     .value)
 
+    print(f"Dependents: {filtered_final_list}")
+
     return filtered_final_list
 
-def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
+def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkTask:
     fn_name = extract_function_name(task.task_id)
     depedencies = list(get_func_calls(task))
     length = len(depedencies)
@@ -157,21 +158,15 @@ def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
     for i in range(length):
         sig = get_type_signature(depedencies[i])
         # Check if functions have same name
-        if depedencies[i] == fn_name:
-            task.dependencies = None
-            # Otherwise remove the valid task
-            return task
         # Check type signature exists
-        if sig == None:
-            print("Banned on task {0} finding {1}".format(task.task_id, depedencies[i]))
-            task.dependencies = None
-            # Otherwise remove the valid task
-            return task
         # Check if result is a type signature
         str_sig = str(sig)
-        if "::" not in str_sig or "data " in str_sig:
-            # Otherwise remove it as a valid task
+        if (depedencies[i] == fn_name or sig == None
+            or "::" not in str_sig or "data " in str_sig):
+            banned_fp.write(f"{fn_name}: '{depedencies[i]}'\n")
+            print(f"Status: Invalid on '{depedencies[i]}'\n")
             task.dependencies = None
+            # Otherwise remove the valid task
             return task
         # Change signature in List.foldr case
         fname = str_sig.index("::")
@@ -180,12 +175,15 @@ def add_dependencies(task: BenchmarkTask)-> BenchmarkTask:
         # Set the type signature
         type_signature[i] = str_sig
     task.dependencies = list(set(type_signature))
+    print(f"Status: Valid\n")
     return task
 
 @lru_cache(maxsize=None)
 def get_type_signature(name: str) -> str | None:
+    # Format using quote and strip
+    url_string = quote(name.strip("()"))
     # api-endpoint
-    URL = "https://hoogle.haskell.org?mode=json&format=text&hoogle={0}+is%3Aexact&start=1&count=1".format(quote(name))
+    URL = f"https://hoogle.haskell.org?mode=json&format=text&hoogle={url_string}+is%3Aexact&start=1&count=1"
 
     # sending get request to get hoogle result
     r = requests.get(url = URL)
@@ -204,13 +202,14 @@ def get_type_signature(name: str) -> str | None:
 def main(
     input_file: str = "Benchmark-F.json",
     output_file: str = "out.json",
+    banned_file: str = "banned.txt"
 ):
+    banned_fp = open(banned_file, "w")
     # For json files
     with open(input_file, "r") as fp:
-        tasks: list[BenchmarkTask] = (
+        tasks: Chain = (
             Chain(json.load(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-            .value
         )
 
     # For jsonl files
@@ -219,23 +218,18 @@ def main(
     #         Chain(fp.readlines())
     #         .map(json.loads)
     #         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-    #         .value
     #     )
 
-    tasks_w_dep = (
-        Chain(tasks)
-        .map(add_dependencies)
-        .value
-    )
+    tasks_w_dep = tasks.map(lambda d: add_dependencies(d, banned_fp))
 
     filtered = (
-        Chain(tasks_w_dep)
+        (tasks_w_dep)
         .filter(lambda d: d.dependencies != None)
         .map(lambda x: x.__dict__)
         .value
     )
 
-    print(len(filtered))
+    print(f"Extracted {len(filtered)} / {len(tasks_w_dep.value)} functions from {input_file}")
 
     with open(output_file, "w") as fp:
         json.dump(filtered, fp)
