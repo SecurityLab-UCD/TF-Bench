@@ -156,7 +156,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
     print(f"Dependents: {filtered_final_list}")
 
-    return filtered_final_list
+    return set(filtered_final_list)
 
 def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkTask:
     fn_name = extract_function_name(task.task_id)
