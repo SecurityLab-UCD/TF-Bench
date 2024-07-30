@@ -97,13 +97,21 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         .value
     )
 
+    alternatives: list[Node] = (
+        Chain(ast.get_all_nodes_of_type(root, "alternative"))
+        .map(lambda node: node.child(0))  # variable is first child of binding
+        .value
+    )
+
     ban_list: list[str] = []
-    for node in (patterns + bindings + generators):
+    for node in (patterns + bindings + generators + alternatives):
         nodes = ast.get_all_nodes_of_type(node, "variable")
         ban_list += Chain(nodes).map(ast.get_src_from_node).value
         if node.type == "variable":
             ban_list += [ast.get_src_from_node(node)]
     # End of Generating Ban List
+
+    print(f"Banlist: {ban_list}")
 
     # Get any function calls, operator calls, or constructor operator calls
     calls: list[str] = (
@@ -200,7 +208,7 @@ def get_type_signature(name: str) -> str | None:
     return type_signature
 
 def main(
-    input_file: str = "Benchmark-F.json",
+    input_file: str = "failed2.json",
     output_file: str = "out.json",
     banned_file: str = "banned.txt"
 ):
