@@ -181,7 +181,7 @@ def get_type_signature(name: str) -> str | None:
 
     # Check if valid result was found, if there is one, return the type signature
     if len(data) > 0:
-        return data[0]["item"]
+        return str(data[0]["item"])
     
     # If no valid result was found return None
     return None
