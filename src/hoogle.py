@@ -134,13 +134,13 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     const_operators: list[str] = (
         Chain(ast.get_all_nodes_of_type(root, "constructor_operator"))
         .map(ast.get_src_from_node)
-        .filter(lambda d: d != ":") # filter : operator
         .map(lambda x: f"({x})")
         .value
     )
 
     # Put everything together and remove anything on the ban list
     final_list = set(calls + operators + variables + const_operators)
+    
     final_list = final_list - set(ban_list)
 
     # Filter out any functions defined in the where clause
@@ -148,10 +148,14 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         where_blacklist = get_where_blacklist(task)
         final_list = final_list - where_blacklist
 
-    # Filter out some common non-important variables like a-z, xs, return, and otherwise
+    # Filter out some common non-important variables patterns
+    # 1. Single Letter variables and variations like s'', x'' , s', etc.
+    # 2. Any empty variables with nothing in them
+    # 3. Common keywords like xs, ys, _, [], return, otherwise, (:)
     filtered_final_list = (Chain(final_list)
-    .filter(lambda d: not (len(d) == 1 and d.isalnum()))
-    .filter(lambda d: d not in ["otherwise", "xs", "return"])
+    .filter(lambda d: not (len(d.strip("'")) == 1 and d.strip("'").isalnum()))
+    .filter(lambda d: not (len(d) == 0))
+    .filter(lambda d: d not in ["(:)", "otherwise", "[]", "_", "xs", "ys", "return"])
     .value)
 
     print(f"Dependents: {filtered_final_list}")
@@ -208,8 +212,8 @@ def get_type_signature(name: str) -> str | None:
     return type_signature
 
 def main(
-    input_file: str = "failed2.json",
-    output_file: str = "out.json",
+    input_file: str = "Benchmark-F.json",
+    output_file: str = "outv5.json",
     banned_file: str = "banned.txt"
 ):
     banned_fp = open(banned_file, "w")

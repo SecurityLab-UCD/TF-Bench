@@ -26,17 +26,18 @@ def main():
     # where_code = code[where_index + 5:].strip()
     # print(where_code)
 
-    code = "foldl _ z Nothing = z\nfoldl _ z _ = z\nfoldl _ z _ = z\nfoldl f z (Just x) = f z x\nfoldl f z (a :| as) = List.foldl f (f z a) as\nfoldl f z t = appEndo (getDual (foldMap (Dual . Endo . flip f) t)) z"
+    code = "lines \"\" = []\nlines s = cons (case break (== '\\n') s of\n (l, s') -> (l, case s' of\n [] -> []\n _:s'' -> lines s''))\n where\n cons ~(h, t) = h : t"
+    # code = "words s = case dropWhile isSpace s of\n \"\" -> []\n s' -> w : words s''\n where (w, s'') =\n break isSpace s'"
     # code2 = "go x | p x = x\n | otherwise = go (f x)"
     ast = AST(code, HASKELL_LANGUAGE)
     root = ast.root
 
     # Get both types and type classes
     types_classes = (
-        Chain(ast.get_all_nodes_of_type(root, None))
+        Chain(ast.get_all_nodes_of_type(root, "case"))
         .map(lambda d: [d, 
                         ast.get_src_from_node(d),
-                        # Chain(ast.get_all_nodes_of_type(d, None)).map(ast.get_src_from_node).value
+                        Chain(ast.get_all_nodes_of_type(d, None)).map(ast.get_src_from_node).value
                         ])
         .value
     )
