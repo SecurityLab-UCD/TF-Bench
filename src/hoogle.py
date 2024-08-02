@@ -20,13 +20,13 @@ def generate_variable_banlist(code: str):
     root = ast.root
 
     # Remove variables that are already defined in the code
-    patterns: list[Node] = ast.get_all_nodes_of_type(root, "patterns")
+    patterns = ast.get_all_nodes_of_type(root, "patterns")
 
-    bindings: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "bind"))
+    bindings = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "bind"))
 
-    generators: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "generator"))
+    generators = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "generator"))
 
-    alternatives: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "alternative"))
+    alternatives = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "alternative"))
 
     ban_list: list[str] = []
     for node in (patterns + bindings + generators + alternatives):
