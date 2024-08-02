@@ -14,27 +14,17 @@ from pprint import pprint
 from tree_sitter import Node
 
 """
-Idea to Solve 
-1. Take everything after go and create an AST
-2. Grab any "functions" type, and variables using the same algorithm to normally get functions
-3. Thus we are able to remove any blacklist ones that are defined in where
+This is a test file for seeing all the Nodes in the AST of certain pieces of code
 """
 
 def main():
-    # code = "until p f = go\n where\n go x | p x = x\n | otherwise = go (f x)"
-    # where_index = code.index("where")
-    # where_code = code[where_index + 5:].strip()
-    # print(where_code)
-
     code = "lines \"\" = []\nlines s = cons (case break (== '\\n') s of\n (l, s') -> (l, case s' of\n [] -> []\n _:s'' -> lines s''))\n where\n cons ~(h, t) = h : t"
-    # code = "words s = case dropWhile isSpace s of\n \"\" -> []\n s' -> w : words s''\n where (w, s'') =\n break isSpace s'"
-    # code2 = "go x | p x = x\n | otherwise = go (f x)"
     ast = AST(code, HASKELL_LANGUAGE)
     root = ast.root
 
     # Get both types and type classes
     types_classes = (
-        Chain(ast.get_all_nodes_of_type(root, "case"))
+        Chain(ast.get_all_nodes_of_type(root, None))
         .map(lambda d: [d, 
                         ast.get_src_from_node(d),
                         Chain(ast.get_all_nodes_of_type(d, None)).map(ast.get_src_from_node).value
@@ -43,6 +33,5 @@ def main():
     )
 
     pprint(types_classes)
-    # print(bindings)
 
 main()
