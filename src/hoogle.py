@@ -12,6 +12,7 @@ from src.filter2complete import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from tree_sitter import Node
+from funcy import lmap
 # Need to update requirements.txt
 
 def get_where_blacklist(task: BenchmarkTask) -> set[str]:
@@ -26,22 +27,14 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
 
     # Idea, Need some way of getting only variables that are functions to be called
     # Also these functions need to be valid
-    patterns: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "patterns"))
-        .value
-    )
+    # Remove variables that are already defined to leave only functions that need dependencies
+    patterns: list[Node] = ast.get_all_nodes_of_type(root, "patterns")
 
-    bindings: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "bind"))
-        .map(lambda node: node.child(0))  # variable is first child of binding
-        .value
-    )
+    bindings: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "bind"))
 
-    generators: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "generator"))
-        .map(lambda node: node.child(0))  # variable is first child of binding
-        .value
-    )
+    generators: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "generator"))
+
+    alternatives: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "alternative"))
 
     function_defs: list[str] = (
         Chain(ast.get_all_nodes_of_type(root, "function"))
@@ -53,7 +46,7 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
     )
 
     ban_list: list[str] = []
-    for node in (patterns + bindings + generators):
+    for node in (patterns + bindings + generators + alternatives):
         nodes = ast.get_all_nodes_of_type(node, "variable")
         ban_list += Chain(nodes).map(ast.get_src_from_node).value
         if node.type == "variable":
@@ -80,28 +73,13 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         .value
     )
     # Remove variables that are already defined to leave only functions that need dependencies
-    patterns: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "patterns"))
-        .value
-    )
+    patterns: list[Node] = ast.get_all_nodes_of_type(root, "patterns")
 
-    bindings: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "bind"))
-        .map(lambda node: node.child(0))  # variable is first child of binding
-        .value
-    )
+    bindings: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "bind"))
 
-    generators: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "generator"))
-        .map(lambda node: node.child(0))  # variable is first child of binding
-        .value
-    )
+    generators: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "generator"))
 
-    alternatives: list[Node] = (
-        Chain(ast.get_all_nodes_of_type(root, "alternative"))
-        .map(lambda node: node.child(0))  # variable is first child of binding
-        .value
-    )
+    alternatives: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "alternative"))
 
     ban_list: list[str] = []
     for node in (patterns + bindings + generators + alternatives):
@@ -149,7 +127,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         final_list = final_list - where_blacklist
 
     # Filter out some common non-important variables patterns
-    # 1. Single Letter variables and variations like s'', x'' , s', etc.
+    # 1. Single Letter variables and variations like s'' and x', etc.
     # 2. Any empty variables with nothing in them
     # 3. Common keywords like xs, ys, _, [], return, otherwise, (:)
     filtered_final_list = (Chain(final_list)
