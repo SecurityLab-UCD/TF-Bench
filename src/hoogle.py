@@ -13,8 +13,8 @@ from src.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from tree_sitter import Node
 from funcy import lmap
-# Need to update requirements.txt
 
+# Generates list of variables that are already defined in the code
 def generate_variable_banlist(code: str):
     ast = AST(code, HASKELL_LANGUAGE)
     root = ast.root
@@ -37,8 +37,9 @@ def generate_variable_banlist(code: str):
 
     return ban_list
 
+# Generates ban list of any functions / variables defined by "where" keyword
 def get_where_blacklist(task: BenchmarkTask) -> set[str]:
-    """extract function calls and operators as string"""
+    # extract function calls and operators as string
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
     where_index = task.code.index("where")
@@ -60,10 +61,9 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
 
     return set(ban_list + function_defs)
 
-    
-
+# Get all the dependent functions of a Benchmark Task
 def get_func_calls(task: BenchmarkTask) -> set[str]:
-    """extract function calls and operators as string"""
+    # extract function calls and operators as string
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
     print(f"Function: {fn_name}")
@@ -118,7 +118,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
         where_blacklist = get_where_blacklist(task)
         final_list = final_list - where_blacklist
 
-    # Filter out some common non-important variables patterns
+    # Filter out some common non-function variables
     # 1. Single Letter variables and variations like s'' and x', etc.
     # 2. Any empty variables with nothing in them
     # 3. Common keywords like xs, ys, _, [], return, otherwise, (:)
@@ -132,6 +132,8 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
     return set(filtered_final_list)
 
+# Gets all dependent functions of a task with their corresponding type signatures
+# If Hoogle cannot find a certain type signature, it sets dependencies to None
 def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkTask:
     fn_name = extract_function_name(task.task_id)
     depedencies = list(get_func_calls(task))
@@ -139,11 +141,13 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkT
     type_signature = [""] * length
     for i in range(length):
         sig = get_type_signature(depedencies[i])
-        # Check if functions have same name
-        # Check type signature exists
-        # Check if result is a type signature
+        # Check's conditions for invalid type signature
+        # 1. If functions have same name
+        # 2. If result exists
+        # 3. If result is a type signature
         str_sig = str(sig)
-        if (depedencies[i] == fn_name or sig == None
+        if (depedencies[i] == fn_name 
+            or sig == None
             or "::" not in str_sig or "data " in str_sig):
             banned_fp.write(f"{fn_name}: '{depedencies[i]}'\n")
             print(f"Status: Invalid on '{depedencies[i]}'\n")
@@ -160,6 +164,8 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkT
     print(f"Status: Valid\n")
     return task
 
+# Gets the type signature given the name of the function
+# Cached to improve efficiency
 @lru_cache(maxsize=None)
 def get_type_signature(name: str) -> str | None:
     # Format using quote and strip
@@ -173,13 +179,12 @@ def get_type_signature(name: str) -> str | None:
     # extracting data in json format
     data = r.json()
 
-    type_signature = None
-
     # Check if valid result was found, if there is one, return the type signature
     if len(data) > 0:
-        type_signature = data[0]["item"]
+        return data[0]["item"]
     
-    return type_signature
+    # If no valid result was found return None
+    return None
 
 def main(
     input_file: str = "Benchmark-F.json",
@@ -187,14 +192,14 @@ def main(
     banned_file: str = "banned.txt"
 ):
     banned_fp = open(banned_file, "w")
-    # For json files
+    # For reading json files (Benchmark-F.json)
     with open(input_file, "r") as fp:
         tasks: Chain = (
             Chain(json.load(fp))
             .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
         )
 
-    # For jsonl files
+    # For reading jsonl files (base-4.20.0.0.jsonl)
     # with open(input_file, "r") as fp:
     #     tasks: list[BenchmarkTask] = (
     #         Chain(fp.readlines())
@@ -202,8 +207,11 @@ def main(
     #         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
     #     )
 
+    # Generate dependencies
     tasks_w_dep = tasks.map(lambda d: add_dependencies(d, banned_fp))
 
+    # Remove any tasks with dependencies that could not be found
+    # Also transform them back into dictionaries for json format
     filtered = (
         (tasks_w_dep)
         .filter(lambda d: d.dependencies != None)
