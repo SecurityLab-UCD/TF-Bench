@@ -14,19 +14,24 @@ from functools import lru_cache
 from tree_sitter import Node
 from funcy import lmap
 
-# Generates list of variables that are already defined in the code
+def get_all_first_child(ast: AST, type: str) -> list[Node]:
+    return lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, type))
+
 def generate_variable_banlist(code: str):
+    """
+    Generates list of variables that are already defined in the code
+    """
     ast = AST(code, HASKELL_LANGUAGE)
     root = ast.root
 
     # Remove variables that are already defined in the code
     patterns = ast.get_all_nodes_of_type(root, "patterns")
 
-    bindings = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "bind"))
+    bindings = get_all_first_child(ast, "bind")
 
-    generators = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "generator"))
+    generators = get_all_first_child(ast, "generator")
 
-    alternatives = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(root, "alternative"))
+    alternatives = get_all_first_child(ast, "alternative")
 
     ban_list: list[str] = []
     for node in (patterns + bindings + generators + alternatives):
@@ -37,8 +42,11 @@ def generate_variable_banlist(code: str):
 
     return ban_list
 
-# Generates ban list of any functions / variables defined by "where" keyword
+
 def get_where_blacklist(task: BenchmarkTask) -> set[str]:
+    """
+    Generates ban list of any functions / variables defined by "where" keyword
+    """
     # extract function calls and operators as string
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
@@ -61,8 +69,11 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
 
     return set(ban_list + function_defs)
 
-# Get all the dependent functions of a Benchmark Task
+
 def get_func_calls(task: BenchmarkTask) -> set[str]:
+    """
+    Get all the dependent functions of a Benchmark Task
+    """
     # extract function calls and operators as string
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
@@ -132,9 +143,12 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
     return set(filtered_final_list)
 
-# Gets all dependent functions of a task with their corresponding type signatures
-# If Hoogle cannot find a certain type signature, it sets dependencies to None
+
 def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkTask:
+    """
+    Gets all dependent functions of a task with their corresponding type signatures
+    If Hoogle cannot find a certain type signature, it sets dependencies to None
+    """
     fn_name = extract_function_name(task.task_id)
     depedencies = list(get_func_calls(task))
     length = len(depedencies)
@@ -164,10 +178,13 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkT
     print(f"Status: Valid\n")
     return task
 
-# Gets the type signature given the name of the function
-# Cached to improve efficiency
+
 @lru_cache(maxsize=None)
 def get_type_signature(name: str) -> str | None:
+    """
+    Gets the type signature given the name of the function
+    Cached to improve efficiency
+    """
     # Format using quote and strip
     url_string = quote(name.strip("()"))
     # api-endpoint
