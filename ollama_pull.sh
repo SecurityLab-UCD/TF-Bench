@@ -1,3 +1,4 @@
+#!/bin/bash
 ollama pull deepseek-coder-v2:16b
 ollama pull deepseek-coder-v2:236b
 
