@@ -15,7 +15,8 @@ from tree_sitter import Node
 from funcy import lmap
 
 def get_all_first_child(ast: AST, type: str) -> list[Node]:
-    return lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, type))
+    children: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, type))
+    return children
 
 def generate_variable_banlist(code: str):
     """
