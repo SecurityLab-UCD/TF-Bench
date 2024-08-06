@@ -2,6 +2,22 @@ from dataclasses import dataclass
 import re
 import copy
 from funcy import lmap
+from src.filter2complete import extract_function_name
+
+# Default hyper-parameters
+SEED = 123
+TEMPERATURE = 0.0
+TOP_P = 1.0
+
+SYSTEM_PROMPT = """
+Act as a static analysis tool for type inference.
+"""
+
+INSTRUCT_PROMPT = """
+1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
+
+2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
+"""
 
 
 @dataclass
@@ -32,3 +48,24 @@ def remove_comments(code: str) -> str:
     # single-line
     code = re.sub(r"--.*", "", code)
     return code
+
+
+def get_prompt(task: BenchmarkTask) -> str:
+    """get prompt from a task instance"""
+
+    fn_name = extract_function_name(task.task_id)
+    code = task.code
+    dependencies = (
+        "where\n" + "\n".join(task.dependencies)
+        if task.dependencies is not None
+        else ""
+    )
+
+    if fn_name is not None:
+        prompt = f"""
+{code}
+{dependencies}
+--complete the following type signature for '{fn_name}'
+{fn_name} :: 
+"""
+    return prompt

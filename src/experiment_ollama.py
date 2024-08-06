@@ -1,6 +1,6 @@
 import fire
 import os
-from ollama import Client
+from ollama import Client as OllamaClient
 from tqdm import tqdm  # Import tqdm for the progress bar
 from experiment import get_prompt, SYSTEM_PROMPT, INSTRUCT_PROMPT
 from add_dependency import BenchmarkTask
@@ -9,16 +9,64 @@ import json
 import logging
 from src.evaluation import evaluate
 from src.postprocessing import postprocess, RESPONSE_STRATEGIES
-
 from typing import Union, Callable
+from src.common import (
+    SEED,
+    TEMPERATURE,
+    TOP_P,
+    SYSTEM_PROMPT,
+    INSTRUCT_PROMPT,
+    get_prompt,
+)
+
+
+OLLAMA_MODELS = [
+    "llama2:7b",
+    "llama2:13b",
+    "llama2:70b",
+    "llama3",
+    "llama3:70b",
+    "phi3",
+    "phi3:medium",
+    "gemma:2b",
+    "gemma:7b",
+    "gemma2",
+    "gemma2:27b",
+    "mistral",
+    "mixtral:8x22b",
+    "mixtral:8x7b",
+    "deepseek-coder-v2:16b",
+    "deepseek-coder-v2:236b",
+    "codegemma:2b",
+    "codegemma:7b",
+    "codellama:7b",
+    "codellama:13b",
+    "codellama:34b",
+    "codellama:70b",
+    "starcoder2:3b",
+    "starcoder2:7b",
+    "starcoder2:15b",
+    "nous-hermes2:10.7b",
+    "nous-hermes2:34b",
+    "nous-hermes2-mixtral:8x7b",
+    "codestral:22b",
+    "stable-code:3b",
+    "codeqwen:7b",
+    "phind-codellama:34b",
+    "granite-code:3b",
+    "granite-code:8b",
+    "granite-code:20b",
+    "granite-code:34b",
+    "codebooga:34b",
+]
 
 
 def get_model(
-    client: Client = Client(host="http://localhost:11434"),
+    client: OllamaClient,
     model: str = "llama3",
-    seed=123,
-    temperature=0.2,
-    top_p=0.95,
+    seed=SEED,
+    temperature=TEMPERATURE,
+    top_p=TOP_P,
 ):
     def generate_type_signature(prompt: str) -> Union[str, None]:
         response = client.chat(
@@ -53,55 +101,18 @@ def main(
     input_file: str = "data/filtered/base-4.20.0.0.jsonl",
     output_file: str | None = None,
     model: str = "llama3",
-    seed: int = 123,
-    temperature: float = 0.2,
-    top_p: float = 0.95,
+    seed: int = SEED,
+    temperature: float = TEMPERATURE,
+    top_p: float = TOP_P,
+    port: int = 11434,
 ):
 
-    assert model in [
-        "llama2:7b",
-        "llama2:13b",
-        "llama2:70b",
-        "llama3",
-        "llama3:70b",
-        "phi3",
-        "phi3:medium",
-        "gemma:2b",
-        "gemma:7b",
-        "gemma2",
-        "gemma2:27b",
-        "mistral",
-        "mixtral:8x22b",
-        "mixtral:8x7b",
-        "deepseek-coder-v2:16b",
-        "deepseek-coder-v2:236b",
-        "codegemma:2b",
-        "codegemma:7b",
-        "codellama:7b",
-        "codellama:13b",
-        "codellama:34b",
-        "codellama:70b",
-        "starcoder2:3b",
-        "starcoder2:7b",
-        "starcoder2:15b",
-        "nous-hermes2:10.7b",
-        "nous-hermes2:34b",
-        "nous-hermes2-mixtral:8x7b",
-        "codestral:22b",
-        "stable-code:3b",
-        "codeqwen:7b",
-        "phind-codellama:34b",
-        "granite-code:3b",
-        "granite-code:8b",
-        "granite-code:20b",
-        "granite-code:34b",
-        "codebooga:34b",
-    ], f"{model} is not supported."
+    assert model in OLLAMA_MODELS, f"{model} is not supported."
 
     if output_file is None:
         output_file = f"result/{model}.txt"
 
-    client = Client(host="http://localhost:11434")
+    client = OllamaClient(host=f"http://localhost:{port}")
 
     generate = get_model(client, model, seed, temperature, top_p)
 
