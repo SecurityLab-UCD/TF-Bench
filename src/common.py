@@ -2,7 +2,8 @@ from dataclasses import dataclass
 import re
 import copy
 from funcy import lmap
-from src.filter2complete import extract_function_name
+import sys
+import io
 
 # Default hyper-parameters
 SEED = 123
@@ -27,6 +28,13 @@ class BenchmarkTask:
     code: str
     poly_type: str
     dependencies: list[str] | None
+
+
+def extract_function_name(id_str: str) -> str | None:
+    """Extract the function name from the id field."""
+    if "--" in id_str:
+        return id_str.split("--")[-1].strip()
+    return None
 
 
 def clean_tab_spaces(task: BenchmarkTask) -> BenchmarkTask:

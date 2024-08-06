@@ -8,7 +8,7 @@ from dacite import from_dict
 
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
-from src.filter2complete import extract_function_name
+from src.common import extract_function_name
 from src.add_dependency import add_dependencies
 from src.common import clean_tab_spaces, BenchmarkTask
 

@@ -2,13 +2,7 @@ import os
 import json
 from tqdm import tqdm
 import fire
-
-
-def extract_function_name(id_str: str) -> str | None:
-    """Extract the function name from the id field."""
-    if "--" in id_str:
-        return id_str.split("--")[-1].strip()
-    return None
+from src.common import extract_function_name
 
 
 def is_valid_entry(entry: dict[str, str]) -> bool:
