@@ -5,18 +5,17 @@ Experiment script for OpenAI models
 import fire
 import os
 from openai import OpenAI
+from ollama import Client as OllamaClient
 import json
 import logging
-from add_dependency import BenchmarkTask
 from funcy_chain import Chain
 from dacite import from_dict
-import time
-from src.evaluation import evaluate
-from src.postprocessing import postprocess, RESPONSE_STRATEGIES
-
 from typing import Callable
 
+from src.evaluation import evaluate
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
 from src.common import (
+    BenchmarkTask,
     SEED,
     TEMPERATURE,
     TOP_P,
@@ -24,6 +23,7 @@ from src.common import (
     INSTRUCT_PROMPT,
     get_prompt,
 )
+from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
 
 GPT_MODELS = [
     "gpt-3.5-turbo",
@@ -36,9 +36,9 @@ GPT_MODELS = [
 def get_model(
     client: OpenAI,
     model: str = "gpt-3.5-turbo",
-    seed=SEED,
-    temperature=TEMPERATURE,
-    top_p=TOP_P,
+    seed: int = SEED,
+    temperature: float = TEMPERATURE,
+    top_p: float = TOP_P,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
@@ -47,7 +47,7 @@ def get_model(
                     "role": "system",
                     "content": SYSTEM_PROMPT,
                 },
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": INSTRUCT_PROMPT + prompt},
             ],
             model=model,
             # Set parameters to ensure reproducibility
@@ -70,16 +70,24 @@ def main(
     seed: int = SEED,
     temperature: float = TEMPERATURE,
     top_p: float = TOP_P,
+    port: int = 11434,
 ):
-    assert model in GPT_MODELS, f"{model} is not supported."
+    assert model in GPT_MODELS + OLLAMA_MODELS, f"{model} is not supported."
     assert api_key is not None, "API key is not provided."
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
         output_file = f"result/{model}.txt"
 
-    client = OpenAI(api_key=api_key)
-    generate = get_model(client, model, seed, temperature, top_p)
+    client: OpenAI | OllamaClient
+    generate: Callable[[str], str | None]
+    if model.startswith("gpt"):
+        client = OpenAI(api_key=api_key)
+        generate = get_model(client, model, seed, temperature, top_p)
+    else:
+        client = OllamaClient(host=f"http://localhost:{port}")
+        generate = get_ollama_model(client, model, seed, temperature, top_p)
+
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
