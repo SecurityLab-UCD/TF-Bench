@@ -73,7 +73,6 @@ def main(
     port: int = 11434,
 ):
     assert model in GPT_MODELS + OLLAMA_MODELS, f"{model} is not supported."
-    assert api_key is not None, "API key is not provided."
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
@@ -82,6 +81,7 @@ def main(
     client: OpenAI | OllamaClient
     generate: Callable[[str], str | None]
     if model.startswith("gpt"):
+        assert api_key is not None, "API key is not provided."
         client = OpenAI(api_key=api_key)
         generate = get_model(client, model, seed, temperature, top_p)
     else:

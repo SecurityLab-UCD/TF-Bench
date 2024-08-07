@@ -77,3 +77,22 @@ def get_prompt(task: BenchmarkTask) -> str:
 {fn_name} :: 
 """
     return prompt
+
+
+def silence(func):
+    """Execute a function with suppressed stdout."""
+
+    def wrapper(*args, **kwargs):
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        try:
+            # Redirect stdout to a dummy file-like object
+            sys.stdout = io.StringIO()
+            sys.stderr = io.StringIO()
+            return func(*args, **kwargs)
+        finally:
+            # Restore original stdout
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+
+    return wrapper
