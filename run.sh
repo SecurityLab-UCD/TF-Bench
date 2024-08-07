@@ -17,4 +17,5 @@ echo "===== Running Extraction and Filtering ====="
 mkdir -p data/source
 # Toggle below if you need a virtual environment to run
 python3 src/dataset.py -o data/source # get raw function dataset
-python3 src/prelude.py
+python3 src/prelude.py -o Benchmark-F.temp.json
+python3 src/hoogle.py -i Benchmark-F.temp.json -o Benchmark-F.json
