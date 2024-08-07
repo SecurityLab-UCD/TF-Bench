@@ -11,6 +11,8 @@ import logging
 from funcy_chain import Chain
 from dacite import from_dict
 from typing import Callable
+from funcy import lmap
+from tqdm import tqdm
 
 from src.evaluation import evaluate
 from src.postprocessing import postprocess, RESPONSE_STRATEGIES
@@ -90,10 +92,10 @@ def main(
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    gen_results: list[str] = (
-        Chain(tasks)
-        .map(get_prompt)
-        .map(generate)  # generate: str -> str | None
+    prompts = lmap(get_prompt, tasks)
+    responses = lmap(generate, tqdm(prompts, desc=model))
+    gen_results = (
+        Chain(responses)
         .map(lambda x: x if x is not None else "")  # convert None to empty string
         .map(lambda x: postprocess(x, RESPONSE_STRATEGIES))
         .value
@@ -102,9 +104,8 @@ def main(
     with open(output_file, "w") as file:
         file.write("\n".join(gen_results))
 
-    logging.info(f"Get {len(gen_results)} results from {model}.")
     eval_acc = evaluate(tasks, gen_results)
-    logging.info(eval_acc)
+    print(eval_acc)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
@@ -113,5 +114,4 @@ def main(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     fire.Fire(main)
