@@ -66,7 +66,6 @@ def main(
     input_file: str = "Benchmark-F.json",
     output_file: str | None = None,
     model: str = "gpt-3.5-turbo",
-    api_key: str | None = None,
     seed: int = SEED,
     temperature: float = TEMPERATURE,
     top_p: float = TOP_P,
@@ -81,8 +80,8 @@ def main(
     client: OpenAI | OllamaClient
     generate: Callable[[str], str | None]
     if model.startswith("gpt"):
-        assert api_key is not None, "API key is not provided."
-        client = OpenAI(api_key=api_key)
+        assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         generate = get_model(client, model, seed, temperature, top_p)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")

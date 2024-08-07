@@ -26,7 +26,7 @@ We suggest using virtual environments instead of directly installing the require
 ### Getting Required Data
 
 ```sh
-./init.sh # -venv
+./scripts/init.sh # -venv
 ```
 
 This script will download raw data from [Hackage](https://hackage.haskell.org/),
@@ -35,31 +35,41 @@ and install Python packages in `requirements.txt`.
 ## Building Benchmark-F
 
 ```sh
-./run.sh
+./scripts/run.sh
 ```
 
 ## Experiments
 
+### GPT Models
+
+To run single model:
+
 ```sh
-mkdir -p data/experiment
+python3 src/experiment.py -i Benchmark-F.json -m gpt-3.5-turbo -a <OPENAI_API_KEY>
 ```
 
-### GPTs
+To run all GPT models:
 
 ```sh
-python3 src/experiment.py -o data/experiment/gpt_generated_responses.jsonl -m gpt-3.5-turbo -a <OPENAI_API_KEY>
+python3 scripts/run_experiments.py --option gpt
 ```
 
 ### Open Source Models
 
 We use [Ollama](https://ollama.com/) to manange and run the OSS models.
+
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
 ollama serve # start your own instance instead of system service
-./ollama_pull.sh # pull the required models
+python3 scripts/ollama_pull.sh # install required models
 ```
 
+```sh
+python3 src/experiment.py -i Benchmark-F.json -m llama3
+```
+
+To run all Ollama models:
 
 ```sh
-python3 src/experiment.py -o data/experiment/llama_generated_responses.jsonl -m llama3-8b-8192 -a "please replace with your groq api key" # call Groq API to generate type signature
+python3 scripts/run_experiments.py --option ollama
 ```
