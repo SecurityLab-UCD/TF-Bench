@@ -1,9 +1,6 @@
 """main script to build Haskell dataset"""
 
 import fire
-from hs_parser import HASKELL_LANGUAGE
-from hs_parser.ast_util import AST, HaskellFunction
-from hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
 from returns.result import Success, Failure
 from returns.io import IOResult, IOSuccess, IOFailure
 from funcy_chain import Chain
@@ -11,10 +8,11 @@ import os
 import logging
 from enum import IntEnum
 import json
-from pathos.multiprocessing import ProcessPool
 from tqdm import tqdm
-from filter2complete import is_valid_entry
 from funcy import lmap
+from src.hs_parser import HASKELL_LANGUAGE
+from src.hs_parser.ast_util import AST, HaskellFunction
+from src.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
 from src.common import remove_comments
 
 
