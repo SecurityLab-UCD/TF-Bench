@@ -12,6 +12,7 @@ from src.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from tree_sitter import Node
 from funcy import lmap
+from src.manual import MANUAL_TASKS
 
 
 def get_all_first_child(ast: AST, type: str) -> list[Node]:
@@ -252,7 +253,7 @@ def main(
     )
 
     with open(output_file, "w") as fp:
-        json.dump(filtered, fp)
+        json.dump(filtered + MANUAL_TASKS, fp)
 
 
 if __name__ == "__main__":
