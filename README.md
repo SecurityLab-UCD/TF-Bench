@@ -45,7 +45,8 @@ and install Python packages in `requirements.txt`.
 To run single model:
 
 ```sh
-python3 src/experiment.py -i Benchmark-F.json -m gpt-3.5-turbo -a <OPENAI_API_KEY>
+export OPENAI_API_KEY=<OPENAI_API_KEY> # make sure your API key is in environment
+python3 src/experiment.py -i Benchmark-F.json -m gpt-3.5-turbo
 ```
 
 To run all GPT models:
