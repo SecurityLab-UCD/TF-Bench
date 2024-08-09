@@ -1,6 +1,6 @@
 import re
 from functools import reduce
-from typing import Callable, List
+from typing import Callable
 from openai import OpenAI
 import os
 import openai
@@ -155,7 +155,7 @@ def postprocess(result: str, strategies: list[Callable[[str], str]]) -> str:
     return reduce(lambda acc, f: f(acc), strategies, result)
 
 
-TASK_STRATEGIES: List[Callable[[str], str]] = [
+TASK_STRATEGIES: list[Callable[[str], str]] = [
     char_list_to_str,
     rm_md_block,
     rm_func_name,
@@ -166,13 +166,13 @@ TASK_STRATEGIES: List[Callable[[str], str]] = [
     remove_backtick,
 ]
 
-RESPONSE_STRATEGIES: List[Callable[[str], str]] = [
+RESPONSE_STRATEGIES: list[Callable[[str], str]] = [
     char_list_to_str,
     rm_md_block,
     rm_func_name,
     str.strip,
     rm_new_line,
-    remove_extra_wrapper,
+    # remove_extra_wrapper,
     remove_space_after_comma,
     remove_space_between_arrow,
     remove_backtick,

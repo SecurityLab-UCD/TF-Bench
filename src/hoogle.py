@@ -7,16 +7,20 @@ import fire
 from funcy_chain import Chain
 import requests
 from urllib.parse import quote
-from src.common import BenchmarkTask
-from src.filter2complete import extract_function_name
+from src.common import BenchmarkTask, extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from tree_sitter import Node
 from funcy import lmap
+from src.manual import MANUAL_TASKS
+
 
 def get_all_first_child(ast: AST, type: str) -> list[Node]:
-    children: list[Node] = lmap(lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, type))
+    children: list[Node] = lmap(
+        lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, type)
+    )
     return children
+
 
 def generate_variable_banlist(code: str):
     """
@@ -35,7 +39,7 @@ def generate_variable_banlist(code: str):
     alternatives = get_all_first_child(ast, "alternative")
 
     ban_list: list[str] = []
-    for node in (patterns + bindings + generators + alternatives):
+    for node in patterns + bindings + generators + alternatives:
         nodes = ast.get_all_nodes_of_type(node, "variable")
         ban_list += Chain(nodes).map(ast.get_src_from_node).value
         if node.type == "variable":
@@ -52,7 +56,7 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
     fn_name = extract_function_name(task.task_id)
     assert fn_name is not None
     where_index = task.code.index("where")
-    where_code = task.code[(where_index + 5):].strip()
+    where_code = task.code[(where_index + 5) :].strip()
 
     ast = AST(where_code, HASKELL_LANGUAGE)
     root = ast.root
@@ -122,7 +126,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
     # Put everything together and remove anything on the ban list
     final_list = set(calls + operators + variables + const_operators)
-    
+
     final_list = final_list - set(ban_list)
 
     # Filter out any functions defined in the where clause
@@ -134,18 +138,22 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     # 1. Single Letter variables and variations like s'' and x', etc.
     # 2. Any empty variables with nothing in them
     # 3. Common keywords like xs, ys, _, [], return, otherwise, (:)
-    filtered_final_list = (Chain(final_list)
-    .filter(lambda d: not (len(d.strip("'")) == 1 and d.strip("'").isalnum()))
-    .filter(lambda d: not (len(d) == 0))
-    .filter(lambda d: d not in ["(:)", "otherwise", "[]", "_", "xs", "ys", "return"])
-    .value)
+    filtered_final_list = (
+        Chain(final_list)
+        .filter(lambda d: not (len(d.strip("'")) == 1 and d.strip("'").isalnum()))
+        .filter(lambda d: not (len(d) == 0))
+        .filter(
+            lambda d: d not in ["(:)", "otherwise", "[]", "_", "xs", "ys", "return"]
+        )
+        .value
+    )
 
     print(f"Dependents: {filtered_final_list}")
 
     return set(filtered_final_list)
 
 
-def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkTask:
+def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper) -> BenchmarkTask:
     """
     Gets all dependent functions of a task with their corresponding type signatures
     If Hoogle cannot find a certain type signature, it sets dependencies to None
@@ -161,9 +169,12 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper)-> BenchmarkT
         # 2. If result exists
         # 3. If result is a type signature
         str_sig = str(sig)
-        if (depedencies[i] == fn_name 
+        if (
+            depedencies[i] == fn_name
             or sig == None
-            or "::" not in str_sig or "data " in str_sig):
+            or "::" not in str_sig
+            or "data " in str_sig
+        ):
             banned_fp.write(f"{fn_name}: '{depedencies[i]}'\n")
             print(f"Status: Invalid on '{depedencies[i]}'\n")
             task.dependencies = None
@@ -192,29 +203,29 @@ def get_type_signature(name: str) -> str | None:
     URL = f"https://hoogle.haskell.org?mode=json&format=text&hoogle={url_string}+is%3Aexact&start=1&count=1"
 
     # sending get request to get hoogle result
-    r = requests.get(url = URL)
-    
+    r = requests.get(url=URL)
+
     # extracting data in json format
     data = r.json()
 
     # Check if valid result was found, if there is one, return the type signature
     if len(data) > 0:
         return str(data[0]["item"])
-    
+
     # If no valid result was found return None
     return None
+
 
 def main(
     input_file: str = "Benchmark-F.json",
     output_file: str = "outv5.json",
-    banned_file: str = "banned.txt"
+    banned_file: str = "banned.txt",
 ):
     banned_fp = open(banned_file, "w")
     # For reading json files (Benchmark-F.json)
     with open(input_file, "r") as fp:
-        tasks: Chain = (
-            Chain(json.load(fp))
-            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
+        tasks: Chain = Chain(json.load(fp)).map(
+            lambda d: from_dict(data_class=BenchmarkTask, data=d)
         )
 
     # For reading jsonl files (base-4.20.0.0.jsonl)
@@ -237,10 +248,13 @@ def main(
         .value
     )
 
-    print(f"Extracted {len(filtered)} / {len(tasks_w_dep.value)} functions from {input_file}")
+    print(
+        f"Extracted {len(filtered)} / {len(tasks_w_dep.value)} functions from {input_file}"
+    )
 
     with open(output_file, "w") as fp:
-        json.dump(filtered, fp)
-    
+        json.dump(filtered + MANUAL_TASKS, fp)
+
+
 if __name__ == "__main__":
     fire.Fire(main)

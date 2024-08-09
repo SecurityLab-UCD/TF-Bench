@@ -4,54 +4,73 @@ Towards Sound Evaluation of Program Logic Understanding with System F
 
 ## Setup
 
-### Download Repo(s)
-
-```sh
-cd data/ && mkdir -p repos
-cd repos
-wget https://hackage.haskell.org/package/base-4.20.0.0/base-4.20.0.0.tar.gz
-tar xvf base-4.20.0.0.tar.gz
-cd ../..
-```
-
 ### Loading Env
 
 ```sh
 source ./env.sh
 ```
 
-### Requirements
+### Python
 
 We use Python 3.10 or above.
+We suggest using virtual environments instead of directly installing the requirements to your system.
+
+1. conda
+    ```sh
+    conda create --name benchmarkf python=3.10
+    conda activate benchmarkf
+    ```
+
+2. venv: We provide script to use `venv` in `init.sh`. You have to check your Python version is 3.10.
+
+### Getting Required Data
 
 ```sh
-pip install -r requirements.txt
+./scripts/init.sh # -venv
 ```
+
+This script will download raw data from [Hackage](https://hackage.haskell.org/),
+and install Python packages in `requirements.txt`.
 
 ## Building Benchmark-F
 
 ```sh
-mkdir -p data/source data/added data/filtered
-source ./env.sh
-python3 src/dataset.py -o data/source # get raw function dataset
-python3 src/add_dependency.py -o data/added/base-4.20.0.0.jsonl # add type dependencies
-python3 src/type_filter.py -s data/added -o data/filtered # get functions with type we want :)
+./scripts/run.sh
 ```
 
 ## Experiments
 
+### GPT Models
+
+To run single model:
+
 ```sh
-mkdir -p data/experiment
+export OPENAI_API_KEY=<OPENAI_API_KEY> # make sure your API key is in environment
+python3 src/experiment.py -i Benchmark-F.json -m gpt-3.5-turbo
 ```
 
-### GPT 3.5
+To run all GPT models:
 
 ```sh
-python3 src/experiment.py -o data/experiment/gpt_generated_responses.jsonl -m gpt-3.5-turbo -a "please replace with your openai api key" # call OpenAI API to generate type signature
+python3 scripts/run_experiments.py --option gpt
 ```
 
-### LLAMA 3
+### Open Source Models
+
+We use [Ollama](https://ollama.com/) to manange and run the OSS models.
 
 ```sh
-python3 src/experiment.py -o data/experiment/llama_generated_responses.jsonl -m llama3-8b-8192 -a "please replace with your groq api key" # call Groq API to generate type signature
+curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
+ollama serve # start your own instance instead of system service
+python3 scripts/ollama_pull.sh # install required models
+```
+
+```sh
+python3 src/experiment.py -i Benchmark-F.json -m llama3
+```
+
+To run all Ollama models:
+
+```sh
+python3 scripts/run_experiments.py --option ollama
 ```

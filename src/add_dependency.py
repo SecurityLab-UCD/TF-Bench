@@ -4,7 +4,7 @@ from funcy_chain import Chain
 import logging
 import json
 from dacite import from_dict
-from src.filter2complete import extract_function_name
+from src.common import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
 from src.common import BenchmarkTask

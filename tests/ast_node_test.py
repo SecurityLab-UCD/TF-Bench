@@ -7,7 +7,7 @@ from funcy_chain import Chain
 import requests
 from urllib.parse import quote
 from src.common import BenchmarkTask
-from src.filter2complete import extract_function_name
+from src.common import extract_function_name
 from src.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from pprint import pprint
@@ -16,6 +16,7 @@ from tree_sitter import Node
 """
 This is a test file for seeing all the Nodes in the AST of certain pieces of code
 """
+
 
 def main():
     assert True
@@ -26,13 +27,19 @@ def main():
     # Get both types and type classes
     types_classes = (
         Chain(ast.get_all_nodes_of_type(root, None))
-        .map(lambda d: [d, 
-                        ast.get_src_from_node(d),
-                        Chain(ast.get_all_nodes_of_type(d, None)).map(ast.get_src_from_node).value
-                        ])
+        .map(
+            lambda d: [
+                d,
+                ast.get_src_from_node(d),
+                Chain(ast.get_all_nodes_of_type(d, None))
+                .map(ast.get_src_from_node)
+                .value,
+            ]
+        )
         .value
     )
 
     pprint(types_classes)
+
 
 main()

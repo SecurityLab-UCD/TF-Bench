@@ -1,67 +1,55 @@
+"""
+Experiment script for OpenAI models
+"""
+
 import fire
 import os
 from openai import OpenAI
-from groq import Groq
+from ollama import Client as OllamaClient
 import json
-from filter2complete import extract_function_name
 import logging
-from add_dependency import BenchmarkTask
 from funcy_chain import Chain
 from dacite import from_dict
-import time
+from typing import Callable
+from funcy import lmap
+from tqdm import tqdm
+
 from src.evaluation import evaluate
 from src.postprocessing import postprocess, RESPONSE_STRATEGIES
+from src.common import (
+    BenchmarkTask,
+    SEED,
+    TEMPERATURE,
+    TOP_P,
+    SYSTEM_PROMPT,
+    INSTRUCT_PROMPT,
+    get_prompt,
+)
+from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
 
-from typing import Union, Callable
-
-SYSTEM_PROMPT = """
-Act as a static analysis tool for type inference.
-"""
-
-INSTRUCT_PROMPT = """
-1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
-
-2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
-"""
-
-
-# Get the prompt for the OpenAI API
-def get_prompt(task: BenchmarkTask) -> str:
-    """get prompt from a task instance"""
-
-    fn_name = extract_function_name(task.task_id)
-    code = task.code
-    dependencies = (
-        "where\n" + "\n".join(task.dependencies)
-        if task.dependencies is not None
-        else ""
-    )
-
-    if fn_name is not None:
-        prompt = f"""
-{code}
-{dependencies}
---complete the following type signature for '{fn_name}'
-{fn_name} :: 
-"""
-    return prompt
+GPT_MODELS = [
+    "gpt-3.5-turbo",
+    "gpt-4-turbo",
+    "gpt-4o",
+    "gpt-4o-mini",
+]
 
 
 def get_model(
-    client: Union[OpenAI, Groq],
+    client: OpenAI,
     model: str = "gpt-3.5-turbo",
-    seed=123,
-    temperature=0.0,
-    top_p=1.0,
-) -> Callable[[str], Union[str, None]]:
-    def generate_type_signature(prompt: str) -> Union[str, None]:
+    seed: int = SEED,
+    temperature: float = TEMPERATURE,
+    top_p: float = TOP_P,
+) -> Callable[[str], str | None]:
+    def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
             messages=[
                 {
                     "role": "system",
                     "content": SYSTEM_PROMPT,
                 },
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": INSTRUCT_PROMPT + prompt},
             ],
             model=model,
             # Set parameters to ensure reproducibility
@@ -69,10 +57,6 @@ def get_model(
             temperature=temperature,
             top_p=top_p,
         )
-
-        if isinstance(client, Groq):
-            # rate limit for Groq is 30 requests per minute
-            time.sleep(2)
 
         content = completion.choices[0].message.content
         return content if isinstance(content, str) else None
@@ -84,47 +68,34 @@ def main(
     input_file: str = "Benchmark-F.json",
     output_file: str | None = None,
     model: str = "gpt-3.5-turbo",
-    api_key: str | None = None,
-    seed: int = 123,
-    temperature: float = 0.2,
-    top_p: float = 0.95,
+    seed: int = SEED,
+    temperature: float = TEMPERATURE,
+    top_p: float = TOP_P,
+    port: int = 11434,
 ):
-    assert model in [
-        "gpt-3.5-turbo",
-        "gpt-4-turbo",
-        "gpt-4o",
-        "llama3-8b-8192",
-        "llama3-70b-8192",
-        "mixtral-8x7b-32768",
-        "gemma-7b-it",
-        "gemma2-9b-it",
-    ], f"{model} is not supported."
-    assert api_key is not None, "API key is not provided."
+    assert model in GPT_MODELS + OLLAMA_MODELS, f"{model} is not supported."
 
     if output_file is None:
+        os.makedirs("result", exist_ok=True)
         output_file = f"result/{model}.txt"
 
-    client: Union[OpenAI, Groq]
-
+    client: OpenAI | OllamaClient
+    generate: Callable[[str], str | None]
     if model.startswith("gpt"):
-        client = OpenAI(api_key=api_key)
-    elif (
-        model.startswith("llama")
-        or model.startswith("gemma")
-        or model.startswith("mixtral")
-    ):
-        client = Groq(api_key=api_key)
-    else:  # in case there are other models in the future
-        exit(1)
+        assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        generate = get_model(client, model, seed, temperature, top_p)
+    else:
+        client = OllamaClient(host=f"http://localhost:{port}")
+        generate = get_ollama_model(client, model, seed, temperature, top_p)
 
-    generate = get_model(client, model, seed, temperature, top_p)
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    gen_results: list[str] = (
-        Chain(tasks)
-        .map(get_prompt)
-        .map(generate)  # generate: str -> Union[str, None]
+    prompts = lmap(get_prompt, tasks)
+    responses = lmap(generate, tqdm(prompts, desc=model))
+    gen_results = (
+        Chain(responses)
         .map(lambda x: x if x is not None else "")  # convert None to empty string
         .map(lambda x: postprocess(x, RESPONSE_STRATEGIES))
         .value
@@ -133,9 +104,8 @@ def main(
     with open(output_file, "w") as file:
         file.write("\n".join(gen_results))
 
-    logging.info(f"Get {len(gen_results)} results from {model}.")
     eval_acc = evaluate(tasks, gen_results)
-    logging.info(eval_acc)
+    print(eval_acc)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.txt", "a") as log_file:
@@ -144,5 +114,4 @@ def main(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     fire.Fire(main)
