@@ -1,195 +1,185 @@
+import re
 import fire
-import funcy
-from funcy_chain import Chain
-import logging
+import tree_sitter
+from tree_sitter import Language, Parser
+import tree_sitter_haskell
 import json
-from dacite import from_dict
-from src.common import extract_function_name
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST
-from src.common import BenchmarkTask
-from typing import Iterable
+from typing import List, Tuple, Set
 
 
-def fill_space(c: str, fill: str, length: int) -> str:
-    return c + ((length - len(c)) * fill)
+def preprocess(line: str) -> str:
+    line = re.sub(r"\(", r"( ", line)
+    line = re.sub(r"\)", r" )", line)
+
+    line = re.sub(r"\[", r"[ ", line)
+    line = re.sub(r"\]", r" ]", line)
+
+    line = re.sub(r"::", r" :: ", line)
+    line = re.sub(r"\,", " , ", line)
+    return line
 
 
-def replace_type(code: str, type_dictionary: dict) -> str:
-    parsed_code = code.split("\n")
-    # Generate Abstract Syntax Tree
-    ast = AST(code, HASKELL_LANGUAGE)
-    root = ast.root
-    # Get both types and type classes
-    types_classes = ast.get_all_nodes_of_type(root, "name")
+def process(line: str) -> str:
+    line = preprocess(line)
+    leading_spaces = ""
+    while line and line[0].isspace():
+        leading_spaces += line[0]
+        line = line[1:]
 
-    # Find which ones need to be replaced (to prevent if type in in a word like IntToGet)
-    for type_node in types_classes:
-        type = ast.get_src_from_node(type_node)
-        if type in type_dictionary:
-            # Helper variables
-            curr_line = parsed_code[type_node.start_point.row]
-            start_col = type_node.start_point.column
-            end_col = type_node.end_point.column
-            # Replace Type at llocation with chr(0) as padding to keep positions accurate
-            parsed_code[type_node.start_point.row] = (
-                curr_line[:start_col]
-                + fill_space(type_dictionary[type], chr(0), len(type))
-                + curr_line[end_col:]
-            )
+    lst = line.split()
+    for i, elem in enumerate(lst):
+        if elem[0].isupper() and '"' not in elem:
+            lst[i] = elem.lower() + "#"
+        elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
+            lst[i] = elem.lstrip(":") + "#"
 
-    # Replace all the chr(0) characters with empty spaces
-    return (("\n").join(parsed_code)).replace(chr(0), "")
+    return leading_spaces + " ".join(lst)
 
 
-def replace_functions(code: str, func_dictionary: dict) -> str:
-    parsed_code = code.split("\n")
-    # Generate Abstract Syntax Tree
-    ast = AST(code, HASKELL_LANGUAGE)
-    root = ast.root
-    # Get both types and type classes
-    functions = ast.get_all_nodes_of_type(root, "variable")
-    functions += ast.get_all_nodes_of_type(root, "operator")
-    functions += ast.get_all_nodes_of_type(root, "apply")
-    functions += ast.get_all_nodes_of_type(root, "constructor")
+def postprocess(line: str) -> str:
+    line = re.sub(r"\( ", r"(", line)
+    line = re.sub(r" \)", r")", line)
 
-    # Find which ones need to be replaced (to prevent if type in in a word like IntToGet)
-    for func_node in functions:
-        func = ast.get_src_from_node(func_node)
-        if func in func_dictionary:
-            # Helper variables
-            curr_rowno = func_node.start_point.row
-            curr_line = parsed_code[func_node.start_point.row]
-            start_col = func_node.start_point.column
-            end_col = func_node.end_point.column
-            replacement = fill_space(func_dictionary[func], chr(0), len(func))
-            # Replace Type at llocation with chr(0) as padding to keep positions accurate
-            parsed_code[curr_rowno] = curr_line[:start_col]
-            parsed_code[curr_rowno] += replacement
-            parsed_code[curr_rowno] += curr_line[end_col:]
+    line = re.sub(r"\[ ", r"[", line)
+    line = re.sub(r" \]", r"]", line)
 
-    # Replace all the chr(0) characters with empty spaces
-    return (("\n").join(parsed_code)).replace(chr(0), "")
+    line = re.sub(r'".*"', r'""', line)
+
+    return line
 
 
-def rewrite_functions(task: BenchmarkTask) -> BenchmarkTask:
-    # Get all pieces of code together to determine all functions
-    signatures = task.signature + "\n"
-    if task.dependencies:
-        signatures += ("\n").join(task.dependencies)
-
-    # Generate Abstract Syntax Tree
-    ast = AST(signatures, HASKELL_LANGUAGE)
-    root = ast.root
-
-    # Get only the function names called using function signatures
-    functions = set(
-        Chain(ast.get_all_nodes_of_type(root, "signature"))
-        .map(ast.get_src_from_node)
-        .map(lambda d: d[: d.index("::")].strip())
-        .value
-    )
-
-    # Populate the dictionary with the corresponding types
-    func_dictionary = {}
-    curr = ord("p")
-    for func in functions:
-        func_dictionary[func] = chr(curr)
-        curr += 1
-
-    task.signature = replace_functions(task.signature, func_dictionary)
-    task.code = replace_functions(task.code, func_dictionary)
-    if task.dependencies:
-        for i in range(len(task.dependencies)):
-            task.dependencies[i] = replace_functions(
-                task.dependencies[i], func_dictionary
-            )
-    return task
+def get_root(code: str) -> tree_sitter.Node:
+    parser = Parser()
+    parser.language = Language(tree_sitter_haskell.language())
+    return parser.parse(code.encode("utf-8")).root_node
 
 
-def rewrite_type(task: BenchmarkTask) -> BenchmarkTask:
-    # Get all pieces of code together to determine all types
-    signatures = task.signature + "\n" + task.code + "\n"
-    if task.dependencies:
-        signatures += ("\n").join(task.dependencies)
-
-    # Generate Abstract Syntax Tree
-    ast = AST(signatures, HASKELL_LANGUAGE)
-    root = ast.root
-
-    # Get both types and type classes
-    types_classes = (
-        Chain(ast.get_all_nodes_of_type(root, "name")).map(ast.get_src_from_node).value
-    )
-
-    # Get only type classes
-    applies = (
-        Chain(ast.get_all_nodes_of_type(root, "apply"))
-        .map(ast.get_src_from_node)
-        .map(lambda d: d.split()[0])
-        .value
-    )
-
-    # Filter out the type classes from both types and type classes
-    types = set(types_classes) - set(applies)
-
-    # Populate the dictionary with the corresponding types
-    type_dictionary = {}
-    curr = ord("A")
-    for type in types:
-        type_dictionary[type] = chr(curr)
-        curr += 1
-
-    task.signature = replace_type(task.signature, type_dictionary)
-    task.code = replace_type(task.code, type_dictionary)
-    if task.dependencies:
-        for i in range(len(task.dependencies)):
-            task.dependencies[i] = replace_type(task.dependencies[i], type_dictionary)
-
-    return task
+def get_byte_offset(code: str, line: int, column: int) -> int:
+    lines = code.splitlines(keepends=True)
+    return sum(len(lines[i]) for i in range(line)) + column
 
 
-def has_type_class(task: BenchmarkTask) -> bool:
-    # Get all pieces of code together to determine all types
-    signatures = task.signature + "\n"
-    if task.dependencies:
-        signatures += ("\n").join(task.dependencies)
-
-    # Generate Abstract Syntax Tree
-    ast = AST(signatures, HASKELL_LANGUAGE)
-    root = ast.root
-
-    # Get only type classes
-    applies = (
-        Chain(ast.get_all_nodes_of_type(root, "apply"))
-        .map(ast.get_src_from_node)
-        .map(lambda d: d.split()[0])
-        .value
-    )
-
-    if len(applies) != 0:
-        return True
-
-    return False
+def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
+    code_bytes = code.encode("utf-8")
+    for start, end, replacement in sorted(replacements, key=lambda x: x[0], reverse=True):
+        code_bytes = code_bytes[:start] + replacement.encode("utf-8") + code_bytes[end:]
+    return code_bytes.decode("utf-8")
 
 
-def main(
-    dataset_path: str = "data/source/Benchmark-F.json",
-    output_path: str = "Benchmark-F.removed.json",
-):
-    with open(dataset_path, "r") as fp:
-        tasks: list[BenchmarkTask] = (
-            Chain(json.load(fp))
-            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-            .map(rewrite_type)
-            .map(rewrite_functions)
-            .value
+def get_names(node: tree_sitter.Node, func_names: Set[str] = set(), var_names: Set[str] = set()) -> Tuple[Set[str], Set[str]]:
+    if node.type == "function" or node.type == "signature":
+        if func_name := node.child_by_field_name("name"):
+            func_names.add(func_name.text.decode("utf-8"))
+    elif node.type == "apply":
+        if func_name := node.children[0]:
+            func_names.add(func_name.text.decode("utf-8"))
+    elif node.type == "operator":
+        func_names.add(node.text.decode("utf-8"))
+    elif node.type == "variable":
+        var_names.add(node.text.decode("utf-8"))
+    for child in node.children:
+        get_names(child, func_names, var_names)
+
+    return func_names, var_names
+
+
+def replace_names(node: tree_sitter.Node, replacements: List[Tuple[int, int, str]], func_map: dict, var_map: dict) -> None:
+    if node.type in ["variable", "constructor", "operator"]:
+        name = node.text.decode("utf-8")
+        if name in func_map:
+            replacements.append((node.start_byte, node.end_byte, func_map[name]))
+        elif name in var_map:
+            replacements.append((node.start_byte, node.end_byte, var_map[name]))
+
+    for child in node.children:
+        replace_names(child, replacements, func_map, var_map)
+
+
+def print_code(item: dict) -> None:
+    print("\n".join(item["dependencies"]))
+    print('-' * 50)
+    print(item["signature"])
+    print('-' * 50)
+    print(item["code"])
+    print("\n" * 2)
+
+
+def all_node_types(node: tree_sitter.Node, node_types: Set[str] = None) -> Set[str]:
+    if node_types is None:
+        node_types = set()
+
+    node_types.add(node.type)
+
+    for child in node.children:
+        all_node_types(child, node_types)
+
+    return node_types
+
+
+def rewrite(code: str) -> str:
+    root_node = get_root(code)
+
+    func_names, var_names = get_names(root_node)
+
+    var_names = var_names - func_names
+    print("function names: ", func_names)
+    print("variable names: ", var_names)
+    print("\n" * 2)
+
+    func_map = {func: f"f{i}" for i, func in enumerate(sorted(func_names, key=len, reverse=True))}
+    var_map = {var: f"v{i}" for i, var in enumerate(sorted(var_names, key=len, reverse=True))}
+
+    replacements = []
+    replace_names(root_node, replacements, func_map, var_map)
+    modified_code = replace_in_code(code, replacements)
+
+    return modified_code
+
+
+def main(dataset_path: str = "data/source/Benchmark-F.json", output_path: str = "Benchmark-F.removed.json") -> None:
+    with open(dataset_path, "r") as file:
+        data = json.load(file)
+
+    for i, item in enumerate(data):
+        print('#' * 50)
+        print(f"Start rewriting item {i}:")
+        print('\n' * 2)
+        print_code(item)
+
+        item["signature"] = postprocess(process(preprocess(item["signature"])))
+
+        for j, dep in enumerate(item["dependencies"]):
+            item["dependencies"][j] = postprocess(process(preprocess(dep)))
+
+        code_lst = item["code"].split("\n")
+        for k, line in enumerate(code_lst):
+            code_lst[k] = postprocess(process(preprocess(line)))
+        item["code"] = "\n".join(code_lst)
+
+        code = (
+            "\n".join(item["dependencies"])
+            + "\n"
+            + "-" * 20
+            + "\n"
+            + item["signature"]
+            + "\n"
+            + "-" * 20
+            + "\n"
+            + item["code"]
         )
-        totalTypeClassed = sum(has_type_class(task) for task in tasks)
-        print("%d/%d tasks involved type classes" % (totalTypeClassed, len(tasks)))
 
-    with open(output_path, "w") as fp:
-        fp.write("\n".join(json.dumps(t.__dict__) for t in tasks))
+        print_code(item)
+
+        root_node = get_root(code)
+        assert "ERROR" not in all_node_types(root_node), f"Error in the Process for item {i}"
+
+        rewritten_code = rewrite(code)
+        print(rewritten_code)
+
+        root_node = get_root(rewritten_code)
+        assert "ERROR" not in all_node_types(root_node), f"Error in the Rewrite for item {i}"
+
+        print('\n' * 2)
 
 
 if __name__ == "__main__":
