@@ -4,7 +4,7 @@ import tree_sitter
 from tree_sitter import Language, Parser
 import tree_sitter_haskell
 import json
-from typing import List, Tuple, Set
+from typing import List, Tuple, Set, Optional
 
 
 def preprocess(line: str) -> str:
@@ -61,35 +61,48 @@ def get_byte_offset(code: str, line: int, column: int) -> int:
 
 def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
     code_bytes = code.encode("utf-8")
-    for start, end, replacement in sorted(replacements, key=lambda x: x[0], reverse=True):
+    for start, end, replacement in sorted(
+        replacements, key=lambda x: x[0], reverse=True
+    ):
         code_bytes = code_bytes[:start] + replacement.encode("utf-8") + code_bytes[end:]
     return code_bytes.decode("utf-8")
 
 
-def get_names(node: tree_sitter.Node, func_names: Set[str] = set(), var_names: Set[str] = set()) -> Tuple[Set[str], Set[str]]:
+def get_names(
+    node: tree_sitter.Node, func_names: Set[str] = set(), var_names: Set[str] = set()
+) -> Tuple[Set[str], Set[str]]:
     if node.type == "function" or node.type == "signature":
-        if func_name := node.child_by_field_name("name"):
+        func_name = node.child_by_field_name("name")
+        if func_name is not None and func_name.text is not None:
             func_names.add(func_name.text.decode("utf-8"))
     elif node.type == "apply":
-        if func_name := node.children[0]:
+        func_name = node.children[0] if node.children else None
+        if func_name is not None and func_name.text is not None:
             func_names.add(func_name.text.decode("utf-8"))
     elif node.type == "operator":
-        func_names.add(node.text.decode("utf-8"))
+        if node.text is not None:
+            func_names.add(node.text.decode("utf-8"))
     elif node.type == "variable":
-        var_names.add(node.text.decode("utf-8"))
+        if node.text is not None:
+            var_names.add(node.text.decode("utf-8"))
     for child in node.children:
         get_names(child, func_names, var_names)
 
     return func_names, var_names
 
-
-def replace_names(node: tree_sitter.Node, replacements: List[Tuple[int, int, str]], func_map: dict, var_map: dict) -> None:
+def replace_names(
+    node: tree_sitter.Node,
+    replacements: List[Tuple[int, int, str]],
+    func_map: dict,
+    var_map: dict,
+) -> None:
     if node.type in ["variable", "constructor", "operator"]:
-        name = node.text.decode("utf-8")
-        if name in func_map:
-            replacements.append((node.start_byte, node.end_byte, func_map[name]))
-        elif name in var_map:
-            replacements.append((node.start_byte, node.end_byte, var_map[name]))
+        if node.text is not None:
+            name = node.text.decode("utf-8")
+            if name in func_map:
+                replacements.append((node.start_byte, node.end_byte, func_map[name]))
+            elif name in var_map:
+                replacements.append((node.start_byte, node.end_byte, var_map[name]))
 
     for child in node.children:
         replace_names(child, replacements, func_map, var_map)
@@ -97,17 +110,14 @@ def replace_names(node: tree_sitter.Node, replacements: List[Tuple[int, int, str
 
 def print_code(item: dict) -> None:
     print("\n".join(item["dependencies"]))
-    print('-' * 50)
+    print("-" * 50)
     print(item["signature"])
-    print('-' * 50)
+    print("-" * 50)
     print(item["code"])
     print("\n" * 2)
 
 
-def all_node_types(node: tree_sitter.Node, node_types: Set[str] = None) -> Set[str]:
-    if node_types is None:
-        node_types = set()
-
+def all_node_types(node: tree_sitter.Node, node_types: Set[str] = set()) -> Set[str]:
     node_types.add(node.type)
 
     for child in node.children:
@@ -126,24 +136,32 @@ def rewrite(code: str) -> str:
     print("variable names: ", var_names)
     print("\n" * 2)
 
-    func_map = {func: f"f{i}" for i, func in enumerate(sorted(func_names, key=len, reverse=True))}
-    var_map = {var: f"v{i}" for i, var in enumerate(sorted(var_names, key=len, reverse=True))}
+    func_map = {
+        func: f"f{i}"
+        for i, func in enumerate(sorted(func_names, key=len, reverse=True))
+    }
+    var_map = {
+        var: f"v{i}" for i, var in enumerate(sorted(var_names, key=len, reverse=True))
+    }
 
-    replacements = []
+    replacements: List[Tuple[int, int, str]] = []
     replace_names(root_node, replacements, func_map, var_map)
     modified_code = replace_in_code(code, replacements)
 
     return modified_code
 
 
-def main(dataset_path: str = "data/source/Benchmark-F.json", output_path: str = "Benchmark-F.removed.json") -> None:
+def main(
+    dataset_path: str = "data/source/Benchmark-F.json",
+    output_path: str = "Benchmark-F.removed.json",
+) -> None:
     with open(dataset_path, "r") as file:
         data = json.load(file)
 
     for i, item in enumerate(data):
-        print('#' * 50)
+        print("#" * 50)
         print(f"Start rewriting item {i}:")
-        print('\n' * 2)
+        print("\n" * 2)
         print_code(item)
 
         item["signature"] = postprocess(process(preprocess(item["signature"])))
@@ -171,15 +189,19 @@ def main(dataset_path: str = "data/source/Benchmark-F.json", output_path: str = 
         print_code(item)
 
         root_node = get_root(code)
-        assert "ERROR" not in all_node_types(root_node), f"Error in the Process for item {i}"
+        assert "ERROR" not in all_node_types(
+            root_node
+        ), f"Error in the Process for item {i}"
 
         rewritten_code = rewrite(code)
         print(rewritten_code)
 
         root_node = get_root(rewritten_code)
-        assert "ERROR" not in all_node_types(root_node), f"Error in the Rewrite for item {i}"
+        assert "ERROR" not in all_node_types(
+            root_node
+        ), f"Error in the Rewrite for item {i}"
 
-        print('\n' * 2)
+        print("\n" * 2)
 
 
 if __name__ == "__main__":
