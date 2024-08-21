@@ -7,6 +7,35 @@ import json
 from typing import List, Tuple, Set, Optional
 
 
+double_letters = [chr(i) * 2 for i in range(ord('a'), ord('z') + 1)]
+
+
+def extract_and_modify_operators(input_string):
+    # Step 1: Extract infix operators inside parentheses but before "::"
+    operator_pattern = re.compile(r'\((.*?)\)\s*::')
+    operators = operator_pattern.findall(input_string)
+    
+    # Step 2: Add spaces around the extracted operators everywhere else in the string
+    for operator in operators:
+        spaced_operator = f' {operator} '
+        input_string = re.sub(rf'(?<!\()\b{re.escape(operator)}\b(?!\))', spaced_operator, input_string)
+    
+    return input_string
+
+def move_line_up_after_arrow(text: str) -> str:
+    lines = text.splitlines()
+    new_lines = []
+    i = 0
+    while i < len(lines):
+        current_line = lines[i]
+        if re.search(r"->\s*$", current_line) and i + 1 < len(lines):
+            # If the current line ends with "->" and the next line exists, move it up
+            current_line += " " + lines[i + 1].strip()
+            i += 1  # Skip the next line as it's moved up
+        new_lines.append(current_line)
+        i += 1
+    return "\n".join(new_lines)
+
 def preprocess(line: str) -> str:
     line = re.sub(r"\(", r"( ", line)
     line = re.sub(r"\)", r" )", line)
@@ -31,9 +60,10 @@ def process(line: str) -> str:
         if elem[0].isupper() and '"' not in elem:
             lst[i] = elem.lower() + "#"
         elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
-            lst[i] = elem.lstrip(":") + "#"
+            lst[i] = double_letters[ord(elem[1])%26]
 
     return leading_spaces + " ".join(lst)
+
 
 
 def postprocess(line: str) -> str:
@@ -44,8 +74,11 @@ def postprocess(line: str) -> str:
     line = re.sub(r" \]", r"]", line)
 
     line = re.sub(r'".*"', r'""', line)
+    line = re.sub(r"\((\w)\1\)", r"\1\1", line)
 
     return line
+
+
 
 
 def get_root(code: str) -> tree_sitter.Node:
@@ -148,20 +181,41 @@ def rewrite(code: str) -> str:
     replace_names(root_node, replacements, func_map, var_map)
     modified_code = replace_in_code(code, replacements)
 
-    return modified_code
+    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
 
 
 def main(
-    dataset_path: str = "data/source/Benchmark-F.json",
+    dataset_path: str = "Benchmark-F.json",
     output_path: str = "Benchmark-F.removed.json",
 ) -> None:
     with open(dataset_path, "r") as file:
         data = json.load(file)
 
     for i, item in enumerate(data):
+        #print the code
         print("#" * 50)
         print(f"Start rewriting item {i}:")
         print("\n" * 2)
+
+        code = (
+            "\n".join(item["dependencies"])
+            + "\n"
+            + "-" * 20
+            + "\n"
+            + item["signature"]
+            + "\n"
+            + "-" * 20
+            + "\n"
+            + item["code"]
+        )
+        
+        code = extract_and_modify_operators(code)
+        code = move_line_up_after_arrow(code)
+        parts = code.split("-" * 20)
+        item["dependencies"] = parts[0].split('\n')
+        item["signature"] = parts[1]
+        item["code"] = parts[2]
+
         print_code(item)
 
         item["signature"] = postprocess(process(preprocess(item["signature"])))
@@ -185,8 +239,9 @@ def main(
             + "\n"
             + item["code"]
         )
-
+        
         print_code(item)
+        
 
         root_node = get_root(code)
         assert "ERROR" not in all_node_types(
@@ -202,7 +257,6 @@ def main(
         ), f"Error in the Rewrite for item {i}"
 
         print("\n" * 2)
-
 
 if __name__ == "__main__":
     fire.Fire(main)
