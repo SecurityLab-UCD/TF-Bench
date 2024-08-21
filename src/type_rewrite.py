@@ -1,10 +1,13 @@
 import re
 import fire
 import tree_sitter
-from tree_sitter import Language, Parser
+
+# import tree_sitter_haskell
+from hs_parser.ast_util import AST
+from tree_sitter import Language
 import tree_sitter_haskell
 import json
-from typing import List, Tuple, Set, Optional
+from typing import List, Tuple, Set
 
 
 # This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
@@ -135,21 +138,6 @@ def postprocess(line: str) -> str:
     return line
 
 
-def get_root(code: str) -> tree_sitter.Node:
-    """
-    Parse Haskell code and return the root node of the syntax tree.
-
-    Args:
-        code (str): The Haskell code to parse.
-
-    Returns:
-        tree_sitter.Node: The root node of the parsed syntax tree.
-    """
-    parser = Parser()
-    parser.language = Language(tree_sitter_haskell.language())
-    return parser.parse(code.encode("utf-8")).root_node
-
-
 def get_byte_offset(code: str, line: int, column: int) -> int:
     """
     Calculate the byte offset for a given line and column in the code.
@@ -164,26 +152,6 @@ def get_byte_offset(code: str, line: int, column: int) -> int:
     """
     lines = code.splitlines(keepends=True)
     return sum(len(lines[i]) for i in range(line)) + column
-
-
-def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
-    """
-    Apply a list of replacements to the code, modifying specific byte ranges.
-
-    Args:
-        code (str): The original Haskell code as a string.
-        replacements (List[Tuple[int, int, str]]): A list of tuples containing the start byte,
-                                                   end byte, and replacement string.
-
-    Returns:
-        str: The modified code with replacements applied.
-    """
-    code_bytes = code.encode("utf-8")
-    for start, end, replacement in sorted(
-        replacements, key=lambda x: x[0], reverse=True
-    ):
-        code_bytes = code_bytes[:start] + replacement.encode("utf-8") + code_bytes[end:]
-    return code_bytes.decode("utf-8")
 
 
 def get_names(
@@ -222,19 +190,23 @@ def get_names(
 
 def replace_names(
     node: tree_sitter.Node,
-    replacements: List[Tuple[int, int, str]],
     func_map: dict,
     var_map: dict,
-) -> None:
+) -> List[Tuple[int, int, str]]:
     """
     Recursively replace function and variable names in the syntax tree using provided mappings.
 
     Args:
         node (tree_sitter.Node): The current node in the syntax tree.
-        replacements (List[Tuple[int, int, str]]): A list to store replacement tuples.
         func_map (dict): A dictionary mapping original function names to replacement names.
         var_map (dict): A dictionary mapping original variable names to replacement names.
+
+    Returns:
+        List[Tuple[int, int, str]]: A list of tuples containing the start byte,
+                                    end byte, and replacement string.
     """
+    replacements = []
+
     if node.type in ["variable", "constructor", "operator"]:
         if node.text is not None:
             name = node.text.decode("utf-8")
@@ -244,7 +216,64 @@ def replace_names(
                 replacements.append((node.start_byte, node.end_byte, var_map[name]))
 
     for child in node.children:
-        replace_names(child, replacements, func_map, var_map)
+        replacements.extend(replace_names(child, func_map, var_map))
+
+    return replacements
+
+
+def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
+    """
+    Apply a list of replacements to the code, modifying specific byte ranges.
+
+    Args:
+        code (str): The original Haskell code as a string.
+        replacements (List[Tuple[int, int, str]]): A list of tuples containing the start byte,
+                                                   end byte, and replacement string.
+
+    Returns:
+        str: The modified code with replacements applied.
+    """
+    code_bytes = code.encode("utf-8")
+    for start, end, replacement in sorted(
+        replacements, key=lambda x: x[0], reverse=True
+    ):
+        code_bytes = code_bytes[:start] + replacement.encode("utf-8") + code_bytes[end:]
+    return code_bytes.decode("utf-8")
+
+
+def rewrite(code: str) -> str:
+    """
+    Rewrite the Haskell code by replacing function and variable names with standardized names.
+
+    Args:
+        code (str): The original Haskell code as a string.
+
+    Returns:
+        str: The rewritten Haskell code with standardized names.
+    """
+    lang = Language(tree_sitter_haskell.language())
+    root_node = AST(code, lang).root
+
+    func_names, var_names = get_names(root_node)
+
+    var_names = var_names - func_names
+    print("function names: ", func_names)
+    print("variable names: ", var_names)
+    print("\n" * 2)
+
+    func_map = {
+        func: f"f{i}"
+        for i, func in enumerate(sorted(func_names, key=len, reverse=True))
+    }
+    var_map = {
+        var: f"v{i}" for i, var in enumerate(sorted(var_names, key=len, reverse=True))
+    }
+
+    # Directly get the replacements list from replace_names
+    replacements = replace_names(root_node, func_map, var_map)
+    modified_code = replace_in_code(code, replacements)
+
+    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
 
 
 def all_node_types(node: tree_sitter.Node, node_types: Set[str] = set()) -> Set[str]:
@@ -266,44 +295,12 @@ def all_node_types(node: tree_sitter.Node, node_types: Set[str] = set()) -> Set[
     return node_types
 
 
-def rewrite(code: str) -> str:
-    """
-    Rewrite the Haskell code by replacing function and variable names with standardized names.
-
-    Args:
-        code (str): The original Haskell code as a string.
-
-    Returns:
-        str: The rewritten Haskell code with standardized names.
-    """
-    root_node = get_root(code)
-
-    func_names, var_names = get_names(root_node)
-
-    var_names = var_names - func_names
-    print("function names: ", func_names)
-    print("variable names: ", var_names)
-    print("\n" * 2)
-
-    func_map = {
-        func: f"f{i}"
-        for i, func in enumerate(sorted(func_names, key=len, reverse=True))
-    }
-    var_map = {
-        var: f"v{i}" for i, var in enumerate(sorted(var_names, key=len, reverse=True))
-    }
-
-    replacements: List[Tuple[int, int, str]] = []
-    replace_names(root_node, replacements, func_map, var_map)
-    modified_code = replace_in_code(code, replacements)
-
-    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
-
-
 def main(
     dataset_path: str = "Benchmark-F.json",
     output_path: str = "Benchmark-F.removed.json",
 ) -> None:
+    lang = Language(tree_sitter_haskell.language())
+
     with open(dataset_path, "r") as file:
         data = json.load(file)
 
@@ -342,10 +339,8 @@ def main(
         print(code)
         print("\n" * 2)
 
-        root_node = get_root(code)
-        assert "ERROR" not in all_node_types(
-            root_node
-        ), f"Error in the Process for item {i}"
+        ast = AST(code, lang)
+        assert ast.is_valid_code(), f"Error in the Process for item {i}"
 
         # print the rewritten code
         rewritten_code = rewrite(code)
@@ -355,10 +350,8 @@ def main(
         print(rewritten_code)
         print("\n" * 2)
 
-        root_node = get_root(rewritten_code)
-        assert "ERROR" not in all_node_types(
-            root_node
-        ), f"Error in the Rewrite for item {i}"
+        ast = AST(rewritten_code, lang)
+        assert ast.is_valid_code(), f"Error in the Rewrite for item {i}"
 
 
 if __name__ == "__main__":
