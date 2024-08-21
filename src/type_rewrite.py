@@ -6,10 +6,23 @@ import tree_sitter_haskell
 import json
 from typing import List, Tuple, Set, Optional
 
+
+# This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
 double_letters = [chr(i) * 2 for i in range(ord("a"), ord("z") + 1)]
 
 
-def extract_and_modify_operators(input_string):
+def extract_and_modify_operators(input_string: str) -> str:
+    """
+    Extract infix operators within parentheses that appear before "::" and add spaces around these
+    operators everywhere else in the string. This is to avoid the case when rewriting x+y to v1f1v2.
+    So the spaces around an operator is necessary for readability.
+
+    Args:
+        input_string (str): The input string containing code.
+
+    Returns:
+        str: The modified string with spaces added around the operators.
+    """
     # Step 1: Extract infix operators inside parentheses but before "::"
     operator_pattern = re.compile(r"\((.*?)\)\s*::")
     operators = operator_pattern.findall(input_string)
@@ -25,6 +38,16 @@ def extract_and_modify_operators(input_string):
 
 
 def move_line_up_after_arrow(text: str) -> str:
+    """
+    Move the next line up if the current line ends with "->" and the next line exists.
+    tree_sitter_haskell doesn't allow the parts before and after "->" to be in two different lines.
+
+    Args:
+        text (str): The input string containing multiple lines of code.
+
+    Returns:
+        str: The modified string with lines moved up where applicable.
+    """
     lines = text.splitlines()
     new_lines = []
     i = 0
@@ -40,6 +63,15 @@ def move_line_up_after_arrow(text: str) -> str:
 
 
 def preprocess(line: str) -> str:
+    """
+    Preprocess a line of code by adding spaces around parentheses, brackets, and the "::" symbol.
+
+    Args:
+        line (str): The line of code to preprocess.
+
+    Returns:
+        str: The preprocessed line of code with added spaces.
+    """
     line = re.sub(r"\(", r"( ", line)
     line = re.sub(r"\)", r" )", line)
 
@@ -52,6 +84,16 @@ def preprocess(line: str) -> str:
 
 
 def process(line: str) -> str:
+    """
+    Process a line of code by converting certain elements to lowercase, replacing operators, and
+    preserving leading spaces.
+
+    Args:
+        line (str): The line of code to process.
+
+    Returns:
+        str: The processed line of code.
+    """
     line = preprocess(line)
     leading_spaces = ""
     while line and line[0].isspace():
@@ -69,6 +111,16 @@ def process(line: str) -> str:
 
 
 def postprocess(line: str) -> str:
+    """
+    Post-process a line of code by removing spaces around certain characters and replacing double
+    letters in parentheses.
+
+    Args:
+        line (str): The line of code to post-process.
+
+    Returns:
+        str: The post-processed line of code.
+    """
     line = re.sub(r"\( ", r"(", line)
     line = re.sub(r" \)", r")", line)
 
@@ -84,17 +136,48 @@ def postprocess(line: str) -> str:
 
 
 def get_root(code: str) -> tree_sitter.Node:
+    """
+    Parse Haskell code and return the root node of the syntax tree.
+
+    Args:
+        code (str): The Haskell code to parse.
+
+    Returns:
+        tree_sitter.Node: The root node of the parsed syntax tree.
+    """
     parser = Parser()
     parser.language = Language(tree_sitter_haskell.language())
     return parser.parse(code.encode("utf-8")).root_node
 
 
 def get_byte_offset(code: str, line: int, column: int) -> int:
+    """
+    Calculate the byte offset for a given line and column in the code.
+
+    Args:
+        code (str): The Haskell code as a string.
+        line (int): The line number (0-based).
+        column (int): The column number (0-based).
+
+    Returns:
+        int: The byte offset corresponding to the line and column.
+    """
     lines = code.splitlines(keepends=True)
     return sum(len(lines[i]) for i in range(line)) + column
 
 
 def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
+    """
+    Apply a list of replacements to the code, modifying specific byte ranges.
+
+    Args:
+        code (str): The original Haskell code as a string.
+        replacements (List[Tuple[int, int, str]]): A list of tuples containing the start byte,
+                                                   end byte, and replacement string.
+
+    Returns:
+        str: The modified code with replacements applied.
+    """
     code_bytes = code.encode("utf-8")
     for start, end, replacement in sorted(
         replacements, key=lambda x: x[0], reverse=True
@@ -106,6 +189,17 @@ def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
 def get_names(
     node: tree_sitter.Node, func_names: Set[str] = set(), var_names: Set[str] = set()
 ) -> Tuple[Set[str], Set[str]]:
+    """
+    Recursively traverse the syntax tree to collect function and variable names.
+
+    Args:
+        node (tree_sitter.Node): The current node in the syntax tree.
+        func_names (Set[str]): A set to store function names.
+        var_names (Set[str]): A set to store variable names.
+
+    Returns:
+        Tuple[Set[str], Set[str]]: Two sets containing the collected function and variable names.
+    """
     if node.type == "function" or node.type == "signature":
         func_name = node.child_by_field_name("name")
         if func_name is not None and func_name.text is not None:
@@ -132,6 +226,15 @@ def replace_names(
     func_map: dict,
     var_map: dict,
 ) -> None:
+    """
+    Recursively replace function and variable names in the syntax tree using provided mappings.
+
+    Args:
+        node (tree_sitter.Node): The current node in the syntax tree.
+        replacements (List[Tuple[int, int, str]]): A list to store replacement tuples.
+        func_map (dict): A dictionary mapping original function names to replacement names.
+        var_map (dict): A dictionary mapping original variable names to replacement names.
+    """
     if node.type in ["variable", "constructor", "operator"]:
         if node.text is not None:
             name = node.text.decode("utf-8")
@@ -144,16 +247,17 @@ def replace_names(
         replace_names(child, replacements, func_map, var_map)
 
 
-def print_code(item: dict) -> None:
-    print("\n".join(item["dependencies"]))
-    print("-" * 50)
-    print(item["signature"])
-    print("-" * 50)
-    print(item["code"])
-    print("\n" * 2)
-
-
 def all_node_types(node: tree_sitter.Node, node_types: Set[str] = set()) -> Set[str]:
+    """
+    Collect all unique node types in the syntax tree.
+
+    Args:
+        node (tree_sitter.Node): The current node in the syntax tree.
+        node_types (Set[str]): A set to store unique node types.
+
+    Returns:
+        Set[str]: A set containing all unique node types found in the tree.
+    """
     node_types.add(node.type)
 
     for child in node.children:
@@ -163,6 +267,15 @@ def all_node_types(node: tree_sitter.Node, node_types: Set[str] = set()) -> Set[
 
 
 def rewrite(code: str) -> str:
+    """
+    Rewrite the Haskell code by replacing function and variable names with standardized names.
+
+    Args:
+        code (str): The original Haskell code as a string.
+
+    Returns:
+        str: The rewritten Haskell code with standardized names.
+    """
     root_node = get_root(code)
 
     func_names, var_names = get_names(root_node)
@@ -195,12 +308,6 @@ def main(
         data = json.load(file)
 
     for i, item in enumerate(data):
-        # print the raw code
-        print("#" * 50)
-        print(f"Start rewriting item {i}:")
-        print("#" * 50)
-        print("\n" * 2)
-        
         # put all code together
         code = (
             "\n".join(item["dependencies"])
@@ -213,61 +320,45 @@ def main(
             + "\n"
             + item["code"]
         )
-        
+
+        # print the raw code
+        print("#" * 50)
+        print(f"Start rewriting item {i}:")
+        print("#" * 50)
+        print(code)
+        print("\n" * 2)
+
         # process the raw code
         code = extract_and_modify_operators(code)
         code = move_line_up_after_arrow(code)
-
-        # # put the code back
-        # parts = code.split("-" * 20)
-        # item["dependencies"] = parts[0].split("\n")
-        # item["signature"] = parts[1]
-        # item["code"] = parts[2]
-        # print_code(item)
-        # #process after pre-process
-        # item["signature"] = postprocess(process(preprocess(item["signature"])))
-        # for j, dep in enumerate(item["dependencies"]):
-        #     item["dependencies"][j] = postprocess(process(preprocess(dep)))
-        # code_lst = item["code"].split("\n")
-        # for k, line in enumerate(code_lst):
-        #     code_lst[k] = postprocess(process(preprocess(line)))
-        # item["code"] = "\n".join(code_lst)
-        
-        # # put all code together
-        # code = (
-        #     "\n".join(item["dependencies"])
-        #     + "\n"
-        #     + "-" * 20
-        #     + "\n"
-        #     + item["signature"]
-        #     + "\n"
-        #     + "-" * 20
-        #     + "\n"
-        #     + item["code"]
-        # )
-        
-        code = '\n'.join([postprocess(process(preprocess(line))) for line in code.split('\n')])
-        
+        code = "\n".join(
+            [postprocess(process(preprocess(line))) for line in code.split("\n")]
+        )
 
         # print the processed code
+        print("#" * 50)
         print("processed code:")
-        # code = fix_where_indentation(code)
+        print("#" * 50)
         print(code)
+        print("\n" * 2)
 
         root_node = get_root(code)
         assert "ERROR" not in all_node_types(
             root_node
         ), f"Error in the Process for item {i}"
 
+        # print the rewritten code
         rewritten_code = rewrite(code)
+        print("#" * 50)
+        print("rewritten code:")
+        print("#" * 50)
         print(rewritten_code)
+        print("\n" * 2)
 
         root_node = get_root(rewritten_code)
         assert "ERROR" not in all_node_types(
             root_node
         ), f"Error in the Rewrite for item {i}"
-
-        print("\n" * 2)
 
 
 if __name__ == "__main__":
