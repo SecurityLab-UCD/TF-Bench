@@ -198,8 +198,10 @@ def main(
         # print the raw code
         print("#" * 50)
         print(f"Start rewriting item {i}:")
+        print("#" * 50)
         print("\n" * 2)
-
+        
+        # put all code together
         code = (
             "\n".join(item["dependencies"])
             + "\n"
@@ -211,37 +213,41 @@ def main(
             + "\n"
             + item["code"]
         )
+        
         # process the raw code
         code = extract_and_modify_operators(code)
         code = move_line_up_after_arrow(code)
 
-        parts = code.split("-" * 20)
-        item["dependencies"] = parts[0].split("\n")
-        item["signature"] = parts[1]
-        item["code"] = parts[2]
-
-        # print the pre-processed code
-        print_code(item)
-
-        item["signature"] = postprocess(process(preprocess(item["signature"])))
-        for j, dep in enumerate(item["dependencies"]):
-            item["dependencies"][j] = postprocess(process(preprocess(dep)))
-        code_lst = item["code"].split("\n")
-        for k, line in enumerate(code_lst):
-            code_lst[k] = postprocess(process(preprocess(line)))
-        item["code"] = "\n".join(code_lst)
-
-        code = (
-            "\n".join(item["dependencies"])
-            + "\n"
-            + "-" * 20
-            + "\n"
-            + item["signature"]
-            + "\n"
-            + "-" * 20
-            + "\n"
-            + item["code"]
-        )
+        # # put the code back
+        # parts = code.split("-" * 20)
+        # item["dependencies"] = parts[0].split("\n")
+        # item["signature"] = parts[1]
+        # item["code"] = parts[2]
+        # print_code(item)
+        # #process after pre-process
+        # item["signature"] = postprocess(process(preprocess(item["signature"])))
+        # for j, dep in enumerate(item["dependencies"]):
+        #     item["dependencies"][j] = postprocess(process(preprocess(dep)))
+        # code_lst = item["code"].split("\n")
+        # for k, line in enumerate(code_lst):
+        #     code_lst[k] = postprocess(process(preprocess(line)))
+        # item["code"] = "\n".join(code_lst)
+        
+        # # put all code together
+        # code = (
+        #     "\n".join(item["dependencies"])
+        #     + "\n"
+        #     + "-" * 20
+        #     + "\n"
+        #     + item["signature"]
+        #     + "\n"
+        #     + "-" * 20
+        #     + "\n"
+        #     + item["code"]
+        # )
+        
+        code = '\n'.join([postprocess(process(preprocess(line))) for line in code.split('\n')])
+        
 
         # print the processed code
         print("processed code:")
