@@ -6,21 +6,23 @@ import tree_sitter_haskell
 import json
 from typing import List, Tuple, Set, Optional
 
-
-double_letters = [chr(i) * 2 for i in range(ord('a'), ord('z') + 1)]
+double_letters = [chr(i) * 2 for i in range(ord("a"), ord("z") + 1)]
 
 
 def extract_and_modify_operators(input_string):
     # Step 1: Extract infix operators inside parentheses but before "::"
-    operator_pattern = re.compile(r'\((.*?)\)\s*::')
+    operator_pattern = re.compile(r"\((.*?)\)\s*::")
     operators = operator_pattern.findall(input_string)
-    
+
     # Step 2: Add spaces around the extracted operators everywhere else in the string
     for operator in operators:
-        spaced_operator = f' {operator} '
-        input_string = re.sub(rf'(?<!\()\b{re.escape(operator)}\b(?!\))', spaced_operator, input_string)
-    
+        spaced_operator = f" {operator} "
+        input_string = re.sub(
+            rf"(?<!\()\b{re.escape(operator)}\b(?!\))", spaced_operator, input_string
+        )
+
     return input_string
+
 
 def move_line_up_after_arrow(text: str) -> str:
     lines = text.splitlines()
@@ -35,6 +37,7 @@ def move_line_up_after_arrow(text: str) -> str:
         new_lines.append(current_line)
         i += 1
     return "\n".join(new_lines)
+
 
 def preprocess(line: str) -> str:
     line = re.sub(r"\(", r"( ", line)
@@ -60,10 +63,9 @@ def process(line: str) -> str:
         if elem[0].isupper() and '"' not in elem:
             lst[i] = elem.lower() + "#"
         elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
-            lst[i] = double_letters[ord(elem[1])%26]
+            lst[i] = double_letters[ord(elem[1]) % 26]
 
     return leading_spaces + " ".join(lst)
-
 
 
 def postprocess(line: str) -> str:
@@ -73,12 +75,12 @@ def postprocess(line: str) -> str:
     line = re.sub(r"\[ ", r"[", line)
     line = re.sub(r" \]", r"]", line)
 
-    line = re.sub(r'".*"', r'""', line)
+    # Avoid replacing double quotes surrounded by single quotes
+    line = re.sub(r"(?<!')\".*?\"(?!')", r'""', line)
+
     line = re.sub(r"\((\w)\1\)", r"\1\1", line)
 
     return line
-
-
 
 
 def get_root(code: str) -> tree_sitter.Node:
@@ -122,6 +124,7 @@ def get_names(
         get_names(child, func_names, var_names)
 
     return func_names, var_names
+
 
 def replace_names(
     node: tree_sitter.Node,
@@ -192,7 +195,7 @@ def main(
         data = json.load(file)
 
     for i, item in enumerate(data):
-        #print the code
+        # print the raw code
         print("#" * 50)
         print(f"Start rewriting item {i}:")
         print("\n" * 2)
@@ -208,21 +211,21 @@ def main(
             + "\n"
             + item["code"]
         )
-        
+        # process the raw code
         code = extract_and_modify_operators(code)
         code = move_line_up_after_arrow(code)
+
         parts = code.split("-" * 20)
-        item["dependencies"] = parts[0].split('\n')
+        item["dependencies"] = parts[0].split("\n")
         item["signature"] = parts[1]
         item["code"] = parts[2]
 
+        # print the pre-processed code
         print_code(item)
 
         item["signature"] = postprocess(process(preprocess(item["signature"])))
-
         for j, dep in enumerate(item["dependencies"]):
             item["dependencies"][j] = postprocess(process(preprocess(dep)))
-
         code_lst = item["code"].split("\n")
         for k, line in enumerate(code_lst):
             code_lst[k] = postprocess(process(preprocess(line)))
@@ -239,9 +242,11 @@ def main(
             + "\n"
             + item["code"]
         )
-        
-        print_code(item)
-        
+
+        # print the processed code
+        print("processed code:")
+        # code = fix_where_indentation(code)
+        print(code)
 
         root_node = get_root(code)
         assert "ERROR" not in all_node_types(
@@ -257,6 +262,7 @@ def main(
         ), f"Error in the Rewrite for item {i}"
 
         print("\n" * 2)
+
 
 if __name__ == "__main__":
     fire.Fire(main)
