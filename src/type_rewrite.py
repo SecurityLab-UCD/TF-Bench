@@ -3,11 +3,13 @@ import fire
 import tree_sitter
 
 # import tree_sitter_haskell
-from hs_parser.ast_util import AST
+from src.hs_parser.ast_util import AST
 from tree_sitter import Language
 import tree_sitter_haskell
 import json
 from typing import List, Tuple, Set
+from dacite import from_dict
+from src.common import BenchmarkTask
 
 
 # This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
@@ -301,21 +303,24 @@ def main(
 ) -> None:
     lang = Language(tree_sitter_haskell.language())
 
-    with open(dataset_path, "r") as file:
-        data = json.load(file)
+    # with open(dataset_path, "r") as file:
+    #     data = json.load(file)
 
-    for i, item in enumerate(data):
+    with open(dataset_path, "r") as fp:
+        tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
+
+    for i, task in enumerate(tasks):
         # put all code together
         code = (
-            "\n".join(item["dependencies"])
+            "\n".join(task.dependencies)
             + "\n"
             + "-" * 20
             + "\n"
-            + item["signature"]
+            + task.signature
             + "\n"
             + "-" * 20
             + "\n"
-            + item["code"]
+            + task.code
         )
 
         # print the raw code
