@@ -310,45 +310,53 @@ def main(
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
     for i, task in enumerate(tasks):
+        # Ensure that task.dependencies, task.signature, and task.code are not None
+        dependencies = task.dependencies if task.dependencies is not None else []
+        signature = task.signature if task.signature is not None else ""
+        code = task.code if task.code is not None else ""
+
         # put all code together
-        code = (
-            "\n".join(task.dependencies)
+        combined_code = (
+            "\n".join(dependencies)
             + "\n"
             + "-" * 20
             + "\n"
-            + task.signature
+            + signature
             + "\n"
             + "-" * 20
             + "\n"
-            + task.code
+            + code
         )
 
         # print the raw code
         print("#" * 50)
         print(f"Start rewriting item {i}:")
         print("#" * 50)
-        print(code)
+        print(combined_code)
         print("\n" * 2)
 
         # process the raw code
-        code = extract_and_modify_operators(code)
-        code = move_line_up_after_arrow(code)
-        code = "\n".join(
-            [postprocess(process(preprocess(line))) for line in code.split("\n")]
+        combined_code = extract_and_modify_operators(combined_code)
+        combined_code = move_line_up_after_arrow(combined_code)
+        combined_code = "\n".join(
+            [
+                postprocess(process(preprocess(line)))
+                for line in combined_code.split("\n")
+            ]
         )
 
         # print the processed code
         print("#" * 50)
         print("processed code:")
         print("#" * 50)
-        print(code)
+        print(combined_code)
         print("\n" * 2)
 
-        ast = AST(code, lang)
+        ast = AST(combined_code, lang)
         assert ast.is_valid_code(), f"Error in the Process for item {i}"
 
         # print the rewritten code
-        rewritten_code = rewrite(code)
+        rewritten_code = rewrite(combined_code)
         print("#" * 50)
         print("rewritten code:")
         print("#" * 50)
