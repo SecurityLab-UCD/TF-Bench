@@ -7,7 +7,6 @@ from src.hs_parser.ast_util import AST
 from tree_sitter import Language
 import tree_sitter_haskell
 import json
-from typing import List, Tuple, Set
 from dacite import from_dict
 from src.common import BenchmarkTask
 
@@ -157,33 +156,25 @@ def get_byte_offset(code: str, line: int, column: int) -> int:
 
 
 def get_names(
-    node: tree_sitter.Node, func_names: Set[str] = set(), var_names: Set[str] = set()
-) -> Tuple[Set[str], Set[str]]:
+    node: tree_sitter.Node, func_names: set[str] = set(), var_names: set[str] = set()
+) -> tuple[set[str], set[str]]:
     """
-    Recursively traverse the syntax tree to collect function and variable names.
-
-    Args:
-        node (tree_sitter.Node): The current node in the syntax tree.
-        func_names (Set[str]): A set to store function names.
-        var_names (Set[str]): A set to store variable names.
-
-    Returns:
-        Tuple[Set[str], Set[str]]: Two sets containing the collected function and variable names.
+    Recursively traverse the syntax tree to collect function and variable names using pattern matching.
     """
-    if node.type == "function" or node.type == "signature":
-        func_name = node.child_by_field_name("name")
-        if func_name is not None and func_name.text is not None:
-            func_names.add(func_name.text.decode("utf-8"))
-    elif node.type == "apply":
-        func_name = node.children[0] if node.children else None
-        if func_name is not None and func_name.text is not None:
-            func_names.add(func_name.text.decode("utf-8"))
-    elif node.type == "operator":
-        if node.text is not None:
-            func_names.add(node.text.decode("utf-8"))
-    elif node.type == "variable":
-        if node.text is not None:
-            var_names.add(node.text.decode("utf-8"))
+    match node.type:
+        case "function" | "signature":
+            if func_name := node.child_by_field_name("name"):
+                func_names.add(func_name.text.decode("utf-8"))
+        case "apply":
+            if func_name := (node.children[0] if node.children else None):
+                func_names.add(func_name.text.decode("utf-8"))
+        case "operator" | "variable":
+            var_or_func_name = node.text.decode("utf-8")
+            if node.type == "operator":
+                func_names.add(var_or_func_name)
+            elif node.type == "variable":
+                var_names.add(var_or_func_name)
+
     for child in node.children:
         get_names(child, func_names, var_names)
 
@@ -194,7 +185,7 @@ def replace_names(
     node: tree_sitter.Node,
     func_map: dict,
     var_map: dict,
-) -> List[Tuple[int, int, str]]:
+) -> list[tuple[int, int, str]]:
     """
     Recursively replace function and variable names in the syntax tree using provided mappings.
 
@@ -223,7 +214,7 @@ def replace_names(
     return replacements
 
 
-def replace_in_code(code: str, replacements: List[Tuple[int, int, str]]) -> str:
+def replace_in_code(code: str, replacements: list[tuple[int, int, str]]) -> str:
     """
     Apply a list of replacements to the code, modifying specific byte ranges.
 
@@ -278,21 +269,20 @@ def rewrite(code: str) -> str:
     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
 
 
-def all_node_types(node: tree_sitter.Node, node_types: Set[str] = set()) -> Set[str]:
+def all_node_types(node: tree_sitter.Node) -> set[str]:
     """
     Collect all unique node types in the syntax tree.
 
     Args:
         node (tree_sitter.Node): The current node in the syntax tree.
-        node_types (Set[str]): A set to store unique node types.
 
     Returns:
         Set[str]: A set containing all unique node types found in the tree.
     """
-    node_types.add(node.type)
+    node_types: set[str] = set()
 
     for child in node.children:
-        all_node_types(child, node_types)
+        node_types += all_node_types(child)
 
     return node_types
 
