@@ -41,31 +41,6 @@ def extract_and_modify_operators(input_string: str) -> str:
     return input_string
 
 
-def move_line_up_after_arrow(text: str) -> str:
-    """
-    Move the next line up if the current line ends with "->" and the next line exists.
-    tree_sitter_haskell doesn't allow the parts before and after "->" to be in two different lines.
-
-    Args:
-        text (str): The input string containing multiple lines of code.
-
-    Returns:
-        str: The modified string with lines moved up where applicable.
-    """
-    lines = text.splitlines()
-    new_lines = []
-    i = 0
-    while i < len(lines):
-        current_line = lines[i]
-        if re.search(r"->\s*$", current_line) and i + 1 < len(lines):
-            # If the current line ends with "->" and the next line exists, move it up
-            current_line += " " + lines[i + 1].strip()
-            i += 1  # Skip the next line as it's moved up
-        new_lines.append(current_line)
-        i += 1
-    return "\n".join(new_lines)
-
-
 def preprocess(line: str) -> str:
     """
     Preprocess a line of code by adding spaces around parentheses, brackets, and the "::" symbol.
@@ -137,22 +112,6 @@ def postprocess(line: str) -> str:
     line = re.sub(r"\((\w)\1\)", r"\1\1", line)
 
     return line
-
-
-def get_byte_offset(code: str, line: int, column: int) -> int:
-    """
-    Calculate the byte offset for a given line and column in the code.
-
-    Args:
-        code (str): The Haskell code as a string.
-        line (int): The line number (0-based).
-        column (int): The column number (0-based).
-
-    Returns:
-        int: The byte offset corresponding to the line and column.
-    """
-    lines = code.splitlines(keepends=True)
-    return sum(len(lines[i]) for i in range(line)) + column
 
 
 def get_names(
@@ -269,36 +228,16 @@ def rewrite(code: str) -> str:
     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
 
 
-def all_node_types(node: tree_sitter.Node) -> set[str]:
-    """
-    Collect all unique node types in the syntax tree.
-
-    Args:
-        node (tree_sitter.Node): The current node in the syntax tree.
-
-    Returns:
-        Set[str]: A set containing all unique node types found in the tree.
-    """
-    node_types: set[str] = set()
-
-    for child in node.children:
-        node_types += all_node_types(child)
-
-    return node_types
-
-
 def main(
     dataset_path: str = "Benchmark-F.json",
     output_path: str = "Benchmark-F.removed.json",
 ) -> None:
     lang = Language(tree_sitter_haskell.language())
 
-    # with open(dataset_path, "r") as file:
-    #     data = json.load(file)
-
     with open(dataset_path, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
+    wrong_item = []
     for i, task in enumerate(tasks):
         # Ensure that task.dependencies, task.signature, and task.code are not None
         dependencies = task.dependencies if task.dependencies is not None else []
@@ -321,13 +260,14 @@ def main(
         # print the raw code
         print("#" * 50)
         print(f"Start rewriting item {i}:")
+        print(f"Task id is {task.task_id}")
         print("#" * 50)
         print(combined_code)
         print("\n" * 2)
 
         # process the raw code
         combined_code = extract_and_modify_operators(combined_code)
-        combined_code = move_line_up_after_arrow(combined_code)
+        
         combined_code = "\n".join(
             [
                 postprocess(process(preprocess(line)))
@@ -343,7 +283,9 @@ def main(
         print("\n" * 2)
 
         ast = AST(combined_code, lang)
-        assert ast.is_valid_code(), f"Error in the Process for item {i}"
+        # assert ast.is_valid_code(), f"Error in the Process for item {i}"
+        if not ast.is_valid_code():
+            wrong_item.append(i)
 
         # print the rewritten code
         rewritten_code = rewrite(combined_code)
@@ -354,8 +296,11 @@ def main(
         print("\n" * 2)
 
         ast = AST(rewritten_code, lang)
-        assert ast.is_valid_code(), f"Error in the Rewrite for item {i}"
+        # assert ast.is_valid_code(), f"Error in the Rewrite for item {i}"
+        if not ast.is_valid_code():
+            wrong_item.append(i)
 
+    print(wrong_item)
 
 if __name__ == "__main__":
     fire.Fire(main)

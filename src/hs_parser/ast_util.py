@@ -3,7 +3,7 @@ from returns.maybe import Maybe, Nothing, Some
 from dataclasses import dataclass
 from funcy_chain import Chain
 from funcy import lmap
-from typing import Set, Optional
+from typing import Optional
 
 
 @dataclass
@@ -152,29 +152,29 @@ class AST:
             .value
         )
         return pairs
-
-    def all_node_types(
-        self, node: Optional[Node] = None, node_types: Set[str] = set()
-    ) -> Set[str]:
+    
+    def all_node_types(self, node: Optional[Node] = None) -> set[str]:
         """
-        Collects all unique node types in the AST starting from the given node.
+        Collect all unique node types in the syntax tree.
 
         Args:
-            node (Optional[Node]): The node to start from. If None, starts from the root.
-            node_types (Set[str]): A set to store unique node types.
+            node (Optional[Node]): The current node in the syntax tree.
 
         Returns:
-            Set[str]: A set containing all unique node types found.
+            Set[str]: A set containing all unique node types found in the tree.
         """
         if node is None:
             node = self.root
 
-        node_types.add(node.type)
+        node_types: set[str] = set()
 
         for child in node.children:
-            self.all_node_types(child, node_types)
+            node_types |= self.all_node_types(child)  # Use |= to merge sets
+
+        node_types.add(node.type)  # Add the current node's type
 
         return node_types
+
 
     def is_valid_code(self) -> bool:
         """

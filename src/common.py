@@ -42,7 +42,7 @@ def clean_tab_spaces(task: BenchmarkTask) -> BenchmarkTask:
         return re.sub(r"[ \t]+", " ", s)
 
     new_task = copy.copy(task)
-    new_task.code = clean(task.code)
+    # new_task.code = clean(task.code)
     new_task.dependencies = lmap(clean, task.dependencies)
     new_task.signature = clean(task.signature)
 
