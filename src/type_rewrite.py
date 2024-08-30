@@ -33,10 +33,17 @@ def extract_and_modify_operators(input_string: str) -> str:
 
     # Step 2: Add spaces around the extracted operators everywhere else in the string
     for operator in operators:
+        #a special case when the infix operator is .
+        if operator == ".":
+            pattern = r"(?<=\s|\()(\.)(?=\s|\))"
+            input_string = re.sub(pattern, double_letters[ord('.') % 26], input_string)
+            continue
+        
         spaced_operator = f" {operator} "
         input_string = re.sub(
             rf"(?<!\()\b{re.escape(operator)}\b(?!\))", spaced_operator, input_string
         )
+        
 
     return input_string
 
@@ -73,7 +80,6 @@ def process(line: str) -> str:
     Returns:
         str: The processed line of code.
     """
-    line = preprocess(line)
     leading_spaces = ""
     while line and line[0].isspace():
         leading_spaces += line[0]
@@ -81,10 +87,16 @@ def process(line: str) -> str:
 
     lst = line.split()
     for i, elem in enumerate(lst):
+        #the first letter of a function cannot be capitalized
         if elem[0].isupper() and '"' not in elem:
             lst[i] = elem.lower() + "#"
+        #the first letter of a function cannot be ":"
         elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
-            lst[i] = double_letters[ord(elem[1]) % 26]
+            lst[i] = double_letters[(ord(elem[0]) + ord(elem[1])) % 26]
+        
+        #for items such as List.foldl
+        pattern = r'\b\w+\.\w+\b'
+        lst[i] = re.sub(pattern, double_letters[sum([ord(l) for l in lst[i]]) % 26], lst[i])
 
     return leading_spaces + " ".join(lst)
 
@@ -108,7 +120,7 @@ def postprocess(line: str) -> str:
 
     # Avoid replacing double quotes surrounded by single quotes
     line = re.sub(r"(?<!')\".*?\"(?!')", r'""', line)
-
+    #remove ()
     line = re.sub(r"\((\w)\1\)", r"\1\1", line)
 
     return line
@@ -300,7 +312,8 @@ def main(
         if not ast.is_valid_code():
             wrong_item.append(i)
 
-    print(wrong_item)
+    print("ERROR while processing items:")
+    print(set(wrong_item))
 
 if __name__ == "__main__":
     fire.Fire(main)
