@@ -181,9 +181,10 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper) -> Benchmark
             # Otherwise remove the valid task
             return task
         # Change signature in List.foldr case
-        fname = str_sig.index("::")
-        if str_sig[:fname].strip() != depedencies[i]:
-            str_sig = depedencies[i] + " " + str_sig[fname:]
+        if "newtype" not in str_sig and "data" not in str_sig:
+            fname = str_sig.index("::")
+            if str_sig[:fname].strip() != depedencies[i]:
+                str_sig = depedencies[i] + " " + str_sig[fname:]
         # Set the type signature
         type_signature[i] = str_sig
     task.dependencies = list(set(type_signature))
@@ -217,8 +218,8 @@ def get_type_signature(name: str) -> str | None:
 
 
 def main(
-    input_file: str = "Benchmark-F.json",
-    output_file: str = "outv5.json",
+    input_file: str = "Benchmark-F-copy.json",
+    output_file: str = "out.json",
     banned_file: str = "banned.txt",
 ):
     banned_fp = open(banned_file, "w")
