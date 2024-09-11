@@ -9,6 +9,8 @@ import tree_sitter_haskell
 import json
 from dacite import from_dict
 from src.common import BenchmarkTask
+from typing import Optional
+from dataclasses import asdict
 
 
 # This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
@@ -33,17 +35,16 @@ def extract_and_modify_operators(input_string: str) -> str:
 
     # Step 2: Add spaces around the extracted operators everywhere else in the string
     for operator in operators:
-        #a special case when the infix operator is .
+        # a special case when the infix operator is .
         if operator == ".":
             pattern = r"(?<=\s|\()(\.)(?=\s|\))"
-            input_string = re.sub(pattern, double_letters[ord('.') % 26], input_string)
+            input_string = re.sub(pattern, double_letters[ord(".") % 26], input_string)
             continue
-        
+
         spaced_operator = f" {operator} "
         input_string = re.sub(
             rf"(?<!\()\b{re.escape(operator)}\b(?!\))", spaced_operator, input_string
         )
-        
 
     return input_string
 
@@ -87,16 +88,18 @@ def process(line: str) -> str:
 
     lst = line.split()
     for i, elem in enumerate(lst):
-        #the first letter of a function cannot be capitalized
+        # the first letter of a function cannot be capitalized
         if elem[0].isupper() and '"' not in elem:
             lst[i] = elem.lower() + "#"
-        #the first letter of a function cannot be ":"
+        # the first letter of a function cannot be ":"
         elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
             lst[i] = double_letters[(ord(elem[0]) + ord(elem[1])) % 26]
-        
-        #for items such as List.foldl
-        pattern = r'\b\w+\.\w+\b'
-        lst[i] = re.sub(pattern, double_letters[sum([ord(l) for l in lst[i]]) % 26], lst[i])
+
+        # for items such as List.foldl
+        pattern = r"\b\w+\.\w+\b"
+        lst[i] = re.sub(
+            pattern, double_letters[sum([ord(l) for l in lst[i]]) % 26], lst[i]
+        )
 
     return leading_spaces + " ".join(lst)
 
@@ -120,42 +123,51 @@ def postprocess(line: str) -> str:
 
     # Avoid replacing double quotes surrounded by single quotes
     line = re.sub(r"(?<!')\".*?\"(?!')", r'""', line)
-    #remove ()
+    # remove () for double letter functions (previous infix operators)
     line = re.sub(r"\((\w)\1\)", r"\1\1", line)
 
     return line
 
 
 def get_names(
-    node: tree_sitter.Node, func_names: set[str] = set(), var_names: set[str] = set()
+    node: tree_sitter.Node,
+    func_names: Optional[set[str]] = None,
+    var_names: Optional[set[str]] = None,
 ) -> tuple[set[str], set[str]]:
-    """
-    Recursively traverse the syntax tree to collect function and variable names using pattern matching.
-    """
+    if func_names is None:
+        func_names = set()
+    if var_names is None:
+        var_names = set()
+
     match node.type:
         case "function" | "signature":
             if func_name := node.child_by_field_name("name"):
-                func_names.add(func_name.text.decode("utf-8"))
+                if func_name.text:
+                    func_names.add(func_name.text.decode("utf-8"))
         case "apply":
             if func_name := (node.children[0] if node.children else None):
-                func_names.add(func_name.text.decode("utf-8"))
+                if func_name.text:
+                    func_names.add(func_name.text.decode("utf-8"))
         case "operator" | "variable":
-            var_or_func_name = node.text.decode("utf-8")
-            if node.type == "operator":
-                func_names.add(var_or_func_name)
-            elif node.type == "variable":
-                var_names.add(var_or_func_name)
+            if node.text is not None:
+                var_or_func_name = node.text.decode("utf-8")
+                if node.type == "operator":
+                    func_names.add(var_or_func_name)
+                elif node.type == "variable":
+                    var_names.add(var_or_func_name)
 
     for child in node.children:
         get_names(child, func_names, var_names)
 
+    # Remove any duplicates or unintended function names
+    func_names = {fn.split()[0] for fn in func_names if " " not in fn}
     return func_names, var_names
 
 
 def replace_names(
     node: tree_sitter.Node,
-    func_map: dict,
-    var_map: dict,
+    func_map: dict[str, str],
+    var_map: dict[str, str],
 ) -> list[tuple[int, int, str]]:
     """
     Recursively replace function and variable names in the syntax tree using provided mappings.
@@ -206,34 +218,29 @@ def replace_in_code(code: str, replacements: list[tuple[int, int, str]]) -> str:
 
 
 def rewrite(code: str) -> str:
-    """
-    Rewrite the Haskell code by replacing function and variable names with standardized names.
-
-    Args:
-        code (str): The original Haskell code as a string.
-
-    Returns:
-        str: The rewritten Haskell code with standardized names.
-    """
     lang = Language(tree_sitter_haskell.language())
     root_node = AST(code, lang).root
 
     func_names, var_names = get_names(root_node)
 
-    var_names = var_names - func_names
-    print("function names: ", func_names)
-    print("variable names: ", var_names)
+    var_names = var_names - func_names  # Ensure var_names does not contain func_names
+
+    # Convert to sorted lists for mapping
+    func_names_list = sorted(func_names)  # Create a sorted list
+    var_names_list = sorted(var_names)  # Create a sorted list
+
+    print("function names: ", func_names_list)
+    print("variable names: ", var_names_list)
     print("\n" * 2)
 
-    func_map = {
-        func: f"f{i}"
-        for i, func in enumerate(sorted(func_names, key=len, reverse=True))
-    }
-    var_map = {
-        var: f"v{i}" for i, var in enumerate(sorted(var_names, key=len, reverse=True))
-    }
+    # Ensure indices for functions are assigned consecutively without skipping
+    func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
+    var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
+    print("func_map: ", func_map)
+    print("var_map: ", var_map)
+    print("\n" * 2)
 
-    # Directly get the replacements list from replace_names
+    # Get the replacements list from replace_names
     replacements = replace_names(root_node, func_map, var_map)
     modified_code = replace_in_code(code, replacements)
 
@@ -279,7 +286,7 @@ def main(
 
         # process the raw code
         combined_code = extract_and_modify_operators(combined_code)
-        
+
         combined_code = "\n".join(
             [
                 postprocess(process(preprocess(line)))
@@ -312,8 +319,20 @@ def main(
         if not ast.is_valid_code():
             wrong_item.append(i)
 
+        rewritten_parts = rewritten_code.split("\n" + "-" * 20 + "\n")
+        task.dependencies = rewritten_parts[0].split("\n")
+        task.signature = rewritten_parts[1]
+        task.code = rewritten_parts[2]
+
     print("ERROR while processing items:")
     print(set(wrong_item))
+    
+    # If you need to dump the objects as dictionaries into a JSON file, do this step right before saving to the JSON file
+    task_dicts = [asdict(task) for task in tasks]
+
+    with open(output_path, "w") as fp:
+        json.dump(task_dicts, fp)
+
 
 if __name__ == "__main__":
     fire.Fire(main)
