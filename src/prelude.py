@@ -55,6 +55,7 @@ def main(
         .filter(lambda t: t["code"] != "")
         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
         .filter(lambda t: t.poly_type in ["Monomorphic", "Parametric"])
+        .filter(lambda t: "Generics.hs" not in t.task_id) # Some functions in Generics.hs are mis-classified in the previous step
         .map(add_dependencies(dependency_dict))
         .map(clean_tab_spaces)
         .map(lambda x: x.__dict__)
