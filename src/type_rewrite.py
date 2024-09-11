@@ -129,39 +129,76 @@ def postprocess(line: str) -> str:
     return line
 
 
+# def get_names(
+#     node: tree_sitter.Node,
+#     func_names: Optional[set[str]] = None,
+#     var_names: Optional[set[str]] = None,
+# ) -> tuple[set[str], set[str]]:
+#     if func_names is None:
+#         func_names = set()
+#     if var_names is None:
+#         var_names = set()
+
+#     match node.type:
+#         case "function" | "signature":
+#             if func_name := node.child_by_field_name("name"):
+#                 if func_name.text:
+#                     func_names.add(func_name.text.decode("utf-8"))
+#         case "apply":
+#             if func_name := (node.children[0] if node.children else None):
+#                 if func_name.text:
+#                     func_names.add(func_name.text.decode("utf-8"))
+#         case "operator" | "variable":
+#             if node.text is not None:
+#                 var_or_func_name = node.text.decode("utf-8")
+#                 if node.type == "operator":
+#                     func_names.add(var_or_func_name)
+#                 elif node.type == "variable":
+#                     var_names.add(var_or_func_name)
+
+#     for child in node.children:
+#         get_names(child, func_names, var_names)
+
+#     # Remove any duplicates or unintended function names
+#     func_names = {fn.split()[0] for fn in func_names if " " not in fn}
+#     return func_names, var_names
 def get_names(
     node: tree_sitter.Node,
-    func_names: Optional[set[str]] = None,
-    var_names: Optional[set[str]] = None,
-) -> tuple[set[str], set[str]]:
+    func_names: Optional[dict[str, int]] = None,
+    var_names: Optional[dict[str, int]] = None,
+) -> tuple[dict[str, int], dict[str, int]]:
     if func_names is None:
-        func_names = set()
+        func_names = {}
     if var_names is None:
-        var_names = set()
+        var_names = {}
 
     match node.type:
         case "function" | "signature":
             if func_name := node.child_by_field_name("name"):
                 if func_name.text:
-                    func_names.add(func_name.text.decode("utf-8"))
+                    func_text = func_name.text.decode("utf-8")
+                    if func_text not in func_names:
+                        func_names[func_text] = func_name.start_byte
         case "apply":
             if func_name := (node.children[0] if node.children else None):
                 if func_name.text:
-                    func_names.add(func_name.text.decode("utf-8"))
+                    func_text = func_name.text.decode("utf-8")
+                    if func_text not in func_names:
+                        func_names[func_text] = func_name.start_byte
         case "operator" | "variable":
             if node.text is not None:
                 var_or_func_name = node.text.decode("utf-8")
-                if node.type == "operator":
-                    func_names.add(var_or_func_name)
-                elif node.type == "variable":
-                    var_names.add(var_or_func_name)
+                if node.type == "operator" and var_or_func_name not in func_names:
+                    func_names[var_or_func_name] = node.start_byte
+                elif node.type == "variable" and var_or_func_name not in var_names:
+                    var_names[var_or_func_name] = node.start_byte
 
     for child in node.children:
         get_names(child, func_names, var_names)
 
-    # Remove any duplicates or unintended function names
-    func_names = {fn.split()[0] for fn in func_names if " " not in fn}
+    # Return the dictionaries containing names and their positions
     return func_names, var_names
+
 
 
 def replace_names(
@@ -217,17 +254,45 @@ def replace_in_code(code: str, replacements: list[tuple[int, int, str]]) -> str:
     return code_bytes.decode("utf-8")
 
 
+# def rewrite(code: str) -> str:
+#     lang = Language(tree_sitter_haskell.language())
+#     root_node = AST(code, lang).root
+
+#     func_names, var_names = get_names(root_node)
+
+#     var_names = var_names - func_names  # Ensure var_names does not contain func_names
+
+#     # Convert to sorted lists for mapping
+#     func_names_list = sorted(func_names)  # Create a sorted list
+#     var_names_list = sorted(var_names)  # Create a sorted list
+
+#     print("function names: ", func_names_list)
+#     print("variable names: ", var_names_list)
+#     print("\n" * 2)
+
+#     # Ensure indices for functions are assigned consecutively without skipping
+#     func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
+#     var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
+#     print("func_map: ", func_map)
+#     print("var_map: ", var_map)
+#     print("\n" * 2)
+
+#     # Get the replacements list from replace_names
+#     replacements = replace_names(root_node, func_map, var_map)
+#     modified_code = replace_in_code(code, replacements)
+
+#     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
 def rewrite(code: str) -> str:
     lang = Language(tree_sitter_haskell.language())
     root_node = AST(code, lang).root
 
     func_names, var_names = get_names(root_node)
 
-    var_names = var_names - func_names  # Ensure var_names does not contain func_names
+    var_names = {name: pos for name, pos in var_names.items() if name not in func_names}  # Ensure var_names does not contain func_names
 
-    # Convert to sorted lists for mapping
-    func_names_list = sorted(func_names)  # Create a sorted list
-    var_names_list = sorted(var_names)  # Create a sorted list
+    # Sort the function and variable names by their first appearance in the code (start byte)
+    func_names_list = [name for name, _ in sorted(func_names.items(), key=lambda x: x[1])]
+    var_names_list = [name for name, _ in sorted(var_names.items(), key=lambda x: x[1])]
 
     print("function names: ", func_names_list)
     print("variable names: ", var_names_list)
@@ -245,6 +310,7 @@ def rewrite(code: str) -> str:
     modified_code = replace_in_code(code, replacements)
 
     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
+
 
 
 def main(
