@@ -11,14 +11,11 @@ TEMPERATURE = 0.0
 TOP_P = 1.0
 
 SYSTEM_PROMPT = """
-Act as a static analysis tool for type inference.
-"""
+Act as a static analysis tool for type inference."""
 
 INSTRUCT_PROMPT = """
 1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
-
-2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
-"""
+2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations."""
 
 
 @dataclass
