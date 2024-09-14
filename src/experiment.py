@@ -6,6 +6,7 @@ import fire
 import os
 from openai import OpenAI
 from ollama import Client as OllamaClient
+from anthropic import Anthropic
 import json
 from funcy_chain import Chain
 from dacite import from_dict
@@ -32,8 +33,15 @@ GPT_MODELS = [
     "gpt-4o-mini",
 ]
 
+ANT_MODELS = [
+    "claude-3-5-sonnet-20240620",
+    "claude-3-opus-20240229",
+    "claude-3-sonnet-20240229",
+    "claude-3-haiku-20240307",
+]
 
-def get_model(
+
+def get_oai_model(
     client: OpenAI,
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
@@ -62,6 +70,36 @@ def get_model(
     return generate_type_signature
 
 
+def get_ant_model(
+    client: Anthropic,
+    model: str = "claude-3-5-sonnet-20240620",
+    seed: int = SEED,
+    temperature: float = TEMPERATURE,
+    top_p: float = TOP_P,
+) -> Callable[[str], str | None]:
+    def generate_type_signature(prompt: str) -> str | None:
+        message = client.messages.create(
+            messages=[
+                {"role": "user", "content": INSTRUCT_PROMPT + prompt},
+                {"role": "assistant", "content": SYSTEM_PROMPT},
+            ],
+            model=model,
+            max_tokens=1024,
+            # ! the following parameters are not supported by Claude API
+            # seed=seed,
+            # temperature=temperature,
+            # top_p=top_p,
+        )
+        contents = message.content
+        if len(contents) > 0:
+            text = contents[0].text  # type: ignore
+            return text if isinstance(text, str) else None
+        else:
+            return None
+
+    return generate_type_signature
+
+
 def main(
     input_file: str = "Benchmark-F.json",
     output_file: str | None = None,
@@ -71,18 +109,27 @@ def main(
     top_p: float = TOP_P,
     port: int = 11434,
 ):
-    assert model in GPT_MODELS + OLLAMA_MODELS, f"{model} is not supported."
+    assert (
+        model in GPT_MODELS + OLLAMA_MODELS + ANT_MODELS
+    ), f"{model} is not supported."
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
         output_file = f"result/{model}.txt"
 
-    client: OpenAI | OllamaClient
+    client: OpenAI | Anthropic | OllamaClient
     generate: Callable[[str], str | None]
-    if model.startswith("gpt"):
+
+    if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_model(client, model, seed, temperature, top_p)
+        generate = get_oai_model(client, model, seed, temperature, top_p)
+    elif model in ANT_MODELS:
+        assert (
+            "ANTHROPIC_API_KEY" in os.environ
+        ), "Please set ANTHROPIC_API_KEY in environment!"
+        client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        generate = get_ant_model(client, model, seed, temperature, top_p)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
         generate = get_ollama_model(client, model, seed, temperature, top_p)
