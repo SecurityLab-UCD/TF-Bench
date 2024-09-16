@@ -146,19 +146,19 @@ def get_names(
 
     if node.type in ("function", "signature"):
         func_name = node.child_by_field_name("name")
-        if func_name and func_name.text:
+        if func_name and func_name.text is not None:
             func_text = func_name.text.decode("utf-8")
             if func_text not in func_names:
                 func_names[func_text] = func_name.start_byte
 
     elif node.type == "apply":
         func_name = node.children[0] if node.children else None
-        if func_name and func_name.text:
+        if func_name and func_name.text is not None:
             func_text = func_name.text.decode("utf-8")
             if func_text not in func_names:
                 func_names[func_text] = func_name.start_byte
     elif node.type in ("operator", "variable"):
-        if node.text:
+        if node.text is not None:
             var_or_func_name = node.text.decode("utf-8")
             if node.type == "operator" and var_or_func_name not in func_names:
                 func_names[var_or_func_name] = node.start_byte
@@ -193,7 +193,7 @@ def replace_names(
     replacements = []
 
     if node.type in ["variable", "constructor", "operator", "type", "name"]:
-        if node.text is not None:
+        if node.text is not None:  # Ensure node.text is not None before decoding
             name = node.text.decode("utf-8")
             if name in type_map:
                 replacements.append((node.start_byte, node.end_byte, type_map[name]))
@@ -274,10 +274,12 @@ def rewrite(code: str) -> str:
     param_names = {
         node.text.decode("utf-8"): node.start_byte
         for node in collect_parametric_nodes(ast.tree.root_node)
+        if node.text is not None  # Ensure node.text is not None
     }
     type_names = {
         node.text.decode("utf-8"): node.start_byte
         for node in find_name_nodes(ast.tree.root_node)
+        if node.text is not None  # Ensure node.text is not None
     }
 
     func_names, var_names = get_names(root_node)
