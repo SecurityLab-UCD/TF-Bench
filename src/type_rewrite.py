@@ -86,10 +86,15 @@ def process(line: str) -> str:
         leading_spaces += line[0]
         line = line[1:]
 
+    func_list = []
+
     lst = line.split()
     for i, elem in enumerate(lst):
         # the first letter of a function cannot be capitalized
-        if elem[0].isupper() and '"' not in elem:
+        if elem[0].isupper() and '"' not in elem and i == 0:
+            func_list.append(elem)
+            lst[i] = elem.lower() + "#"
+        elif elem in func_list:
             lst[i] = elem.lower() + "#"
         # the first letter of a function cannot be ":"
         elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
@@ -129,39 +134,6 @@ def postprocess(line: str) -> str:
     return line
 
 
-# def get_names(
-#     node: tree_sitter.Node,
-#     func_names: Optional[set[str]] = None,
-#     var_names: Optional[set[str]] = None,
-# ) -> tuple[set[str], set[str]]:
-#     if func_names is None:
-#         func_names = set()
-#     if var_names is None:
-#         var_names = set()
-
-#     match node.type:
-#         case "function" | "signature":
-#             if func_name := node.child_by_field_name("name"):
-#                 if func_name.text:
-#                     func_names.add(func_name.text.decode("utf-8"))
-#         case "apply":
-#             if func_name := (node.children[0] if node.children else None):
-#                 if func_name.text:
-#                     func_names.add(func_name.text.decode("utf-8"))
-#         case "operator" | "variable":
-#             if node.text is not None:
-#                 var_or_func_name = node.text.decode("utf-8")
-#                 if node.type == "operator":
-#                     func_names.add(var_or_func_name)
-#                 elif node.type == "variable":
-#                     var_names.add(var_or_func_name)
-
-#     for child in node.children:
-#         get_names(child, func_names, var_names)
-
-#     # Remove any duplicates or unintended function names
-#     func_names = {fn.split()[0] for fn in func_names if " " not in fn}
-#     return func_names, var_names
 def get_names(
     node: tree_sitter.Node,
     func_names: Optional[dict[str, int]] = None,
@@ -172,37 +144,37 @@ def get_names(
     if var_names is None:
         var_names = {}
 
-    match node.type:
-        case "function" | "signature":
-            if func_name := node.child_by_field_name("name"):
-                if func_name.text:
-                    func_text = func_name.text.decode("utf-8")
-                    if func_text not in func_names:
-                        func_names[func_text] = func_name.start_byte
-        case "apply":
-            if func_name := (node.children[0] if node.children else None):
-                if func_name.text:
-                    func_text = func_name.text.decode("utf-8")
-                    if func_text not in func_names:
-                        func_names[func_text] = func_name.start_byte
-        case "operator" | "variable":
-            if node.text is not None:
-                var_or_func_name = node.text.decode("utf-8")
-                if node.type == "operator" and var_or_func_name not in func_names:
-                    func_names[var_or_func_name] = node.start_byte
-                elif node.type == "variable" and var_or_func_name not in var_names:
-                    var_names[var_or_func_name] = node.start_byte
+    if node.type in ("function", "signature"):
+        func_name = node.child_by_field_name("name")
+        if func_name and func_name.text:
+            func_text = func_name.text.decode("utf-8")
+            if func_text not in func_names:
+                func_names[func_text] = func_name.start_byte
+
+    elif node.type == "apply":
+        func_name = node.children[0] if node.children else None
+        if func_name and func_name.text:
+            func_text = func_name.text.decode("utf-8")
+            if func_text not in func_names:
+                func_names[func_text] = func_name.start_byte
+    elif node.type in ("operator", "variable"):
+        if node.text:
+            var_or_func_name = node.text.decode("utf-8")
+            if node.type == "operator" and var_or_func_name not in func_names:
+                func_names[var_or_func_name] = node.start_byte
+            elif node.type == "variable" and var_or_func_name not in var_names:
+                var_names[var_or_func_name] = node.start_byte
 
     for child in node.children:
         get_names(child, func_names, var_names)
 
-    # Return the dictionaries containing names and their positions
     return func_names, var_names
-
 
 
 def replace_names(
     node: tree_sitter.Node,
+    type_map: dict[str, str],
+    param_map: dict[str, str],
     func_map: dict[str, str],
     var_map: dict[str, str],
 ) -> list[tuple[int, int, str]]:
@@ -220,16 +192,22 @@ def replace_names(
     """
     replacements = []
 
-    if node.type in ["variable", "constructor", "operator"]:
+    if node.type in ["variable", "constructor", "operator", "type", "name"]:
         if node.text is not None:
             name = node.text.decode("utf-8")
-            if name in func_map:
+            if name in type_map:
+                replacements.append((node.start_byte, node.end_byte, type_map[name]))
+            elif name in param_map:
+                replacements.append((node.start_byte, node.end_byte, param_map[name]))
+            elif name in func_map:
                 replacements.append((node.start_byte, node.end_byte, func_map[name]))
             elif name in var_map:
                 replacements.append((node.start_byte, node.end_byte, var_map[name]))
 
     for child in node.children:
-        replacements.extend(replace_names(child, func_map, var_map))
+        replacements.extend(
+            replace_names(child, type_map, param_map, func_map, var_map)
+        )
 
     return replacements
 
@@ -254,63 +232,104 @@ def replace_in_code(code: str, replacements: list[tuple[int, int, str]]) -> str:
     return code_bytes.decode("utf-8")
 
 
-# def rewrite(code: str) -> str:
-#     lang = Language(tree_sitter_haskell.language())
-#     root_node = AST(code, lang).root
+def find_name_nodes(node):
+    name_nodes = []
 
-#     func_names, var_names = get_names(root_node)
+    # Check if this node is a name node
+    if node.type == "name":
+        name_nodes.append(node)
 
-#     var_names = var_names - func_names  # Ensure var_names does not contain func_names
+    # Recursively check child nodes
+    for child in node.children:
+        name_nodes.extend(find_name_nodes(child))
 
-#     # Convert to sorted lists for mapping
-#     func_names_list = sorted(func_names)  # Create a sorted list
-#     var_names_list = sorted(var_names)  # Create a sorted list
+    return name_nodes
 
-#     print("function names: ", func_names_list)
-#     print("variable names: ", var_names_list)
-#     print("\n" * 2)
 
-#     # Ensure indices for functions are assigned consecutively without skipping
-#     func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
-#     var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
-#     print("func_map: ", func_map)
-#     print("var_map: ", var_map)
-#     print("\n" * 2)
+def collect_parametric_nodes(root: tree_sitter.Node) -> list[tree_sitter.Node]:
+    result = []
 
-#     # Get the replacements list from replace_names
-#     replacements = replace_names(root_node, func_map, var_map)
-#     modified_code = replace_in_code(code, replacements)
+    def collect_variables(node):
+        if node.type == "variable":
+            result.append(node)
+        for child in node.children:
+            collect_variables(child)
 
-#     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
+    def traverse(node):
+        if node.type == "signature":
+            collect_variables(node)
+        else:
+            for child in node.children:
+                traverse(child)
+
+    traverse(root)
+    return result
+
+
 def rewrite(code: str) -> str:
     lang = Language(tree_sitter_haskell.language())
     root_node = AST(code, lang).root
 
-    func_names, var_names = get_names(root_node)
+    ast = AST(code, lang)
+    param_names = {
+        node.text.decode("utf-8"): node.start_byte
+        for node in collect_parametric_nodes(ast.tree.root_node)
+    }
+    type_names = {
+        node.text.decode("utf-8"): node.start_byte
+        for node in find_name_nodes(ast.tree.root_node)
+    }
 
-    var_names = {name: pos for name, pos in var_names.items() if name not in func_names}  # Ensure var_names does not contain func_names
+    func_names, var_names = get_names(root_node)
+    func_names = {
+        name: pos for name, pos in func_names.items() if name not in type_names
+    }
+    param_names = {
+        name: pos
+        for name, pos in param_names.items()
+        if name not in type_names and name not in func_names
+    }
+    var_names = {
+        name: pos
+        for name, pos in var_names.items()
+        if name not in func_names and name not in param_names
+    }  # Ensure var_names does not contain func_names
 
     # Sort the function and variable names by their first appearance in the code (start byte)
-    func_names_list = [name for name, _ in sorted(func_names.items(), key=lambda x: x[1])]
+    type_names_list = [
+        name for name, _ in sorted(type_names.items(), key=lambda x: x[1])
+    ]
+    param_names_list = [
+        name for name, _ in sorted(param_names.items(), key=lambda x: x[1])
+    ]
+    func_names_list = [
+        name for name, _ in sorted(func_names.items(), key=lambda x: x[1])
+    ]
     var_names_list = [name for name, _ in sorted(var_names.items(), key=lambda x: x[1])]
 
+    print("type names: ", type_names_list)
+    print("param names: ", param_names_list)
     print("function names: ", func_names_list)
     print("variable names: ", var_names_list)
     print("\n" * 2)
 
     # Ensure indices for functions are assigned consecutively without skipping
+    type_map = {typ: f"T{i + 1}" for i, typ in enumerate(type_names_list)}
+    param_map = {param: f"t{i + 1}" for i, param in enumerate(param_names_list)}
     func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
     var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
+
+    print("type_map: ", type_map)
+    print("param_map: ", param_map)
     print("func_map: ", func_map)
     print("var_map: ", var_map)
     print("\n" * 2)
 
     # Get the replacements list from replace_names
-    replacements = replace_names(root_node, func_map, var_map)
+    replacements = replace_names(root_node, type_map, param_map, func_map, var_map)
     modified_code = replace_in_code(code, replacements)
 
     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
-
 
 
 def main(
@@ -369,8 +388,12 @@ def main(
 
         ast = AST(combined_code, lang)
         # assert ast.is_valid_code(), f"Error in the Process for item {i}"
+        assert ast.is_valid_code()
+
         if not ast.is_valid_code():
             wrong_item.append(i)
+
+        # type_names = {node:node.start_byte for node in find_name_nodes(ast.root)}
 
         # print the rewritten code
         rewritten_code = rewrite(combined_code)
@@ -392,7 +415,7 @@ def main(
 
     print("ERROR while processing items:")
     print(set(wrong_item))
-    
+
     # If you need to dump the objects as dictionaries into a JSON file, do this step right before saving to the JSON file
     task_dicts = [asdict(task) for task in tasks]
 
