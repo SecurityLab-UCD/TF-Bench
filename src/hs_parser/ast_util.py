@@ -1,10 +1,9 @@
-"""Helper Class and Functions for tree-sitter AST"""
-
 from tree_sitter import Language, Parser, Tree, Node
 from returns.maybe import Maybe, Nothing, Some
 from dataclasses import dataclass
 from funcy_chain import Chain
 from funcy import lmap
+from typing import Optional
 
 
 @dataclass
@@ -20,23 +19,54 @@ class HaskellFunction:
 
     @staticmethod
     def from_pair(p: tuple[Node, list[Node]]):
+        """
+        Creates a `HaskellFunction` object from a tuple containing a type signature node and a list of function nodes.
+
+        Args:
+            p (tuple[Node, list[Node]]): A tuple with a type signature node and a list of function nodes.
+
+        Returns:
+            HaskellFunction: A new `HaskellFunction` object.
+        """
         return HaskellFunction(*p)
 
 
 class AST:
-    """Helper Class to build/read/manipulate AST with tree-sitter"""
+    """Helper class to build, read, and manipulate ASTs using tree-sitter."""
 
     def __init__(self, source_code: str, lang: Language) -> None:
+        """
+        Initializes an AST object with the given source code and language.
+
+        Args:
+            source_code (str): The source code to parse.
+            lang (Language): The tree-sitter language used for parsing.
+        """
         self.src = source_code
         self.parser = Parser()
-        self.parser.set_language(lang)
+        self.parser.language = lang  # Directly assign the language
         self.tree: Tree = self.parser.parse(bytes(self.src, "utf8"))
 
     @property
     def root(self) -> Node:
+        """
+        Gets the root node of the AST.
+
+        Returns:
+            Node: The root node of the AST.
+        """
         return self.tree.root_node
 
     def get_src_from_node(self, node: Node) -> str:
+        """
+        Retrieves the source code corresponding to a given node.
+
+        Args:
+            node (Node): The AST node to extract source code from.
+
+        Returns:
+            str: The source code corresponding to the given node.
+        """
         start = node.start_byte
         end = node.end_byte
         src_bytes = self.src.encode()
@@ -44,6 +74,15 @@ class AST:
         return node_bytes.decode()
 
     def get_fn_name(self, node: Node) -> Maybe[str]:
+        """
+        Retrieves the name of a function or type signature from a node.
+
+        Args:
+            node (Node): The AST node representing a function or type signature.
+
+        Returns:
+            Maybe[str]: A Maybe containing the function name if found, or Nothing otherwise.
+        """
         fn_name: str
         match node.type:
             case "signature":
@@ -57,24 +96,39 @@ class AST:
         return Some(fn_name.strip())
 
     def get_fn_docstring(self, node: Node) -> Maybe[str]:
+        """
+        Retrieves the docstring associated with a function node.
+
+        Args:
+            node (Node): The AST node representing a function.
+
+        Returns:
+            Maybe[str]: A Maybe containing the docstring if found, or Nothing otherwise.
+        """
         # todo: implement docstring finder
         raise NotImplementedError
 
     def func2src(self, func: HaskellFunction) -> tuple[str, str]:
+        """
+        Converts a `HaskellFunction` object into its corresponding type signature and code source.
+
+        Args:
+            func (HaskellFunction): The `HaskellFunction` object to convert.
+
+        Returns:
+            tuple[str, str]: A tuple containing the type signature and function code as strings.
+        """
         type_src = self.get_src_from_node(func.type_signature)
-        # code_src = Chain(func.functions).map(self.get_src_from_node).value
         code_src = lmap(self.get_src_from_node, func.functions)
         code_src.sort()
         return type_src, "\n".join(code_src)
 
     def get_functions(self) -> list[HaskellFunction]:
-        """extract functions from an AST
-
-        Args:
-            root (Node): root node of the AST
+        """
+        Extracts all functions defined in the source code.
 
         Returns:
-            list[HaskellFunction]: [(type signature, [function code])]
+            list[HaskellFunction]: A list of `HaskellFunction` objects representing the functions in the source code.
         """
         signatures = AST.get_all_nodes_of_type(self.root, "signature")
         functions: dict[str, list[Node]] = (
@@ -93,25 +147,58 @@ class AST:
         pairs: list[HaskellFunction] = (
             Chain(signatures)
             .map(make_ty_fn_pair)
-            .filter(None)  # short for filter(lambda x: x is not None)
+            .filter(None)
             .map(HaskellFunction.from_pair)
             .value
         )
         return pairs
+    
+    def all_node_types(self, node: Optional[Node] = None) -> set[str]:
+        """
+        Collect all unique node types in the syntax tree.
+
+        Args:
+            node (Optional[Node]): The current node in the syntax tree.
+
+        Returns:
+            Set[str]: A set containing all unique node types found in the tree.
+        """
+        if node is None:
+            node = self.root
+
+        node_types: set[str] = set()
+
+        for child in node.children:
+            node_types |= self.all_node_types(child)  # Use |= to merge sets
+
+        node_types.add(node.type)  # Add the current node's type
+
+        return node_types
+
+
+    def is_valid_code(self) -> bool:
+        """
+        Checks whether the parsed source code contains any syntax errors.
+
+        Returns:
+            bool: True if the code is valid, False if there are syntax errors.
+        """
+        return "ERROR" not in self.all_node_types()
 
     @staticmethod
     def get_all_nodes_of_type(
-        root: Node, node_type: str | None, max_level=50
+        root: Node, node_type: Optional[str], max_level=50
     ) -> list[Node]:
-        """walk on AST and collect all nodes of the given type
+        """
+        Recursively retrieves all nodes of a given type from the AST.
 
         Args:
-            root (Node): root node of tree or subtree
-            node_type (str | None): type of node to collect, if None collect all Node
-            max_level (int, optional): maximum recursion level. Defaults to 50.
+            root (Node): The root node to start the search from.
+            node_type (Optional[str]): The type of node to search for. If None, retrieves all nodes.
+            max_level (int): The maximum recursion depth. Default is 50.
 
         Returns:
-            list[Node]: collected nodes
+            list[Node]: A list of nodes matching the specified type.
         """
         nodes: list[Node] = []
         if max_level == 0:
@@ -127,17 +214,18 @@ class AST:
 
     @staticmethod
     def has_any_child_of_type(
-        root: Node, node_type: str | None, max_level: int = 50
+        root: Node, node_type: Optional[str], max_level: int = 50
     ) -> bool:
-        """walk on AST and check if a node of `node_type` exists
+        """
+        Checks whether any child of the root node has a specified type.
 
         Args:
-            root (Node): root node of tree or subtree
-            node_type (str | None): type of node to collect, if None collect all Node
-            max_level (int, optional): maximum recursion level. Defaults to 50.
+            root (Node): The root node to search from.
+            node_type (Optional[str]): The type of node to search for. If None, returns True if there are any children.
+            max_level (int): The maximum recursion depth. Default is 50.
 
         Returns:
-            bool: `root` has and child of type `node_type`
+            bool: True if a child of the specified type is found, False otherwise.
         """
         if max_level == 0:
             return False

@@ -1,94 +1,77 @@
 from dacite import from_dict
 from src.common import BenchmarkTask
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST, ASTLoc, HaskellFunction
-from hypothesis import given
-import hypothesis.strategies as st
-from funcy_chain import Chain
-from src.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
-from src.type_rewrite import rewrite_functions, rewrite_type
+from src.type_rewrite import (
+    rewrite,
+    extract_and_modify_operators,
+    preprocess,
+    process,
+    postprocess,
+)
 
 
-def test_rewrite_type():
+def test_rewrite():
     task_data = {
         "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational",
         "signature": "fromRational :: Rational -> a",
-        "code": "fromRational (x:%y) = fromInteger x % fromInteger y",
+        "code": "fromRational (x:%y) =  fromInteger x % fromInteger y",
         "poly_type": "Parametric",
         "dependencies": [
-            "fromInteger :: Integer -> a",
-            "(%) :: (Integral a) => a -> a -> Ratio a"
-        ]
-    }
-    valid_result1 = {
-        "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational", 
-        "signature": "fromRational :: A -> a", 
-        "code": "fromRational (x:%y) = fromInteger x % fromInteger y", "poly_type": "Parametric", 
-        "dependencies": [
-            "fromInteger :: B -> a", 
-            "(%) :: (Integral a) => a -> a -> Ratio a"
-        ]
-    }
-    valid_result2 = {
-        "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational", 
-        "signature": "fromRational :: B -> a", 
-        "code": "fromRational (x:%y) = fromInteger x % fromInteger y", "poly_type": "Parametric", 
-        "dependencies": [
-            "fromInteger :: A -> a", 
-            "(%) :: (Integral a) => a -> a -> Ratio a"
-        ]
+            "(:%) :: a -> a -> Ratio a",
+            "(%) :: Integral a => a -> a -> Ratio a",
+            "fromInteger :: Num a => Integer -> a",
+        ],
     }
 
     task = from_dict(data_class=BenchmarkTask, data=task_data)
 
-    task = rewrite_type(task)
+    dependencies = task.dependencies if task.dependencies is not None else []
+    signature = task.signature if task.signature is not None else ""
+    code = task.code if task.code is not None else ""
 
-    assert task.signature in [valid_result1["signature"], valid_result2["signature"]]
-    assert task.code in [valid_result1["code"], valid_result2["code"]]
-    assert task.poly_type == valid_result1["poly_type"]
-    assert task.dependencies[0] in [valid_result1["dependencies"][0], valid_result2["dependencies"][0]]
+    # put all code together
+    combined_code = (
+        "\n".join(dependencies)
+        + "\n"
+        + "-" * 20
+        + "\n"
+        + signature
+        + "\n"
+        + "-" * 20
+        + "\n"
+        + code
+    )
 
+    # process the raw code
+    combined_code = extract_and_modify_operators(combined_code)
 
-def test_rewrite_func():
-    task_data = {
-        "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Data/Maybe.hs--maybe",
-        "signature": "maybe :: b -> (a -> b) -> Maybe a -> b",
-        "code": "maybe _ f (Just x) = f x\nmaybe n _ Nothing = n",
+    combined_code = "\n".join(
+        [postprocess(process(preprocess(line))) for line in combined_code.split("\n")]
+    )
+
+    rewritten_code = rewrite(combined_code)
+
+    rewritten_parts = rewritten_code.split("\n" + "-" * 20 + "\n")
+    task.dependencies = rewritten_parts[0].split("\n")
+    task.signature = rewritten_parts[1]
+    task.code = rewritten_parts[2]
+
+    valid_result = {
+        "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational",
+        "signature": "f5 :: T5 -> t1",
+        "code": "f5 (f7 f1 v1) = f4 f7 f3 f4 v1",
         "poly_type": "Parametric",
         "dependencies": [
-            "Just :: a -> Maybe a"
-        ]
-    }
-    # Account for two results due to set order
-    valid_result1 = {
-        "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Data/Maybe.hs--maybe",
-        "signature": "p :: b -> (a -> b) -> Maybe a -> b",
-        "code": "p _ f (q x) = f x\np n _ Nothing = n",
-        "poly_type": "Parametric",
-        "dependencies": [
-            "q :: a -> Maybe a"
-        ]
-    }
-    valid_result2 = {
-        "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Data/Maybe.hs--maybe",
-        "signature": "q :: b -> (a -> b) -> Maybe a -> b",
-        "code": "q _ f (p x) = f x\nq n _ Nothing = n",
-        "poly_type": "Parametric",
-        "dependencies": [
-            "p :: a -> Maybe a"
-        ]
+            "f1 :: t1 -> t1 -> T2 t1",
+            "f3 :: T1 t1 => t1 -> t1 -> T2 t1",
+            "f4 :: T3 t1 => T4 -> t1",
+        ],
     }
 
-    task = from_dict(data_class=BenchmarkTask, data=task_data)
-
-    task = rewrite_functions(task)
-
-    assert task.signature in [valid_result1["signature"], valid_result2["signature"]]
-    assert task.code in [valid_result1["code"], valid_result2["code"]]
-    assert task.poly_type == valid_result1["poly_type"]
-    assert task.dependencies[0] in [valid_result1["dependencies"][0], valid_result2["dependencies"][0]]
+    assert task.signature == valid_result["signature"]
+    assert task.code == valid_result["code"]
+    assert task.poly_type == valid_result["poly_type"]
+    assert task.dependencies[0] == valid_result["dependencies"][0]
 
 
 if __name__ == "__main__":
-    test_rewrite_type()
-    test_rewrite_func()
+    test_rewrite()
