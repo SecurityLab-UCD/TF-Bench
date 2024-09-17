@@ -343,7 +343,8 @@ def main(
     with open(dataset_path, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    wrong_item = []
+    process_wrong_item = []
+    rewrite_wrong_item = []
     for i, task in enumerate(tasks):
         # Ensure that task.dependencies, task.signature, and task.code are not None
         dependencies = task.dependencies if task.dependencies is not None else []
@@ -387,15 +388,10 @@ def main(
         print("#" * 50)
         print(combined_code)
         print("\n" * 2)
-
+        # check if the processed code is valid
         ast = AST(combined_code, lang)
-        # assert ast.is_valid_code(), f"Error in the Process for item {i}"
-        assert ast.is_valid_code()
-
         if not ast.is_valid_code():
-            wrong_item.append(i)
-
-        # type_names = {node:node.start_byte for node in find_name_nodes(ast.root)}
+            process_wrong_item.append(i)
 
         # print the rewritten code
         rewritten_code = rewrite(combined_code)
@@ -404,19 +400,21 @@ def main(
         print("#" * 50)
         print(rewritten_code)
         print("\n" * 2)
-
+        # check if the rewritten code is valid
         ast = AST(rewritten_code, lang)
-        # assert ast.is_valid_code(), f"Error in the Rewrite for item {i}"
         if not ast.is_valid_code():
-            wrong_item.append(i)
-
+            rewrite_wrong_item.append(i)
+        # update the code to the rewritten version
         rewritten_parts = rewritten_code.split("\n" + "-" * 20 + "\n")
         task.dependencies = rewritten_parts[0].split("\n")
         task.signature = rewritten_parts[1]
         task.code = rewritten_parts[2]
 
     print("ERROR while processing items:")
-    print(set(wrong_item))
+    print(process_wrong_item)
+
+    print("ERROR while rewriting items:")
+    print(rewrite_wrong_item)
 
     # If you need to dump the objects as dictionaries into a JSON file, do this step right before saving to the JSON file
     task_dicts = [asdict(task) for task in tasks]
