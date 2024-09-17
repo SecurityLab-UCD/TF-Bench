@@ -19,3 +19,4 @@ mkdir -p data/source
 python3 src/dataset.py -o data/source # get raw function dataset
 python3 src/prelude.py -o Benchmark-F.temp.json
 python3 src/hoogle.py -i Benchmark-F.temp.json -o Benchmark-F.json
+python3 src/type_rewrite.py -d Benchmark-F.json -o Benchmark-F.removed.json
