@@ -11,7 +11,8 @@ TEMPERATURE = 0.0
 TOP_P = 1.0
 
 SYSTEM_PROMPT = """
-Act as a static analysis tool for type inference."""
+Act as a static analysis tool for type inference.
+NOTE: all tasks are monomorphic or parametric polymorphic, Do not output any type class."""
 
 INSTRUCT_PROMPT = """
 1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
@@ -61,15 +62,16 @@ def get_prompt(task: BenchmarkTask) -> str:
     fn_name = extract_function_name(task.task_id)
     code = task.code
     dependencies = (
-        "where\n" + "\n".join(task.dependencies)
+        "\n".join(map(str.strip, task.dependencies))
         if task.dependencies is not None
         else ""
     )
 
     if fn_name is not None:
         prompt = f"""
-{code}
 {dependencies}
+\n\n
+{code}
 --complete the following type signature for '{fn_name}'
 {fn_name} :: 
 """
