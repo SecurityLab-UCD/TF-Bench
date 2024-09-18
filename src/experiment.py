@@ -155,7 +155,7 @@ def main(
     print(eval_acc)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open("evaluation_log.txt", "a") as log_file:
+    with open("evaluation_log.jsonl", "a") as log_file:
         logging_result = {"model_name": model, **eval_acc}
         log_file.write(f"{logging_result}\n")
 
