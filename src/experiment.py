@@ -33,7 +33,7 @@ GPT_MODELS = [
     "gpt-4o-mini",
 ]
 
-ANT_MODELS = [
+CLAUDE_MODELS = [
     "claude-3-5-sonnet-20240620",
     "claude-3-opus-20240229",
     "claude-3-sonnet-20240229",
@@ -110,7 +110,7 @@ def main(
     port: int = 11434,
 ):
     assert (
-        model in GPT_MODELS + OLLAMA_MODELS + ANT_MODELS
+        model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS
     ), f"{model} is not supported."
 
     if output_file is None:
@@ -124,7 +124,7 @@ def main(
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         generate = get_oai_model(client, model, seed, temperature, top_p)
-    elif model in ANT_MODELS:
+    elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
         ), "Please set ANTHROPIC_API_KEY in environment!"
