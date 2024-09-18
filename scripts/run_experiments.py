@@ -2,7 +2,7 @@
 Script to run all experiments
 """
 
-from src.experiment import GPT_MODELS, main as run_experiment
+from src.experiment import GPT_MODELS, CLAUDE_MODELS, main as run_experiment
 from src.experiment_ollama import OLLAMA_MODELS, OLLAMA_LARGE, OLLAMA_SMALL
 from src.common import SEED, TEMPERATURE, TOP_P
 import fire
@@ -17,12 +17,14 @@ def main(
     top_p: float = TOP_P,
     port: int = 11434,
 ):
-    assert option in ("gpt", "ollama-all", "ollama-large", "ollama-small")
+    assert option in ("gpt", "claude", "ollama-all", "ollama-large", "ollama-small")
 
     models: list[str]
     match option:
         case "gpt":
             models = GPT_MODELS
+        case "claude":
+            models = CLAUDE_MODELS
         case "ollama-all":
             models = OLLAMA_MODELS
         case "ollama-small":
