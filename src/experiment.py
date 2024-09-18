@@ -57,7 +57,7 @@ def get_oai_model(
                     "role": "system",
                     "content": SYSTEM_PROMPT,
                 },
-                {"role": "user", "content": INSTRUCT_PROMPT + prompt},
+                {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
             ],
             model=model,
             # Set parameters to ensure reproducibility
@@ -82,7 +82,7 @@ def get_ant_model(
     def generate_type_signature(prompt: str) -> str | None:
         message = client.messages.create(
             messages=[
-                {"role": "user", "content": INSTRUCT_PROMPT + prompt},
+                {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
                 {"role": "assistant", "content": SYSTEM_PROMPT},
             ],
             model=model,
