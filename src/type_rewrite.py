@@ -329,9 +329,10 @@ def rewrite(code: str) -> str:
 
     # Get the replacements list from replace_names
     replacements = replace_names(root_node, type_map, param_map, func_map, var_map)
+    combined_dict = {**type_map, **param_map, **func_map, **var_map}
     modified_code = replace_in_code(code, replacements)
 
-    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
+    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code), combined_dict
 
 
 def main(
@@ -394,7 +395,7 @@ def main(
             process_wrong_item.append(i)
 
         # print the rewritten code
-        rewritten_code = rewrite(combined_code)
+        rewritten_code, combined_dict = rewrite(combined_code)
         print("#" * 50)
         print("rewritten code:")
         print("#" * 50)

@@ -7,7 +7,6 @@ import os
 from openai import OpenAI
 from ollama import Client as OllamaClient
 import json
-import logging
 from funcy_chain import Chain
 from dacite import from_dict
 from typing import Callable
@@ -15,7 +14,6 @@ from funcy import lmap
 from tqdm import tqdm
 
 from src.evaluation import evaluate
-from src.postprocessing import postprocess, RESPONSE_STRATEGIES
 from src.common import (
     BenchmarkTask,
     SEED,
@@ -97,7 +95,6 @@ def main(
     gen_results = (
         Chain(responses)
         .map(lambda x: x if x is not None else "")  # convert None to empty string
-        .map(lambda x: postprocess(x, RESPONSE_STRATEGIES))
         .value
     )
 
