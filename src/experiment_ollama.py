@@ -27,6 +27,7 @@ OLLAMA_OSS = [
     "llama3",
     "llama3:70b",
     "mixtral:8x22b",
+    "llama3.1:8b",
     "llama3.1:70b",
     "llama3.1:405b",
     "gemma:2b",
