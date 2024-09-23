@@ -2,10 +2,16 @@ import fire
 import json
 import logging
 from src.common import BenchmarkTask
-from src.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
+from src.postprocessing import (
+    postprocess,
+    TASK_STRATEGIES,
+    RESPONSE_STRATEGIES,
+)
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
+from tree_sitter import Language, Parser
+import tree_sitter_haskell
 
 
 def are_trees_equal(tree1, tree2):
@@ -36,8 +42,18 @@ def are_trees_equal(tree1, tree2):
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
     result = postprocess(result, RESPONSE_STRATEGIES)
+    print(result)
     ground_truth = postprocess(task.signature, TASK_STRATEGIES)
-    
+    print(ground_truth)
+    print('\n')
+
+
+    parser = Parser()
+    parser.language = Language(tree_sitter_haskell.language())
+    ground_truth_tree = parser.parse(bytes(ground_truth, "utf8"))
+    result_tree = parser.parse(bytes(result, "utf8"))
+    are_trees_equal(ground_truth_tree, result_tree)
+
     return ground_truth == result
 
 
@@ -58,7 +74,7 @@ def evaluate(
 
 
 def main(
-    benchmark_file: str = "Benchmark-F.jsonl",
+    benchmark_file: str = "Benchmark-F.removed.jsonl",
     results_file: str = "data/experiment/gpt_enerated_responses.jsonl",
 ):
     with open(benchmark_file, "r") as file:

@@ -101,7 +101,7 @@ def get_ant_model(
 
 
 def main(
-    input_file: str = "Benchmark-F.json",
+    input_file: str = "Benchmark-F.removed.json",
     output_file: str | None = None,
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,

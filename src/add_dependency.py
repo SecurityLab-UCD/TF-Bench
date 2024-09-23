@@ -15,13 +15,13 @@ def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
     return {
         fn_name: t.signature
         for t in tasks
-        if (fn_name := extract_function_name(t.task_id)) is not None
+        if (fn_name := extract_function_name(t)) is not None
     }
 
 
 def get_func_calls(task: BenchmarkTask) -> set[str]:
     """extract function calls and operators as string"""
-    fn_name = extract_function_name(task.task_id)
+    fn_name = extract_function_name(task)
     assert fn_name is not None
 
     ast = AST(task.code, HASKELL_LANGUAGE)

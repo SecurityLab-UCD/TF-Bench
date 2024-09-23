@@ -25,12 +25,12 @@ def rm_new_line(text: str) -> str:
     return text.replace("\n", "")
 
 
-def remove_space_after_comma(text: str) -> str:
-    return re.sub(r",\s", ",", text)
+# def remove_space_after_comma(text: str) -> str:
+#     return re.sub(r",\s", ",", text)
 
 
-def remove_space_between_arrow(text: str) -> str:
-    return re.sub(r"\s*->\s*", "->", text)
+# def remove_space_between_arrow(text: str) -> str:
+#     return re.sub(r"\s*->\s*", "->", text)
 
 
 def remove_backtick(text: str) -> str:
@@ -144,9 +144,6 @@ def remove_extra_wrapper(text: str) -> str:
     result = remove_extra(text)
     return result if result is not None else ""
 
-# def map_to_original(text: str) -> str:
-    
-
 
 def postprocess(result: str, strategies: list[Callable[[str], str]]) -> str:
     """
@@ -164,8 +161,8 @@ TASK_STRATEGIES: list[Callable[[str], str]] = [
     rm_func_name,
     str.strip,
     rm_new_line,
-    remove_space_after_comma,
-    remove_space_between_arrow,
+    # remove_space_after_comma,
+    # remove_space_between_arrow,
     remove_backtick,
 ]
 
@@ -176,7 +173,7 @@ RESPONSE_STRATEGIES: list[Callable[[str], str]] = [
     str.strip,
     rm_new_line,
     # remove_extra_wrapper,
-    remove_space_after_comma,
-    remove_space_between_arrow,
+    # remove_space_after_comma,
+    # remove_space_between_arrow,
     remove_backtick,
 ]
