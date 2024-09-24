@@ -48,6 +48,8 @@ OLLAMA_OSS = [
     "qwen2.5:14b",
     "qwen2.5:32b",
     "qwen2.5:72b",
+    "qwen2.5-coder:1.5b",
+    "qwen2.5-coder:7b",
     "deepseek-v2:16b",
     "deepseek-v2:236b",
     "deepseek-v2.5:236b",
