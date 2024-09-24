@@ -173,18 +173,14 @@ def get_names(
 
 def replace_names(
     node: tree_sitter.Node,
-    type_map: dict[str, str],
-    param_map: dict[str, str],
-    func_map: dict[str, str],
-    var_map: dict[str, str],
+    combined_map: dict[str, str],
 ) -> list[tuple[int, int, str]]:
     """
     Recursively replace function and variable names in the syntax tree using provided mappings.
 
     Args:
         node (tree_sitter.Node): The current node in the syntax tree.
-        func_map (dict): A dictionary mapping original function names to replacement names.
-        var_map (dict): A dictionary mapping original variable names to replacement names.
+        combined_map (dict): A dictionary mapping original function and variable names to replacement names.
 
     Returns:
         List[Tuple[int, int, str]]: A list of tuples containing the start byte,
@@ -195,19 +191,17 @@ def replace_names(
     if node.type in ["variable", "constructor", "operator", "type", "name"]:
         if node.text is not None:  # Ensure node.text is not None before decoding
             name = node.text.decode("utf-8")
-            if name in type_map:
-                replacements.append((node.start_byte, node.end_byte, type_map[name]))
-            elif name in param_map:
-                replacements.append((node.start_byte, node.end_byte, param_map[name]))
-            elif name in func_map:
-                replacements.append((node.start_byte, node.end_byte, func_map[name]))
-            elif name in var_map:
-                replacements.append((node.start_byte, node.end_byte, var_map[name]))
+            if name in combined_map:
+                replacements.append(
+                    (node.start_byte, node.end_byte, combined_map[name])
+                )
+            else:
+                print(
+                    f"Warning: Name '{name}' not found in combined_map, skipping replacement."
+                )
 
     for child in node.children:
-        replacements.extend(
-            replace_names(child, type_map, param_map, func_map, var_map)
-        )
+        replacements.extend(replace_names(child, combined_map))
 
     return replacements
 
@@ -328,11 +322,11 @@ def rewrite(code: str) -> str:
     print("\n" * 2)
 
     # Get the replacements list from replace_names
-    replacements = replace_names(root_node, type_map, param_map, func_map, var_map)
-    combined_dict = {**type_map, **param_map, **func_map, **var_map}
+    combined_map = {**type_map, **param_map, **func_map, **var_map}
+    replacements = replace_names(root_node, combined_map)
     modified_code = replace_in_code(code, replacements)
 
-    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code), combined_dict
+    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
 
 
 def main(
@@ -395,7 +389,7 @@ def main(
             process_wrong_item.append(i)
 
         # print the rewritten code
-        rewritten_code, combined_dict = rewrite(combined_code)
+        rewritten_code = rewrite(combined_code)
         print("#" * 50)
         print("rewritten code:")
         print("#" * 50)

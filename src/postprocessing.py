@@ -144,9 +144,6 @@ def remove_extra_wrapper(text: str) -> str:
     result = remove_extra(text)
     return result if result is not None else ""
 
-# def map_to_original(text: str) -> str:
-    
-
 
 def postprocess(result: str, strategies: list[Callable[[str], str]]) -> str:
     """
