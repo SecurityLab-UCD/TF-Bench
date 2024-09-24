@@ -11,50 +11,57 @@ from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
 from tree_sitter import Language, Parser
+import tree_sitter
 import tree_sitter_haskell
+from typing import Generator
 
 
-def are_trees_equal(tree1, tree2):
-    def compare_nodes(node1, node2):
-        # Check if node types are the same
-        if node1.type != node2.type:
-            return False
-        # Check if the ranges (start and end positions) are the same
-        if node1.start_point != node2.start_point or node1.end_point != node2.end_point:
-            return False
-        # Check if the number of children is the same
-        if node1.child_count != node2.child_count:
-            return False
-        # Recursively check each child node
-        for i in range(node1.child_count):
-            child1 = node1.child(i)
-            child2 = node2.child(i)
-            if not compare_nodes(child1, child2):
-                return False
-        return True
+def relevant_code_nodes(
+    node: tree_sitter.Node, source_code: str
+) -> Generator[str, None, None]:
+    """
+    Traverse the tree, yielding only the relevant nodes (ignoring whitespace and comments).
+    """
+    for child in node.children:
+        if child.type in ["comment", "whitespace"]:  # Ignore these types of nodes
+            continue
+        if child.children:
+            yield from relevant_code_nodes(child, source_code)
+        else:
+            # Yield the text of the node, skipping irrelevant ones
+            yield source_code[child.start_byte : child.end_byte]
 
-    # Start comparison from the root nodes
-    root1 = tree1.root_node
-    root2 = tree2.root_node
 
-    return compare_nodes(root1, root2)
+def normalize_signature(signature: str) -> str:
+    parser = Parser()
+    parser.language = Language(tree_sitter_haskell.language())
+    # Parse the signature into a tree
+    tree = parser.parse(signature.encode("utf-8"))
+    # Traverse and collect relevant parts of the tree
+    root_node = tree.root_node
+    relevant_parts = list(relevant_code_nodes(root_node, signature))
+    # Join the relevant parts into a single string
+    return "".join(relevant_parts)
+
+
+def compare_signatures(sig1: str, sig2: str) -> bool:
+    # Normalize both signatures by extracting relevant parts of the AST
+    normalized_sig1 = normalize_signature(sig1)
+    normalized_sig2 = normalize_signature(sig2)
+
+    # Compare the normalized versions
+    return normalized_sig1 == normalized_sig2
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
     result = postprocess(result, RESPONSE_STRATEGIES)
-    print(result)
     ground_truth = postprocess(task.signature, TASK_STRATEGIES)
-    print(ground_truth)
-    print('\n')
+    # print(result)
+    # print(ground_truth)
+    # print(compare_signatures(result, ground_truth))
+    # print('\n')
 
-
-    parser = Parser()
-    parser.language = Language(tree_sitter_haskell.language())
-    ground_truth_tree = parser.parse(bytes(ground_truth, "utf8"))
-    result_tree = parser.parse(bytes(result, "utf8"))
-    are_trees_equal(ground_truth_tree, result_tree)
-
-    return ground_truth == result
+    return compare_signatures(result, ground_truth)
 
 
 def evaluate(
