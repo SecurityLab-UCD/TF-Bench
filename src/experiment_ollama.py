@@ -12,48 +12,59 @@ from src.common import (
     INSTRUCT_PROMPT,
 )
 
-OLLAMA_LARGE = [
+OLLAMA_OSS = [
     "gemma2:27b",
-    "llama2:70b",
+    "llama3",
     "llama3:70b",
     "mixtral:8x22b",
-    "deepseek-coder-v2:236b",
-    "codellama:34b",
-    "codellama:70b",
-    "phind-codellama:34b",
-    "granite-code:34b",
-    "codebooga:34b",
-    "nous-hermes2-mixtral:8x7b",
-    "codestral:22b",
-]
-
-OLLAMA_SMALL = [
-    "llama2:7b",
-    "llama2:13b",
-    "llama3",
-    "phi3",
-    "phi3:medium",
+    "llama3.1:8b",
+    "llama3.1:70b",
+    "llama3.1:405b",
     "gemma:2b",
     "gemma:7b",
     "gemma2",
     "mistral",
     "mixtral:8x7b",
+    "phi3",
+    "phi3:medium",
+    "qwen2:0.5b",
+    "qwen2:1.5b",
+    "qwen2:7b",
+    "qwen2:72b",
+    "qwen2.5:0.5b",
+    "qwen2.5:1.5b",
+    "qwen2.5:3b",
+    "qwen2.5:7b",
+    "qwen2.5:14b",
+    "qwen2.5:32b",
+    "qwen2.5:72b",
+    "deepseek-v2:16b",
+    "deepseek-v2:236b",
+    "deepseek-v2.5:236b",
+]
+
+
+OLLAMA_CODE = [
     "deepseek-coder-v2:16b",
+    "deepseek-coder-v2:236b",
     "codegemma:2b",
     "codegemma:7b",
     "codellama:7b",
     "codellama:13b",
+    "codellama:34b",
+    "codellama:70b",
     "starcoder2:3b",
     "starcoder2:7b",
-    "starcoder2:15b",
-    "stable-code:3b",
     "codeqwen:7b",
     "granite-code:3b",
     "granite-code:8b",
     "granite-code:20b",
+    "granite-code:34b",
+    "codegeex4:9b",
+    "codestral:22b",
 ]
 
-OLLAMA_MODELS = OLLAMA_SMALL + OLLAMA_LARGE
+OLLAMA_MODELS = OLLAMA_OSS + OLLAMA_CODE
 
 
 def get_model(
@@ -70,7 +81,7 @@ def get_model(
                     "role": "system",
                     "content": SYSTEM_PROMPT,
                 },
-                {"role": "user", "content": INSTRUCT_PROMPT + "\n\n" + prompt},
+                {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
             ],
             model=model,
             options={
