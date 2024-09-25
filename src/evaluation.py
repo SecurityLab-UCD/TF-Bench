@@ -13,7 +13,6 @@ from itertools import starmap
 from tree_sitter import Language, Parser
 import tree_sitter
 import tree_sitter_haskell
-from typing import Generator
 
 
 def relevant_code_nodes(node: tree_sitter.Node, source_code: str) -> list[str]:
