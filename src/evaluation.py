@@ -16,20 +16,22 @@ import tree_sitter_haskell
 from typing import Generator
 
 
-def relevant_code_nodes(
-    node: tree_sitter.Node, source_code: str
-) -> Generator[str, None, None]:
+def relevant_code_nodes(node: tree_sitter.Node, source_code: str) -> list[str]:
     """
-    Traverse the tree, yielding only the relevant nodes (ignoring whitespace and comments).
+    Traverse the tree and return a list of only the relevant nodes (ignoring whitespace and comments).
     """
+    relevant_nodes = []  # Accumulate relevant nodes here
     for child in node.children:
         if child.type in ["comment", "whitespace"]:  # Ignore these types of nodes
             continue
         if child.children:
-            yield from relevant_code_nodes(child, source_code)
+            # Recursively add relevant nodes from child nodes
+            relevant_nodes.extend(relevant_code_nodes(child, source_code))
         else:
-            # Yield the text of the node, skipping irrelevant ones
-            yield source_code[child.start_byte : child.end_byte]
+            # Add the text of the relevant node to the list
+            relevant_nodes.append(source_code[child.start_byte : child.end_byte])
+
+    return relevant_nodes
 
 
 def normalize_signature(signature: str) -> str:
@@ -39,7 +41,7 @@ def normalize_signature(signature: str) -> str:
     tree = parser.parse(signature.encode("utf-8"))
     # Traverse and collect relevant parts of the tree
     root_node = tree.root_node
-    relevant_parts = list(relevant_code_nodes(root_node, signature))
+    relevant_parts = relevant_code_nodes(root_node, signature)
     # Join the relevant parts into a single string
     return "".join(relevant_parts)
 
