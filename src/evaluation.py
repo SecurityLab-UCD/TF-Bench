@@ -2,67 +2,16 @@ import fire
 import json
 import logging
 from src.common import BenchmarkTask
-from src.postprocessing import (
-    postprocess,
-    TASK_STRATEGIES,
-    RESPONSE_STRATEGIES,
-)
+from src.postprocessing import postprocess, TASK_STRATEGIES
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
-from tree_sitter import Language, Parser
-import tree_sitter
-import tree_sitter_haskell
-
-
-def relevant_code_nodes(node: tree_sitter.Node, source_code: str) -> list[str]:
-    """
-    Traverse the tree and return a list of only the relevant nodes (ignoring whitespace and comments).
-    """
-    relevant_nodes = []  # Accumulate relevant nodes here
-    for child in node.children:
-        if child.type in ["comment", "whitespace"]:  # Ignore these types of nodes
-            continue
-        if child.children:
-            # Recursively add relevant nodes from child nodes
-            relevant_nodes.extend(relevant_code_nodes(child, source_code))
-        else:
-            # Add the text of the relevant node to the list
-            relevant_nodes.append(source_code[child.start_byte : child.end_byte])
-
-    return relevant_nodes
-
-
-def normalize_signature(signature: str) -> str:
-    parser = Parser()
-    parser.language = Language(tree_sitter_haskell.language())
-    # Parse the signature into a tree
-    tree = parser.parse(signature.encode("utf-8"))
-    # Traverse and collect relevant parts of the tree
-    root_node = tree.root_node
-    relevant_parts = relevant_code_nodes(root_node, signature)
-    # Join the relevant parts into a single string
-    return "".join(relevant_parts)
-
-
-def compare_signatures(sig1: str, sig2: str) -> bool:
-    # Normalize both signatures by extracting relevant parts of the AST
-    normalized_sig1 = normalize_signature(sig1)
-    normalized_sig2 = normalize_signature(sig2)
-
-    # Compare the normalized versions
-    return normalized_sig1 == normalized_sig2
+from typing import Callable
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
-    result = postprocess(result, RESPONSE_STRATEGIES)
     ground_truth = postprocess(task.signature, TASK_STRATEGIES)
-    # print(result)
-    # print(ground_truth)
-    # print(compare_signatures(result, ground_truth))
-    # print('\n')
-
-    return compare_signatures(result, ground_truth)
+    return ground_truth == result
 
 
 def evaluate(
@@ -82,7 +31,7 @@ def evaluate(
 
 
 def main(
-    benchmark_file: str = "Benchmark-F.removed.jsonl",
+    benchmark_file: str = "Benchmark-F.jsonl",
     results_file: str = "data/experiment/gpt_enerated_responses.jsonl",
 ):
     with open(benchmark_file, "r") as file:
