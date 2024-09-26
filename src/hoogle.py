@@ -53,7 +53,7 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
     Generates ban list of any functions / variables defined by "where" keyword
     """
     # extract function calls and operators as string
-    fn_name = extract_function_name(task.task_id)
+    fn_name = extract_function_name(task)
     assert fn_name is not None
     where_index = task.code.index("where")
     where_code = task.code[(where_index + 5) :].strip()
@@ -80,7 +80,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     Get all the dependent functions of a Benchmark Task
     """
     # extract function calls and operators as string
-    fn_name = extract_function_name(task.task_id)
+    fn_name = extract_function_name(task)
     assert fn_name is not None
     print(f"Function: {fn_name}")
 
@@ -158,7 +158,7 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper) -> Benchmark
     Gets all dependent functions of a task with their corresponding type signatures
     If Hoogle cannot find a certain type signature, it sets dependencies to None
     """
-    fn_name = extract_function_name(task.task_id)
+    fn_name = extract_function_name(task)
     depedencies = list(get_func_calls(task))
     length = len(depedencies)
     type_signature = [""] * length

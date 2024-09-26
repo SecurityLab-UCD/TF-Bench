@@ -9,7 +9,7 @@ import fire
 
 
 def main(
-    input_file: str = "Benchmark-F.json",
+    input_file: str = "Benchmark-F.removed.json",
     output_file: str | None = None,
     option: str = "ollama",
     seed: int = SEED,

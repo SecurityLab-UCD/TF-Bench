@@ -11,6 +11,7 @@ from dacite import from_dict
 from src.common import BenchmarkTask
 from typing import Optional
 from dataclasses import asdict
+import string
 
 
 # This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
@@ -173,18 +174,14 @@ def get_names(
 
 def replace_names(
     node: tree_sitter.Node,
-    type_map: dict[str, str],
-    param_map: dict[str, str],
-    func_map: dict[str, str],
-    var_map: dict[str, str],
+    combined_map: dict[str, str],
 ) -> list[tuple[int, int, str]]:
     """
     Recursively replace function and variable names in the syntax tree using provided mappings.
 
     Args:
         node (tree_sitter.Node): The current node in the syntax tree.
-        func_map (dict): A dictionary mapping original function names to replacement names.
-        var_map (dict): A dictionary mapping original variable names to replacement names.
+        combined_map (dict): A dictionary mapping original function and variable names to replacement names.
 
     Returns:
         List[Tuple[int, int, str]]: A list of tuples containing the start byte,
@@ -195,19 +192,17 @@ def replace_names(
     if node.type in ["variable", "constructor", "operator", "type", "name"]:
         if node.text is not None:  # Ensure node.text is not None before decoding
             name = node.text.decode("utf-8")
-            if name in type_map:
-                replacements.append((node.start_byte, node.end_byte, type_map[name]))
-            elif name in param_map:
-                replacements.append((node.start_byte, node.end_byte, param_map[name]))
-            elif name in func_map:
-                replacements.append((node.start_byte, node.end_byte, func_map[name]))
-            elif name in var_map:
-                replacements.append((node.start_byte, node.end_byte, var_map[name]))
+            if name in combined_map:
+                replacements.append(
+                    (node.start_byte, node.end_byte, combined_map[name])
+                )
+            else:
+                print(
+                    f"Warning: Name '{name}' not found in combined_map, skipping replacement."
+                )
 
     for child in node.children:
-        replacements.extend(
-            replace_names(child, type_map, param_map, func_map, var_map)
-        )
+        replacements.extend(replace_names(child, combined_map))
 
     return replacements
 
@@ -315,9 +310,11 @@ def rewrite(code: str) -> str:
     print("variable names: ", var_names_list)
     print("\n" * 2)
 
-    # Ensure indices for functions are assigned consecutively without skipping
-    type_map = {typ: f"T{i + 1}" for i, typ in enumerate(type_names_list)}
-    param_map = {param: f"t{i + 1}" for i, param in enumerate(param_names_list)}
+    letters = string.ascii_uppercase  # 'A' to 'Z'
+    type_map = {typ: letters[i % 26] for i, typ in enumerate(type_names_list)}
+    letters = string.ascii_lowercase  # 'a' to 'z'
+    param_map = {param: letters[i % 26] for i, param in enumerate(param_names_list)}
+
     func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
     var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
 
@@ -328,7 +325,8 @@ def rewrite(code: str) -> str:
     print("\n" * 2)
 
     # Get the replacements list from replace_names
-    replacements = replace_names(root_node, type_map, param_map, func_map, var_map)
+    combined_map = {**type_map, **param_map, **func_map, **var_map}
+    replacements = replace_names(root_node, combined_map)
     modified_code = replace_in_code(code, replacements)
 
     return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
@@ -343,7 +341,8 @@ def main(
     with open(dataset_path, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    wrong_item = []
+    process_wrong_item = []
+    rewrite_wrong_item = []
     for i, task in enumerate(tasks):
         # Ensure that task.dependencies, task.signature, and task.code are not None
         dependencies = task.dependencies if task.dependencies is not None else []
@@ -387,15 +386,10 @@ def main(
         print("#" * 50)
         print(combined_code)
         print("\n" * 2)
-
+        # check if the processed code is valid
         ast = AST(combined_code, lang)
-        # assert ast.is_valid_code(), f"Error in the Process for item {i}"
-        assert ast.is_valid_code()
-
         if not ast.is_valid_code():
-            wrong_item.append(i)
-
-        # type_names = {node:node.start_byte for node in find_name_nodes(ast.root)}
+            process_wrong_item.append(i)
 
         # print the rewritten code
         rewritten_code = rewrite(combined_code)
@@ -404,19 +398,21 @@ def main(
         print("#" * 50)
         print(rewritten_code)
         print("\n" * 2)
-
+        # check if the rewritten code is valid
         ast = AST(rewritten_code, lang)
-        # assert ast.is_valid_code(), f"Error in the Rewrite for item {i}"
         if not ast.is_valid_code():
-            wrong_item.append(i)
-
+            rewrite_wrong_item.append(i)
+        # update the code to the rewritten version
         rewritten_parts = rewritten_code.split("\n" + "-" * 20 + "\n")
         task.dependencies = rewritten_parts[0].split("\n")
         task.signature = rewritten_parts[1]
         task.code = rewritten_parts[2]
 
     print("ERROR while processing items:")
-    print(set(wrong_item))
+    print(process_wrong_item)
+
+    print("ERROR while rewriting items:")
+    print(rewrite_wrong_item)
 
     # If you need to dump the objects as dictionaries into a JSON file, do this step right before saving to the JSON file
     task_dicts = [asdict(task) for task in tasks]

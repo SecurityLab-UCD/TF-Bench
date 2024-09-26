@@ -2,24 +2,14 @@
 Experiment script for OSS models using Ollama
 """
 
-import fire
-import os
 from ollama import Client as OllamaClient
-from tqdm import tqdm  # Import tqdm for the progress bar
-from dacite import from_dict
-import json
-import logging
-from src.evaluation import evaluate
-from src.postprocessing import postprocess, RESPONSE_STRATEGIES
-from typing import Union, Callable
+from typing import Union
 from src.common import (
-    BenchmarkTask,
     SEED,
     TEMPERATURE,
     TOP_P,
     SYSTEM_PROMPT,
     INSTRUCT_PROMPT,
-    get_prompt,
 )
 
 OLLAMA_OSS = [

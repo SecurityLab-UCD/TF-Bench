@@ -27,12 +27,8 @@ class BenchmarkTask:
     poly_type: str
     dependencies: list[str] | None
 
-
-def extract_function_name(id_str: str) -> str | None:
-    """Extract the function name from the id field."""
-    if "--" in id_str:
-        return id_str.split("--")[-1].strip()
-    return None
+def extract_function_name(task: BenchmarkTask) -> str | None:
+    return task.signature.split('::')[0].strip()
 
 
 def clean_tab_spaces(task: BenchmarkTask) -> BenchmarkTask:
@@ -59,7 +55,7 @@ def remove_comments(code: str) -> str:
 def get_prompt(task: BenchmarkTask) -> str:
     """get prompt from a task instance"""
 
-    fn_name = extract_function_name(task.task_id)
+    fn_name = extract_function_name(task)
     code = task.code
     dependencies = (
         "\n".join(map(str.strip, task.dependencies))

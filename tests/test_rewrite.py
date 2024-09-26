@@ -54,16 +54,17 @@ def test_rewrite():
     task.dependencies = rewritten_parts[0].split("\n")
     task.signature = rewritten_parts[1]
     task.code = rewritten_parts[2]
+    print(task.signature)
 
     valid_result = {
         "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational",
-        "signature": "f5 :: T5 -> t1",
+        "signature": "f5 :: E -> a",
         "code": "f5 (f7 f1 v1) = f4 f7 f3 f4 v1",
         "poly_type": "Parametric",
         "dependencies": [
-            "f1 :: t1 -> t1 -> T2 t1",
-            "f3 :: T1 t1 => t1 -> t1 -> T2 t1",
-            "f4 :: T3 t1 => T4 -> t1",
+            "f1 :: a -> a -> B a",
+            "f3 :: A a => a -> a -> B a",
+            "f4 :: C a => D -> a",
         ],
     }
 
