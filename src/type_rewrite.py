@@ -11,6 +11,7 @@ from dacite import from_dict
 from src.common import BenchmarkTask
 from typing import Optional
 from dataclasses import asdict
+import string
 
 
 # This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
@@ -309,9 +310,11 @@ def rewrite(code: str) -> str:
     print("variable names: ", var_names_list)
     print("\n" * 2)
 
-    # Ensure indices for functions are assigned consecutively without skipping
-    type_map = {typ: f"T{i + 1}" for i, typ in enumerate(type_names_list)}
-    param_map = {param: f"t{i + 1}" for i, param in enumerate(param_names_list)}
+    letters = string.ascii_uppercase  # 'A' to 'Z'
+    type_map = {typ: letters[i % 26] for i, typ in enumerate(type_names_list)}
+    letters = string.ascii_lowercase  # 'a' to 'z'
+    param_map = {param: letters[i % 26] for i, param in enumerate(param_names_list)}
+
     func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
     var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
 
