@@ -55,14 +55,15 @@ def postprocess(code: str) -> str:
     return code
 
 
-def convert_upper_to_lower(code):
-    def convert_upper_to_lower_line(line: str, func_list) -> str:
+def convert_upper_to_lower(code: str) -> str:
+    def convert_upper_to_lower_line(line: str, func_list: list[str]) -> str:
         """
         Process a line of code by converting certain elements to lowercase, replacing operators, and
         preserving leading spaces.
 
         Args:
             line (str): The line of code to process.
+            func_list (List[str]): The list of function names to be modified.
 
         Returns:
             str: The processed line of code.
@@ -81,12 +82,12 @@ def convert_upper_to_lower(code):
             elif elem in func_list:
                 lst[i] = elem.lower() + "#"
 
-        return leading_spaces + " ".join(lst), func_list
+        return leading_spaces + " ".join(lst)
 
     lines = code.split("\n")
-    func_list = []
+    func_list: list[str] = []
     for i, line in enumerate(lines):
-        lines[i], func_list = convert_upper_to_lower_line(line, func_list)
+        lines[i] = convert_upper_to_lower_line(line, func_list)
     return "\n".join(lines)
 
 
