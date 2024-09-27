@@ -6,16 +6,11 @@ from src.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap
-from typing import Callable
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
     ground_truth = postprocess(task.signature, TASK_STRATEGIES)
     result = postprocess(result, RESPONSE_STRATEGIES)
-    # print(ground_truth)
-    # print(result)
-    # print(ground_truth == result)
-    # print('\n')
     return ground_truth == result
 
 

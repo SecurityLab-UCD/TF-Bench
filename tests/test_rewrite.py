@@ -1,13 +1,15 @@
 from dacite import from_dict
 from src.common import BenchmarkTask
+from typing import Callable
 from src.type_rewrite import (
     preprocess,
     manual_change,
     convert_upper_to_lower,
     remove_string_content,
-    postprocess,
+    reverse_process,
     rewrite,
 )
+from src.postprocessing import postprocess
 
 
 def test_rewrite():
@@ -43,11 +45,14 @@ def test_rewrite():
     )
 
     # process the raw code
-    combined_code = preprocess(combined_code)
-    combined_code = manual_change(combined_code)
-    combined_code = convert_upper_to_lower(combined_code)
-    combined_code = remove_string_content(combined_code)
-    combined_code = postprocess(combined_code)
+    process_strategy: list[Callable[[str], str]] = [
+        preprocess,
+        manual_change,
+        convert_upper_to_lower,
+        remove_string_content,
+        reverse_process,
+    ]
+    combined_code = postprocess(combined_code, process_strategy)
 
     rewritten_code = rewrite(combined_code)
 

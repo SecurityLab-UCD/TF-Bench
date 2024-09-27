@@ -1,10 +1,6 @@
 import re
 from functools import reduce
 from typing import Callable
-from openai import OpenAI
-import os
-import openai
-import tiktoken
 
 
 def char_list_to_str(text: str) -> str:

@@ -1,14 +1,17 @@
 import re
 import fire
 import tree_sitter
-from src.hs_parser.ast_util import AST
 from tree_sitter import Language
 import tree_sitter_haskell
 import json
 from dacite import from_dict
-from src.common import BenchmarkTask
 from dataclasses import asdict
 import string
+from typing import Callable
+from src.hs_parser.ast_util import AST
+from src.common import BenchmarkTask
+from src.postprocessing import postprocess
+from typing import Optional
 
 
 def preprocess(code: str) -> str:
@@ -32,7 +35,7 @@ def preprocess(code: str) -> str:
     return code
 
 
-def postprocess(code: str) -> str:
+def reverse_process(code: str) -> str:
     """
     Reverse the preprocessing of a line of code by removing extra spaces around
     parentheses, brackets, commas, and the "::" symbol.
@@ -100,12 +103,14 @@ def manual_change(code: str) -> str:
     return code
 
 
-def get_monomorphic_names(node):
-    def get_monomorphic_nodes(node):
+def get_monomorphic_names(node: tree_sitter.Node) -> dict[str, int]:
+    def get_monomorphic_nodes(node: tree_sitter.Node) -> list[tree_sitter.Node]:
         name_nodes = []
 
         # Check if this node is a name node
-        if node.type == "name" or node.text.decode("utf-8") == "Nothing":
+        if node.type == "name" or (
+            node.text and node.text.decode("utf-8") == "Nothing"
+        ):
             name_nodes.append(node)
 
         # Recursively check child nodes
@@ -123,7 +128,7 @@ def get_monomorphic_names(node):
     return type_names
 
 
-def get_parametric_names(node):
+def get_parametric_names(node: tree_sitter.Node) -> dict[str, int]:
     def get_parametric_nodes(root: tree_sitter.Node) -> list[tree_sitter.Node]:
         result = []
 
@@ -151,7 +156,9 @@ def get_parametric_names(node):
     return param_names
 
 
-def get_function_names(node, func_names=None):
+def get_function_names(
+    node: tree_sitter.Node, func_names: Optional[dict[str, int]] = None
+) -> dict[str, int]:
     if func_names is None:
         func_names = {}
 
@@ -175,7 +182,9 @@ def get_function_names(node, func_names=None):
     return func_names
 
 
-def get_variable_names(node, var_names=None):
+def get_variable_names(
+    node: tree_sitter.Node, var_names: Optional[dict[str, int]] = None
+) -> dict[str, int]:
     if var_names is None:
         var_names = {}
 
@@ -342,11 +351,14 @@ def main(
         print(combined_code)
         print("\n" * 2)
 
-        combined_code = preprocess(combined_code)
-        combined_code = manual_change(combined_code)
-        combined_code = convert_upper_to_lower(combined_code)
-        combined_code = remove_string_content(combined_code)
-        combined_code = postprocess(combined_code)
+        process_strategy: list[Callable[[str], str]] = [
+            preprocess,
+            manual_change,
+            convert_upper_to_lower,
+            remove_string_content,
+            reverse_process,
+        ]
+        combined_code = postprocess(combined_code, process_strategy)
 
         # print the processed code
         print("#" * 50)
