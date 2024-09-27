@@ -1,56 +1,17 @@
 import re
 import fire
 import tree_sitter
-
-# import tree_sitter_haskell
 from src.hs_parser.ast_util import AST
 from tree_sitter import Language
 import tree_sitter_haskell
 import json
 from dacite import from_dict
 from src.common import BenchmarkTask
-from typing import Optional
 from dataclasses import asdict
 import string
 
 
-# This is for replace the operators starting with ":", since these operator are not allowed in current tree_sitter_haskell
-double_letters = [chr(i) * 2 for i in range(ord("a"), ord("z") + 1)]
-
-
-def extract_and_modify_operators(input_string: str) -> str:
-    """
-    Extract infix operators within parentheses that appear before "::" and add spaces around these
-    operators everywhere else in the string. This is to avoid the case when rewriting x+y to v1f1v2.
-    So the spaces around an operator is necessary for readability.
-
-    Args:
-        input_string (str): The input string containing code.
-
-    Returns:
-        str: The modified string with spaces added around the operators.
-    """
-    # Step 1: Extract infix operators inside parentheses but before "::"
-    operator_pattern = re.compile(r"\((.*?)\)\s*::")
-    operators = operator_pattern.findall(input_string)
-
-    # Step 2: Add spaces around the extracted operators everywhere else in the string
-    for operator in operators:
-        # a special case when the infix operator is .
-        if operator == ".":
-            pattern = r"(?<=\s|\()(\.)(?=\s|\))"
-            input_string = re.sub(pattern, double_letters[ord(".") % 26], input_string)
-            continue
-
-        spaced_operator = f" {operator} "
-        input_string = re.sub(
-            rf"(?<!\()\b{re.escape(operator)}\b(?!\))", spaced_operator, input_string
-        )
-
-    return input_string
-
-
-def preprocess(line: str) -> str:
+def preprocess(code: str) -> str:
     """
     Preprocess a line of code by adding spaces around parentheses, brackets, and the "::" symbol.
 
@@ -60,116 +21,173 @@ def preprocess(line: str) -> str:
     Returns:
         str: The preprocessed line of code with added spaces.
     """
-    line = re.sub(r"\(", r"( ", line)
-    line = re.sub(r"\)", r" )", line)
+    code = re.sub(r"\(", r"( ", code)
+    code = re.sub(r"\)", r" )", code)
 
-    line = re.sub(r"\[", r"[ ", line)
-    line = re.sub(r"\]", r" ]", line)
+    code = re.sub(r"\[", r"[ ", code)
+    code = re.sub(r"\]", r" ]", code)
 
-    line = re.sub(r"::", r" :: ", line)
-    line = re.sub(r"\,", " , ", line)
-    return line
+    code = re.sub(r"::", r" :: ", code)
+    code = re.sub(r"\,", " , ", code)
+    return code
 
 
-def process(line: str) -> str:
+def postprocess(code: str) -> str:
     """
-    Process a line of code by converting certain elements to lowercase, replacing operators, and
-    preserving leading spaces.
+    Reverse the preprocessing of a line of code by removing extra spaces around
+    parentheses, brackets, commas, and the "::" symbol.
 
     Args:
-        line (str): The line of code to process.
+        line (str): The line of code to reverse preprocess.
 
     Returns:
-        str: The processed line of code.
+        str: The line of code with spaces removed around specific symbols.
     """
-    leading_spaces = ""
-    while line and line[0].isspace():
-        leading_spaces += line[0]
-        line = line[1:]
+    code = re.sub(r"\(\s+", r"(", code)
+    code = re.sub(r"\s+\)", r")", code)
 
+    code = re.sub(r"\[\s+", r"[", code)
+    code = re.sub(r"\s+\]", r"]", code)
+
+    code = re.sub(r"\s*::\s*", r"::", code)
+    code = re.sub(r"\s*,\s*", r",", code)
+
+    return code
+
+
+def convert_upper_to_lower(code):
+    def convert_upper_to_lower_line(line: str, func_list) -> str:
+        """
+        Process a line of code by converting certain elements to lowercase, replacing operators, and
+        preserving leading spaces.
+
+        Args:
+            line (str): The line of code to process.
+
+        Returns:
+            str: The processed line of code.
+        """
+        leading_spaces = ""
+        while line and line[0].isspace():
+            leading_spaces += line[0]
+            line = line[1:]
+
+        lst = line.split()
+        for i, elem in enumerate(lst):
+            # the first letter of a function cannot be capitalized
+            if elem[0].isupper() and '"' not in elem and i == 0:
+                func_list.append(elem)
+                lst[i] = elem.lower() + "#"
+            elif elem in func_list:
+                lst[i] = elem.lower() + "#"
+
+        return leading_spaces + " ".join(lst), func_list
+
+    lines = code.split("\n")
     func_list = []
-
-    lst = line.split()
-    for i, elem in enumerate(lst):
-        # the first letter of a function cannot be capitalized
-        if elem[0].isupper() and '"' not in elem and i == 0:
-            func_list.append(elem)
-            lst[i] = elem.lower() + "#"
-        elif elem in func_list:
-            lst[i] = elem.lower() + "#"
-        # the first letter of a function cannot be ":"
-        elif elem[0] == ":" and len(elem) > 1 and elem[1] != ":":
-            lst[i] = double_letters[(ord(elem[0]) + ord(elem[1])) % 26]
-
-        # for items such as List.foldl
-        pattern = r"\b\w+\.\w+\b"
-        lst[i] = re.sub(
-            pattern, double_letters[sum([ord(l) for l in lst[i]]) % 26], lst[i]
-        )
-
-    return leading_spaces + " ".join(lst)
+    for i, line in enumerate(lines):
+        lines[i], func_list = convert_upper_to_lower_line(line, func_list)
+    return "\n".join(lines)
 
 
-def postprocess(line: str) -> str:
-    """
-    Post-process a line of code by removing spaces around certain characters and replacing double
-    letters in parentheses.
-
-    Args:
-        line (str): The line of code to post-process.
-
-    Returns:
-        str: The post-processed line of code.
-    """
-    line = re.sub(r"\( ", r"(", line)
-    line = re.sub(r" \)", r")", line)
-
-    line = re.sub(r"\[ ", r"[", line)
-    line = re.sub(r" \]", r"]", line)
-
-    # Avoid replacing double quotes surrounded by single quotes
-    line = re.sub(r"(?<!')\".*?\"(?!')", r'""', line)
-    # remove () for double letter functions (previous infix operators)
-    line = re.sub(r"\((\w)\1\)", r"\1\1", line)
-
-    return line
+def remove_string_content(code: str) -> str:
+    return re.sub(r"(?<!')\".*?\"(?!')", r'""', code)
 
 
-def get_names(
-    node: tree_sitter.Node,
-    func_names: Optional[dict[str, int]] = None,
-    var_names: Optional[dict[str, int]] = None,
-) -> tuple[dict[str, int], dict[str, int]]:
+def manual_change(code: str) -> str:
+    code = re.sub(r"List\.foldl", r"foldll", code)  # Escape '.' to match literal '.'
+    return code
+
+
+def get_monomorphic_names(node):
+    def get_monomorphic_nodes(node):
+        name_nodes = []
+
+        # Check if this node is a name node
+        if node.type == "name" or node.text.decode("utf-8") == "Nothing":
+            name_nodes.append(node)
+
+        # Recursively check child nodes
+        for child in node.children:
+            name_nodes.extend(get_monomorphic_nodes(child))
+
+        return name_nodes
+
+    type_names = {
+        node.text.decode("utf-8"): node.start_byte
+        for node in get_monomorphic_nodes(node)
+        if node.text is not None  # Ensure node.text is not None
+    }
+
+    return type_names
+
+
+def get_parametric_names(node):
+    def get_parametric_nodes(root: tree_sitter.Node) -> list[tree_sitter.Node]:
+        result = []
+
+        def collect_variables(node):
+            if node.type == "variable":
+                result.append(node)
+            for child in node.children:
+                collect_variables(child)
+
+        def traverse(node):
+            if node.type == "signature":
+                collect_variables(node)
+            else:
+                for child in node.children:
+                    traverse(child)
+
+        traverse(root)
+        return result
+
+    param_names = {
+        node.text.decode("utf-8"): node.start_byte
+        for node in get_parametric_nodes(node)
+        if node.text is not None  # Ensure node.text is not None
+    }
+    return param_names
+
+
+def get_function_names(node, func_names=None):
     if func_names is None:
         func_names = {}
-    if var_names is None:
-        var_names = {}
 
     if node.type in ("function", "signature"):
         func_name = node.child_by_field_name("name")
-        if func_name and func_name.text is not None:
+        if func_name and func_name.text:
             func_text = func_name.text.decode("utf-8")
             if func_text not in func_names:
                 func_names[func_text] = func_name.start_byte
 
     elif node.type == "apply":
         func_name = node.children[0] if node.children else None
-        if func_name and func_name.text is not None:
+        if func_name and func_name.text:
             func_text = func_name.text.decode("utf-8")
             if func_text not in func_names:
                 func_names[func_text] = func_name.start_byte
-    elif node.type in ("operator", "variable"):
-        if node.text is not None:
-            var_or_func_name = node.text.decode("utf-8")
-            if node.type == "operator" and var_or_func_name not in func_names:
-                func_names[var_or_func_name] = node.start_byte
-            elif node.type == "variable" and var_or_func_name not in var_names:
-                var_names[var_or_func_name] = node.start_byte
 
     for child in node.children:
-        get_names(child, func_names, var_names)
+        get_function_names(child, func_names)
 
-    return func_names, var_names
+    return func_names
+
+
+def get_variable_names(node, var_names=None):
+    if var_names is None:
+        var_names = {}
+
+    if node.type == "variable":
+        if node.text:
+            var_name = node.text.decode("utf-8")
+            if var_name not in var_names:
+                var_names[var_name] = node.start_byte
+
+    for child in node.children:
+        get_variable_names(child, var_names)
+
+    return var_names
 
 
 def replace_names(
@@ -227,57 +245,15 @@ def replace_in_code(code: str, replacements: list[tuple[int, int, str]]) -> str:
     return code_bytes.decode("utf-8")
 
 
-def find_name_nodes(node):
-    name_nodes = []
-
-    # Check if this node is a name node
-    if node.type == "name":
-        name_nodes.append(node)
-
-    # Recursively check child nodes
-    for child in node.children:
-        name_nodes.extend(find_name_nodes(child))
-
-    return name_nodes
-
-
-def collect_parametric_nodes(root: tree_sitter.Node) -> list[tree_sitter.Node]:
-    result = []
-
-    def collect_variables(node):
-        if node.type == "variable":
-            result.append(node)
-        for child in node.children:
-            collect_variables(child)
-
-    def traverse(node):
-        if node.type == "signature":
-            collect_variables(node)
-        else:
-            for child in node.children:
-                traverse(child)
-
-    traverse(root)
-    return result
-
-
 def rewrite(code: str) -> str:
     lang = Language(tree_sitter_haskell.language())
     root_node = AST(code, lang).root
 
-    ast = AST(code, lang)
-    param_names = {
-        node.text.decode("utf-8"): node.start_byte
-        for node in collect_parametric_nodes(ast.tree.root_node)
-        if node.text is not None  # Ensure node.text is not None
-    }
-    type_names = {
-        node.text.decode("utf-8"): node.start_byte
-        for node in find_name_nodes(ast.tree.root_node)
-        if node.text is not None  # Ensure node.text is not None
-    }
+    param_names = get_parametric_names(root_node)
+    type_names = get_monomorphic_names(root_node)
+    func_names = get_function_names(root_node)
+    var_names = get_variable_names(root_node)
 
-    func_names, var_names = get_names(root_node)
     func_names = {
         name: pos for name, pos in func_names.items() if name not in type_names
     }
@@ -296,40 +272,35 @@ def rewrite(code: str) -> str:
     type_names_list = [
         name for name, _ in sorted(type_names.items(), key=lambda x: x[1])
     ]
-    param_names_list = [
-        name for name, _ in sorted(param_names.items(), key=lambda x: x[1])
-    ]
     func_names_list = [
         name for name, _ in sorted(func_names.items(), key=lambda x: x[1])
     ]
     var_names_list = [name for name, _ in sorted(var_names.items(), key=lambda x: x[1])]
 
     print("type names: ", type_names_list)
-    print("param names: ", param_names_list)
     print("function names: ", func_names_list)
     print("variable names: ", var_names_list)
     print("\n" * 2)
 
+    # not to rewrite otherwise
+    if "otherwise" in var_names_list:
+        var_names_list.remove("otherwise")
+
     letters = string.ascii_uppercase  # 'A' to 'Z'
     type_map = {typ: letters[i % 26] for i, typ in enumerate(type_names_list)}
-    letters = string.ascii_lowercase  # 'a' to 'z'
-    param_map = {param: letters[i % 26] for i, param in enumerate(param_names_list)}
-
     func_map = {func: f"f{i + 1}" for i, func in enumerate(func_names_list)}
     var_map = {var: f"v{i + 1}" for i, var in enumerate(var_names_list)}
 
     print("type_map: ", type_map)
-    print("param_map: ", param_map)
     print("func_map: ", func_map)
     print("var_map: ", var_map)
     print("\n" * 2)
 
-    # Get the replacements list from replace_names
-    combined_map = {**type_map, **param_map, **func_map, **var_map}
+    combined_map = {**type_map, **func_map, **var_map}
     replacements = replace_names(root_node, combined_map)
     modified_code = replace_in_code(code, replacements)
 
-    return re.sub(r"\(([^)]+)\)\s*::", r"\1 ::", modified_code)
+    return modified_code
 
 
 def main(
@@ -370,15 +341,11 @@ def main(
         print(combined_code)
         print("\n" * 2)
 
-        # process the raw code
-        combined_code = extract_and_modify_operators(combined_code)
-
-        combined_code = "\n".join(
-            [
-                postprocess(process(preprocess(line)))
-                for line in combined_code.split("\n")
-            ]
-        )
+        combined_code = preprocess(combined_code)
+        combined_code = manual_change(combined_code)
+        combined_code = convert_upper_to_lower(combined_code)
+        combined_code = remove_string_content(combined_code)
+        combined_code = postprocess(combined_code)
 
         # print the processed code
         print("#" * 50)

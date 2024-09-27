@@ -1,11 +1,12 @@
 from dacite import from_dict
 from src.common import BenchmarkTask
 from src.type_rewrite import (
-    rewrite,
-    extract_and_modify_operators,
     preprocess,
-    process,
+    manual_change,
+    convert_upper_to_lower,
+    remove_string_content,
     postprocess,
+    rewrite,
 )
 
 
@@ -42,11 +43,11 @@ def test_rewrite():
     )
 
     # process the raw code
-    combined_code = extract_and_modify_operators(combined_code)
-
-    combined_code = "\n".join(
-        [postprocess(process(preprocess(line))) for line in combined_code.split("\n")]
-    )
+    combined_code = preprocess(combined_code)
+    combined_code = manual_change(combined_code)
+    combined_code = convert_upper_to_lower(combined_code)
+    combined_code = remove_string_content(combined_code)
+    combined_code = postprocess(combined_code)
 
     rewritten_code = rewrite(combined_code)
 
@@ -54,17 +55,16 @@ def test_rewrite():
     task.dependencies = rewritten_parts[0].split("\n")
     task.signature = rewritten_parts[1]
     task.code = rewritten_parts[2]
-    print(task.signature)
 
     valid_result = {
         "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational",
-        "signature": "f5 :: E -> a",
-        "code": "f5 (f7 f1 v1) = f4 f7 f3 f4 v1",
+        "signature": "f3::E -> a",
+        "code": "f3 (v1:%v2) = f2 v1 % f2 v2",
         "poly_type": "Parametric",
         "dependencies": [
-            "f1 :: a -> a -> B a",
-            "f3 :: A a => a -> a -> B a",
-            "f4 :: C a => D -> a",
+            "(:%)::a -> a -> B a",
+            "(%)::A a => a -> a -> B a",
+            "f2::C a => D -> a",
         ],
     }
 
