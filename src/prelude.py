@@ -43,7 +43,7 @@ def main(
     ghc_internal_dict = {
         fn_name: f
         for f in ghc_internal_functions
-        if (fn_name := extract_function_name(f["task_id"])) is not None
+        if (fn_name := f["task_id"].split("--")[-1].strip()) is not None
     }
 
     dependency_dict = {k: v["signature"] for k, v in ghc_internal_dict.items()}
