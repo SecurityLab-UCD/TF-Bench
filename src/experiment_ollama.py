@@ -51,16 +51,13 @@ OLLAMA_CODE = [
     "codegemma:7b",
     "codellama:7b",
     "codellama:13b",
-    "codellama:34b",
     "codellama:70b",
-    "starcoder2:3b",
-    "starcoder2:7b",
-    "codeqwen:7b",
+    "qwen2.5-coder:1.5b",
+    "qwen2.5-coder:7b",
     "granite-code:3b",
     "granite-code:8b",
     "granite-code:20b",
     "granite-code:34b",
-    "codegeex4:9b",
     "codestral:22b",
 ]
 
