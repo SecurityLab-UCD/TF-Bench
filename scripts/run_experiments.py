@@ -17,7 +17,7 @@ def main(
     top_p: float = TOP_P,
     port: int = 11434,
 ):
-    assert option in ("gpt", "claude", "ollama-all", "ollama-large", "ollama-small")
+    assert option in ("gpt", "claude", "ollama-all", "ollama-oss", "ollama-code")
 
     models: list[str]
     match option:
