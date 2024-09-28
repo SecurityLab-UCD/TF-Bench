@@ -63,13 +63,13 @@ def test_rewrite():
 
     valid_result = {
         "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Real.hs--fromRational",
-        "signature": "f3::E -> a",
-        "code": "f3 (v1:%v2) = f2 v1 % f2 v2",
+        "signature": "f2::E -> a",
+        "code": "f2 (v1:%v2) = f1 v1 % f1 v2",
         "poly_type": "Parametric",
         "dependencies": [
-            "(:%)::a -> a -> B a",
-            "(%)::A a => a -> a -> B a",
-            "f2::C a => D -> a",
+            "(:%)::a -> a -> A a",
+            "(%)::B a => a -> a -> A a",
+            "f1::C a => D -> a",
         ],
     }
 

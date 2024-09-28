@@ -1,7 +1,7 @@
 import re
 import fire
 import tree_sitter
-from tree_sitter import Language
+from tree_sitter import Language, Node
 import tree_sitter_haskell
 import json
 from dacite import from_dict
@@ -11,7 +11,8 @@ from typing import Callable
 from src.hs_parser.ast_util import AST
 from src.common import BenchmarkTask
 from src.postprocessing import postprocess
-from typing import Optional
+
+EXPECTED_TYPE_NODES = ["variable", "constructor", "operator", "type", "name"]
 
 
 def preprocess(code: str) -> str:
@@ -103,11 +104,15 @@ def manual_change(code: str) -> str:
     return code
 
 
+def expected_type_nodes(nodes: list[Node]) -> list[Node]:
+    return [node for node in nodes if node.type in EXPECTED_TYPE_NODES]
+
+
 def get_monomorphic_names(root: tree_sitter.Node) -> dict[str, int]:
     name_nodes = AST.get_all_nodes_of_type(root, "name")
     nothing_nodes = AST.get_all_nodes_of_name(root, "Nothing")
 
-    return AST.get_nodes_start_bytes(name_nodes + nothing_nodes)
+    return AST.get_nodes_start_bytes(expected_type_nodes(name_nodes + nothing_nodes))
 
 
 def get_parametric_names(root: tree_sitter.Node) -> dict[str, int]:
@@ -116,7 +121,7 @@ def get_parametric_names(root: tree_sitter.Node) -> dict[str, int]:
     for node in sig_nodes:
         param_nodes += AST.get_all_nodes_of_type(node, "variable")
 
-    return AST.get_nodes_start_bytes(param_nodes)
+    return AST.get_nodes_start_bytes(expected_type_nodes(param_nodes))
 
 
 def get_function_names(root: tree_sitter.Node) -> dict[str, int]:
@@ -133,12 +138,15 @@ def get_function_names(root: tree_sitter.Node) -> dict[str, int]:
         if app_child_nodes := node.children:
             child_nodes.append(app_child_nodes[0])
 
-    return AST.get_nodes_start_bytes(child_nodes)
+    return AST.get_nodes_start_bytes(expected_type_nodes(child_nodes))
 
 
 def get_variable_names(root: tree_sitter.Node) -> dict[str, int]:
-    var_nodes = AST.get_all_nodes_of_type(root, "variable")
-    return AST.get_nodes_start_bytes(var_nodes)
+    var_nodes = list(
+        set(AST.get_all_nodes_of_type(root, "variable"))
+        - set(AST.get_all_nodes_of_name(root, "otherwise"))
+    )
+    return AST.get_nodes_start_bytes(expected_type_nodes(var_nodes))
 
 
 def replace_names(
@@ -158,7 +166,7 @@ def replace_names(
     """
     replacements = []
 
-    if node.type in ["variable", "constructor", "operator", "type", "name"]:
+    if node.type in EXPECTED_TYPE_NODES:
         if node.text is not None:  # Ensure node.text is not None before decoding
             name = node.text.decode("utf-8")
             if name in combined_map:
@@ -232,10 +240,6 @@ def rewrite(code: str) -> str:
     print("function names: ", func_names_list)
     print("variable names: ", var_names_list)
     print("\n" * 2)
-
-    # not to rewrite otherwise
-    if "otherwise" in var_names_list:
-        var_names_list.remove("otherwise")
 
     letters = string.ascii_uppercase  # 'A' to 'Z'
     type_map = {typ: letters[i % 26] for i, typ in enumerate(type_names_list)}

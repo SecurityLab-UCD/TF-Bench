@@ -239,12 +239,15 @@ class AST:
         return nodes
 
     @staticmethod
-    def get_nodes_start_bytes(nodes: list[Node]):
-        start_bytes = {
-            node.text.decode("utf-8"): node.start_byte
-            for node in nodes
-            if node.text is not None  # Ensure node.text is not None
-        }
+    def get_nodes_start_bytes(nodes: list[Node]) -> dict[str, int]:
+        start_bytes: dict[str, int] = {}
+
+        for node in nodes:
+            if node.text and (node_name := node.text.decode("utf-8")):
+                start_bytes[node_name] = min(
+                    start_bytes.get(node_name, node.start_byte), node.start_byte
+                )
+
         return start_bytes
 
     @staticmethod
