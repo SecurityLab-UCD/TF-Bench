@@ -152,7 +152,7 @@ class AST:
             .value
         )
         return pairs
-    
+
     def all_node_types(self, node: Optional[Node] = None) -> set[str]:
         """
         Collect all unique node types in the syntax tree.
@@ -174,7 +174,6 @@ class AST:
         node_types.add(node.type)  # Add the current node's type
 
         return node_types
-
 
     def is_valid_code(self) -> bool:
         """
@@ -211,6 +210,42 @@ class AST:
                 child, node_type, max_level=max_level - 1
             )
         return nodes
+
+    @staticmethod
+    def get_all_nodes_of_name(
+        root: Node, node_name: Optional[str], max_level=50
+    ) -> list[Node]:
+        """
+        Recursively retrieves all nodes of a given name from the AST.
+
+        Args:
+            root (Node): The root node to start the search from.
+            node_name (Optional[str]): The name of node to search for.
+            max_level (int): The maximum recursion depth. Default is 50.
+
+        Returns:
+            list[Node]: A list of nodes matching the specified name.
+        """
+        nodes: list[Node] = []
+        if max_level == 0:
+            return nodes
+
+        for child in root.children:
+            if child.text and child.text.decode("utf-8") == node_name:
+                nodes.append(child)
+            nodes += AST.get_all_nodes_of_name(
+                child, node_name, max_level=max_level - 1
+            )
+        return nodes
+
+    @staticmethod
+    def get_nodes_start_bytes(nodes: list[Node]):
+        start_bytes = {
+            node.text.decode("utf-8"): node.start_byte
+            for node in nodes
+            if node.text is not None  # Ensure node.text is not None
+        }
+        return start_bytes
 
     @staticmethod
     def has_any_child_of_type(

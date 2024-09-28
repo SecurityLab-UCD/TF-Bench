@@ -103,101 +103,42 @@ def manual_change(code: str) -> str:
     return code
 
 
-def get_monomorphic_names(node: tree_sitter.Node) -> dict[str, int]:
-    def get_monomorphic_nodes(node: tree_sitter.Node) -> list[tree_sitter.Node]:
-        name_nodes = []
+def get_monomorphic_names(root: tree_sitter.Node) -> dict[str, int]:
+    name_nodes = AST.get_all_nodes_of_type(root, "name")
+    nothing_nodes = AST.get_all_nodes_of_name(root, "Nothing")
 
-        # Check if this node is a name node
-        if node.type == "name" or (
-            node.text and node.text.decode("utf-8") == "Nothing"
-        ):
-            name_nodes.append(node)
-
-        # Recursively check child nodes
-        for child in node.children:
-            name_nodes.extend(get_monomorphic_nodes(child))
-
-        return name_nodes
-
-    type_names = {
-        node.text.decode("utf-8"): node.start_byte
-        for node in get_monomorphic_nodes(node)
-        if node.text is not None  # Ensure node.text is not None
-    }
-
-    return type_names
+    return AST.get_nodes_start_bytes(name_nodes + nothing_nodes)
 
 
-def get_parametric_names(node: tree_sitter.Node) -> dict[str, int]:
-    def get_parametric_nodes(root: tree_sitter.Node) -> list[tree_sitter.Node]:
-        result = []
+def get_parametric_names(root: tree_sitter.Node) -> dict[str, int]:
+    param_nodes = []
+    sig_nodes = AST.get_all_nodes_of_type(root, "signature")
+    for node in sig_nodes:
+        param_nodes += AST.get_all_nodes_of_type(node, "variable")
 
-        def collect_variables(node):
-            if node.type == "variable":
-                result.append(node)
-            for child in node.children:
-                collect_variables(child)
-
-        def traverse(node):
-            if node.type == "signature":
-                collect_variables(node)
-            else:
-                for child in node.children:
-                    traverse(child)
-
-        traverse(root)
-        return result
-
-    param_names = {
-        node.text.decode("utf-8"): node.start_byte
-        for node in get_parametric_nodes(node)
-        if node.text is not None  # Ensure node.text is not None
-    }
-    return param_names
+    return AST.get_nodes_start_bytes(param_nodes)
 
 
-def get_function_names(
-    node: tree_sitter.Node, func_names: Optional[dict[str, int]] = None
-) -> dict[str, int]:
-    if func_names is None:
-        func_names = {}
+def get_function_names(root: tree_sitter.Node) -> dict[str, int]:
+    func_nodes = AST.get_all_nodes_of_type(root, "function")
+    sig_nodes = AST.get_all_nodes_of_type(root, "signature")
+    app_nodes = AST.get_all_nodes_of_type(root, "apply")
 
-    if node.type in ("function", "signature"):
-        func_name = node.child_by_field_name("name")
-        if func_name and func_name.text:
-            func_text = func_name.text.decode("utf-8")
-            if func_text not in func_names:
-                func_names[func_text] = func_name.start_byte
+    child_nodes = []
+    for node in func_nodes + sig_nodes:
+        if child_name_node := node.child_by_field_name("name"):
+            child_nodes.append(child_name_node)
 
-    elif node.type == "apply":
-        func_name = node.children[0] if node.children else None
-        if func_name and func_name.text:
-            func_text = func_name.text.decode("utf-8")
-            if func_text not in func_names:
-                func_names[func_text] = func_name.start_byte
+    for node in app_nodes:
+        if app_child_nodes := node.children:
+            child_nodes.append(app_child_nodes[0])
 
-    for child in node.children:
-        get_function_names(child, func_names)
-
-    return func_names
+    return AST.get_nodes_start_bytes(child_nodes)
 
 
-def get_variable_names(
-    node: tree_sitter.Node, var_names: Optional[dict[str, int]] = None
-) -> dict[str, int]:
-    if var_names is None:
-        var_names = {}
-
-    if node.type == "variable":
-        if node.text:
-            var_name = node.text.decode("utf-8")
-            if var_name not in var_names:
-                var_names[var_name] = node.start_byte
-
-    for child in node.children:
-        get_variable_names(child, var_names)
-
-    return var_names
+def get_variable_names(root: tree_sitter.Node) -> dict[str, int]:
+    var_nodes = AST.get_all_nodes_of_type(root, "variable")
+    return AST.get_nodes_start_bytes(var_nodes)
 
 
 def replace_names(
