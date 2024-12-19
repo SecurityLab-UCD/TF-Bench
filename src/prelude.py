@@ -61,7 +61,7 @@ def main(
     print(f"Collected {len(tasks_w_dep)} for the benchmark.")
 
     for i, t in enumerate(tasks_w_dep):
-        md_path = pjoin(output_dir, f"task_{i}.md")
+        md_path = pjoin(output_dir, f"task_{i}.core.md")
         with open(md_path, "w") as fp:
             fp.write(task2md(t))
 
