@@ -7,13 +7,13 @@ Parametric
 
 # signature
 ```haskell
-f :: (a -> c) -> (b -> c) -> A a b -> c
+f1 :: (a -> c) -> (b -> c) -> A a b -> c
 ```   
 
 # code
 ```haskell
-either _ g (B y)    =  g y
-either f _ (C x)     =  f x
+f1 _ g (B y)    =  g y
+f1 f _ (C x)     =  f x
 ```
 
 # dependencies
