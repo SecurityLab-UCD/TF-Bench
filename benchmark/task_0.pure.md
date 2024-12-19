@@ -19,13 +19,13 @@ maybe n _ C  = n
 # dependencies
 ## 0
 ```haskell
-B :: a -> A a
+data A a = C | B a
 ```
 ## 1
 ```haskell
-C :: A a
+B :: a -> A a
 ```
 ## 2
 ```haskell
-data A a = C | B a
+C :: A a
 ```

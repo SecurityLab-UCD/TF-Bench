@@ -19,13 +19,13 @@ maybe n _ Nothing  = n
 # dependencies
 ## 0
 ```haskell
-Just :: a -> Maybe a
+data Maybe a = Nothing | Just a
 ```
 ## 1
 ```haskell
-Nothing :: Maybe a
+Just :: a -> Maybe a
 ```
 ## 2
 ```haskell
-data Maybe a = Nothing | Just a
+Nothing :: Maybe a
 ```
