@@ -7,25 +7,25 @@ Parametric
 
 # signature
 ```haskell
-f1 :: b -> (a -> b) -> A a -> b
+f1 :: b -> (a -> b) -> T1 a -> b
 ```   
 
 # code
 ```haskell
-f1 _ f (B x) = f x
-f1 n _ C  = n
+f1 _ f (T2 x) = f x
+f1 n _ T3  = n
 ```
 
 # dependencies
 ## 0
 ```haskell
-data A a = C | B a
+data T1 a = T3 | T2 a
 ```
 ## 1
 ```haskell
-B :: a -> A a
+T2 :: a -> T1 a
 ```
 ## 2
 ```haskell
-C :: A a
+T3 :: T1 a
 ```
