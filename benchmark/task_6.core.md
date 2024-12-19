@@ -15,15 +15,19 @@ succ :: Enum a => a -> a
 
 # code
 ```haskell
-succ (c :: Char) =  chr (ord c + 1)
 succ False = True
-succ (x :: Int) = x + 1
+succ True  = error "bad argument"
+succ LT = EQ
+succ EQ = GT
+succ GT = error "bad argument"
+succ c =  chr (ord c + 1)
+succ x = x + 1
 ```
 
 # dependencies
 ## 0
 ```haskell
-class Enum a = {Char, Int, Bool}
+class Enum a = {Char, Int, Bool, Ordering}
 ```
 ## 1
 ```haskell
@@ -40,4 +44,8 @@ ord :: Char -> Int
 ## 4
 ```haskell
 data Bool = False | True
+```
+## 5
+```haskell
+data Ordering = LT | EQ | GT
 ```
