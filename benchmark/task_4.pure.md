@@ -7,12 +7,12 @@ Parametric
 
 # signature
 ```haskell
-g :: ((a, b) -> c) -> a -> b -> c
+f1 :: ((a, b) -> c) -> a -> b -> c
 ```   
 
 # code
 ```haskell
-g f x y             =  f (x, y)
+f1 f x y             =  f (x, y)
 ```
 
 # dependencies

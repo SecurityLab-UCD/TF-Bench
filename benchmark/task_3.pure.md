@@ -7,12 +7,12 @@ Parametric
 
 # signature
 ```haskell
-f :: (a,b) -> b
+f1 :: (a,b) -> b
 ```   
 
 # code
 ```haskell
-f (_,y)               =  y
+f1 (_,y)               =  y
 ```
 
 # dependencies
