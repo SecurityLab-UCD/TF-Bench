@@ -24,3 +24,7 @@ f1 n  = if n > 0 then n else f2 n
 ```haskell
 f2 :: T1 -> T1
 ```
+## 2
+```haskell
+type T1 = Int
+```
