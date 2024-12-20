@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Enum.hs--enumFromThen
 
 # poly_type
-Parametric
+Ad-hoc
 
 # signature
 ```haskell
