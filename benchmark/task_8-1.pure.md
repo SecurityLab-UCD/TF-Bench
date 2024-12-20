@@ -22,3 +22,7 @@ f1 n | n == 0    = T3
 ```haskell
 data T1 = T3 | T4
 ```
+## 1
+```haskell
+type T2 = Int
+```
