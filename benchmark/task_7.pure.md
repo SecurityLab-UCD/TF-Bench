@@ -15,37 +15,23 @@ f1 :: T1 a => a -> a
 
 # code
 ```haskell
-f1 T7 = T6
-f1 T6 = error "bad argument"
-f1 T10 = T9
-f1 T9 = T8
-f1 T8 = error "bad argument"
-f1 c = f2 (f3 c - 1)
-f1 x = x - 1
+f1 = f2 . (f3 1) . f4
 ```
 
 # dependencies
 ## 0
 ```haskell
-class T1 a = {T2, T3, T4, T5}
+f2 :: T1 a => T2 -> a
 ```
 ## 1
 ```haskell
-f2 :: T3 -> T2
+(.) :: (b -> c) -> (a -> b) -> a -> c
 ```
 ## 2
 ```haskell
-f3 :: T2 -> T3
+f3 :: T2 -> T2 -> T2
 ```
 ## 3
 ```haskell
-(-) :: T3 -> T3 -> T3
-```
-## 4
-```haskell
-data T4 = T6 | T7
-```
-## 5
-```haskell
-data T5 = T8 | T9 | T10
+f4 :: T1 a => a -> T2
 ```
