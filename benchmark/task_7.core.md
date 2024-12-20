@@ -8,23 +8,26 @@ Ad-hoc
 # note
 modified
 
-
 # signature
 ```haskell
 pred :: Enum a => a -> a
-```   
+```  
 
 # code
 ```haskell
-pred (c :: Char) =  chr (ord c - 1)
 pred True = False
-pred (x :: Int) = x - 1
+pred False = error "bad argument"
+pred GT = EQ
+pred EQ = LT
+pred LT = error "bad argument"
+pred c = chr (ord c - 1)
+pred x = x - 1
 ```
 
 # dependencies
 ## 0
 ```haskell
-class Enum a = {Char, Int, Bool}
+class Enum a = {Char, Int, Bool, Ordering}
 ```
 ## 1
 ```haskell
@@ -41,4 +44,8 @@ ord :: Char -> Int
 ## 4
 ```haskell
 data Bool = False | True
+```
+## 5
+```haskell
+data Ordering = LT | EQ | GT
 ```
