@@ -23,7 +23,7 @@ mapM_ f = foldr c (return ())
 ```
 ## 1
 ```haskell
-foldr :: (a -> b -> b) -> b -> t a -> b
+foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 ```
 ## 2
 ```haskell
