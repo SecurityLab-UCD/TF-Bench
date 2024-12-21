@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Float.hs--decodeFloat-Double
 
 # poly_type
-Parametric
+Monomorphic
 
 # signature
 ```haskell
