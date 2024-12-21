@@ -1,6 +1,6 @@
 
 # task_id
-data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Float.hs--f1-Double
+data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Float.hs--isNaN-Double
 
 # poly_type
 Monomorphic
