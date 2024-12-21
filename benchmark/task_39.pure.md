@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Float.hs--significand
 
 # poly_type
-Parametric
+Ad-hoc
 
 # signature
 ```haskell
