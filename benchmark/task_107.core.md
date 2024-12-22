@@ -26,3 +26,23 @@ lines s  =  cons (case break (== '\n') s of
 ```haskell
 break :: (a -> Bool) -> [a] -> ([a],[a])
 ```
+## 1
+```haskell
+(:) :: a -> [a] -> [a]
+```
+## 2
+```haskell
+[] :: [a]
+```
+## 3
+```haskell
+"" :: String
+```
+## 4
+```haskell
+'', '\n' :: Char
+```
+## 5
+```haskell
+(==) :: Eq a => a -> a -> Bool
+```

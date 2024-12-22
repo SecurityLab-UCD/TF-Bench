@@ -31,3 +31,15 @@ dropWhile :: (a -> Bool) -> [a] -> [a]
 ```haskell
 isSpace :: Char -> Bool
 ```
+## 3
+```haskell
+(:) :: a -> [a] -> [a]
+```
+## 4
+```haskell
+[] :: [a]
+```
+## 5
+```haskell
+"" :: String
+```
