@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Show.hs--showsPrec
 
 # poly_type
-Adhoc
+Ad-hoc
 
 # signature
 ```haskell
