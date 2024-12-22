@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/List.hs--concatMap
 
 # poly_type
-Ad-hoc
+Parametric
 
 # signature
 ```haskell
