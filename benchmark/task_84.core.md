@@ -1,26 +1,26 @@
 
 # task_id
-data/repos/ghc-internal-9.1001.0/src/GHC/Internal/List.hs--concat
+data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Data/Foldable.hs--concat
 
 # poly_type
-Parametric
+Ad-hoc
 
 # signature
 ```haskell
-concat :: [[a]] -> [a]
+concat :: Foldable t => t [a] -> [a]
 ```   
 
 # code
 ```haskell
-concat = foldr (++) []
+concat xs = build (\c n -> foldr (\x y -> foldr c y x) n xs)
 ```
 
 # dependencies
 ## 0
 ```haskell
-foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
+build :: forall a. (forall b. (a -> b -> b) -> b -> b) -> [a]
 ```
 ## 1
 ```haskell
-(++) :: [a] -> [a] -> [a]
+foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 ```
