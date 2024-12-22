@@ -10,7 +10,7 @@ modified
 
 # signature
 ```haskell
-init :: HasCallStack => [a] -> [a]
+init :: [a] -> [a]
 ```   
 
 # code
