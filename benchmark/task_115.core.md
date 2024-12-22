@@ -39,3 +39,7 @@ lex :: String -> [(String, String)]
 ```haskell
 (>>=) :: Monad m => m a -> (a -> m b) -> m b
 ```
+## 4
+```haskell
+type ReadS a = String -> [(a, String)]
+```
