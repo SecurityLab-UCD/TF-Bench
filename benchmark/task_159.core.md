@@ -22,5 +22,5 @@ id :: a -> a
 ```
 ## 1
 ```haskell
-liftA2 :: Apply f => (a -> b -> c) -> f a -> f b -> f c
+liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
 ```
