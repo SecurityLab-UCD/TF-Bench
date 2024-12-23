@@ -1,6 +1,6 @@
 
 # task_id
-data/repos/ghc/libraries/ghc-prim/GHC/Classes.hs--(min)
+data/repos/ghc/libraries/ghc-prim/GHC/Classes.hs--min
 
 # poly_type
 Ad-hoc

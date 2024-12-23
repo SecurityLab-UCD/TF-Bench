@@ -1,6 +1,6 @@
 
 # task_id
-data/repos/ghc/libraries/ghc-prim/GHC/Classes.hs--(max)
+data/repos/ghc/libraries/ghc-prim/GHC/Classes.hs--max
 
 # poly_type
 Ad-hoc
