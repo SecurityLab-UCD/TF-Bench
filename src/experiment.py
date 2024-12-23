@@ -152,7 +152,7 @@ def main(
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open("evaluation_log.jsonl", "a") as log_file:
         logging_result = {"model_name": model, **eval_acc}
-        log_file.write(f"{logging_result}\n")
+        log_file.write(f"{json.dumps(logging_result)}\n")
 
 
 if __name__ == "__main__":
