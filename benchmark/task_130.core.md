@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Base.hs--($)
 
 # poly_type
-Arbitrary-rank
+Parametric
 
 # signature
 ```haskell
