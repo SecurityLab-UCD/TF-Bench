@@ -24,6 +24,7 @@ from src.common import (
     get_prompt,
 )
 from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
 
 GPT_MODELS = [
     "gpt-3.5-turbo",
@@ -137,6 +138,8 @@ def main(
     gen_results = (
         Chain(responses)
         .map(lambda x: x if x is not None else "")  # convert None to empty string
+        .map(lambda s: postprocess(s, RESPONSE_STRATEGIES))
+        .map(str.strip)
         .value
     )
 
