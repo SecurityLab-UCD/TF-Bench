@@ -59,6 +59,8 @@ def get_prompt(task: BenchmarkTask) -> str:
     """get prompt from a task instance"""
 
     fn_name = extract_function_name(task)
+    assert fn_name is not None
+
     code = task.code
     dependencies = (
         "\n".join(map(str.strip, task.dependencies))
@@ -66,8 +68,7 @@ def get_prompt(task: BenchmarkTask) -> str:
         else ""
     )
 
-    if fn_name is not None:
-        prompt = f"""
+    prompt = f"""
 {dependencies}
 \n\n
 {code}
