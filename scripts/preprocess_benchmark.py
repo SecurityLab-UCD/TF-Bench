@@ -13,7 +13,7 @@ def main(raw_benchmark_path: str = "benchmark", output_path: str = "Benchmark-F.
     # read in all files ending with .md in the raw_benchmark_path
     tasks: list[BenchmarkTask] = []
     for file in os.listdir(raw_benchmark_path):
-        if not file.endswith(".core.md") or "-" in file:
+        if not file.endswith(".core.md"):
             continue
         with open(os.path.join(raw_benchmark_path, file), "r") as f:
             data = f.read()
