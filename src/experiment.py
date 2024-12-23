@@ -19,7 +19,6 @@ from src.common import (
     BenchmarkTask,
     SEED,
     TEMPERATURE,
-    TOP_P,
     SYSTEM_PROMPT,
     INSTRUCT_PROMPT,
     get_prompt,
@@ -46,7 +45,6 @@ def get_oai_model(
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
@@ -61,7 +59,6 @@ def get_oai_model(
             # Set parameters to ensure reproducibility
             seed=seed,
             temperature=temperature,
-            top_p=top_p,
         )
 
         content = completion.choices[0].message.content
@@ -75,7 +72,6 @@ def get_ant_model(
     model: str = "claude-3-5-sonnet-20240620",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         message = client.messages.create(
@@ -106,7 +102,6 @@ def main(
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
     port: int = 11434,
 ):
     assert (
@@ -123,16 +118,16 @@ def main(
     if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_model(client, model, seed, temperature, top_p)
+        generate = get_oai_model(client, model, seed, temperature)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
         ), "Please set ANTHROPIC_API_KEY in environment!"
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_model(client, model, seed, temperature, top_p)
+        generate = get_ant_model(client, model, seed, temperature)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
-        generate = get_ollama_model(client, model, seed, temperature, top_p)
+        generate = get_ollama_model(client, model, seed, temperature)
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]

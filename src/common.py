@@ -8,9 +8,8 @@ import io
 import markdown_to_json
 
 # Default hyper-parameters
-SEED = 123
+SEED = 0
 TEMPERATURE = 0.0
-TOP_P = 1.0
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.

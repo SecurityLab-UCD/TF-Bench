@@ -7,7 +7,6 @@ from typing import Union
 from src.common import (
     SEED,
     TEMPERATURE,
-    TOP_P,
     SYSTEM_PROMPT,
     INSTRUCT_PROMPT,
 )
@@ -69,7 +68,6 @@ def get_model(
     model: str = "llama3",
     seed=SEED,
     temperature=TEMPERATURE,
-    top_p=TOP_P,
 ):
     def generate_type_signature(prompt: str) -> Union[str, None]:
         response = client.chat(
@@ -83,7 +81,6 @@ def get_model(
             model=model,
             options={
                 "seed": seed,
-                "top_p": top_p,
                 "temperature": temperature,
             },
         )
