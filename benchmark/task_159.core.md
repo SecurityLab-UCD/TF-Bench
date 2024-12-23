@@ -24,7 +24,3 @@ id :: a -> a
 ```haskell
 liftA2 :: Apply f => (a -> b -> c) -> f a -> f b -> f c
 ```
-## 3
-```haskell
-(.) :: (b -> c) -> (a -> b) -> a -> c
-```
