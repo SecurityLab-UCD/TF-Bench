@@ -10,7 +10,7 @@ def test_len():
         "signature": "properFraction      :: (Integral b) => a -> (b,a)",
         "code": "properFraction (x:%y) = (fromInteger (toInteger q), r:%y)\n                          where (q,r) = quotRem x y",
         "poly_type": "Ad-hoc",
-        "dependencies": None,
+        "dependencies": [],
     }
 
     task = from_dict(data_class=BenchmarkTask, data=task_data)
