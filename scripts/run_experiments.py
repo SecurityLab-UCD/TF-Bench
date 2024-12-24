@@ -10,8 +10,8 @@ import fire
 
 def main(
     input_file: str = "Benchmark-F.removed.json",
-    output_file: str | None = None,
-    option: str = "ollama",
+    log_file: str | None = None,
+    option: str = "gpt",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
     port: int = 11434,
@@ -36,11 +36,12 @@ def main(
         for m in models:
             run_experiment(
                 input_file=input_file,
-                output_file=output_file,
+                output_file=None,
                 model=m,
                 seed=seed,
                 temperature=temperature,
                 port=port,
+                log_file=log_file,
             )
 
 

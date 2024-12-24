@@ -100,6 +100,7 @@ def get_ant_model(
 def main(
     input_file: str = "Benchmark-F.removed.json",
     output_file: str | None = None,
+    log_file: str | None = None,
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
@@ -112,6 +113,9 @@ def main(
     if output_file is None:
         os.makedirs("result", exist_ok=True)
         output_file = f"result/{model}.txt"
+
+    if log_file is None:
+        log_file = "evaluation_log.json"
 
     client: OpenAI | Anthropic | OllamaClient
     generate: Callable[[str], str | None]
@@ -150,9 +154,9 @@ def main(
     print(eval_acc)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open("evaluation_log.jsonl", "a") as log_file:
+    with open(log_file, "a") as fp:
         logging_result = {"model_name": model, **eval_acc}
-        log_file.write(f"{json.dumps(logging_result)}\n")
+        fp.write(f"{json.dumps(logging_result)}\n")
 
 
 if __name__ == "__main__":

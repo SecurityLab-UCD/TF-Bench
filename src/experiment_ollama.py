@@ -23,7 +23,7 @@ OLLAMA_OSS = [
     "llama3.1:70b",
     "llama3.1:405b",
     "llama3.2:1b",
-    "llama3.2:8b",
+    "llama3.2:3b",
     "llama3.3:70b",
     "gemma:2b",
     "gemma:7b",
@@ -42,14 +42,8 @@ OLLAMA_OSS = [
 
 
 OLLAMA_CODE = [
-    "codegemma:2b",
-    "codegemma:7b",
     "qwen2.5-coder:1.5b",
     "qwen2.5-coder:7b",
-    "codestral:22b",
-    "codellama:7b",
-    "codellama:13b",
-    "codellama:70b",
     "granite-code:3b",
     "granite-code:8b",
     "granite-code:20b",
