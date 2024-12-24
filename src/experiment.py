@@ -115,7 +115,7 @@ def main(
         output_file = f"result/{model}.txt"
 
     if log_file is None:
-        log_file = "evaluation_log.json"
+        log_file = "evaluation_log.jsonl"
 
     client: OpenAI | Anthropic | OllamaClient
     generate: Callable[[str], str | None]
