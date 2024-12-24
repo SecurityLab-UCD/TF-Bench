@@ -34,9 +34,24 @@ and install Python packages in `requirements.txt`.
 
 ## Building Benchmark-F
 
+### Benchmark-F
+
+This script will build the benchmark (Prelude with NL) from the raw data.
+
 ```sh
-./scripts/run.sh
+python scripts/preprocess_benchmark.py -i benchmark/ -o Benchmark-F.json
 ```
+
+### Benchmark-F_pure
+
+```sh
+python src/type_rewrite.py -d Benchmark-F.json -o Benchmark-F.pure.json
+```
+
+### Benchmark-F_extended
+
+ToDo
+
 
 ## Experiments
 
