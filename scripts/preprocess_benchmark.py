@@ -8,14 +8,14 @@ from src.common import md2task, BenchmarkTask
 from funcy import lmap
 
 
-def main(raw_benchmark_path: str = "benchmark", output_path: str = "Benchmark-F.json"):
+def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "Benchmark-F.json"):
 
-    # read in all files ending with .md in the raw_benchmark_path
+    # read in all files ending with .md in the input_raw_benchmark_path
     tasks: list[BenchmarkTask] = []
-    for file in os.listdir(raw_benchmark_path):
+    for file in os.listdir(input_raw_benchmark_path):
         if not file.endswith(".core.md"):
             continue
-        with open(os.path.join(raw_benchmark_path, file), "r") as f:
+        with open(os.path.join(input_raw_benchmark_path, file), "r") as f:
             data = f.read()
 
         # convert the markdown file to json
