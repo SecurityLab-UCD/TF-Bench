@@ -15,6 +15,7 @@ def main(
     seed: int = SEED,
     temperature: float = TEMPERATURE,
     port: int = 11434,
+    repeat: int = 1,
 ):
     assert option in ("gpt", "claude", "ollama-all", "ollama-oss", "ollama-code")
 
@@ -31,15 +32,16 @@ def main(
         case "ollama-code":
             models = OLLAMA_CODE
 
-    for m in models:
-        run_experiment(
-            input_file=input_file,
-            output_file=output_file,
-            model=m,
-            seed=seed,
-            temperature=temperature,
-            port=port,
-        )
+    for _ in range(repeat):
+        for m in models:
+            run_experiment(
+                input_file=input_file,
+                output_file=output_file,
+                model=m,
+                seed=seed,
+                temperature=temperature,
+                port=port,
+            )
 
 
 if __name__ == "__main__":
