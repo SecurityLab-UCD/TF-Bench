@@ -8,15 +8,14 @@ from dacite import from_dict
 
 from src.hs_parser import HASKELL_LANGUAGE
 from src.hs_parser.ast_util import AST
-from src.common import extract_function_name
 from src.add_dependency import add_dependencies
-from src.common import clean_tab_spaces, BenchmarkTask
+from src.common import clean_tab_spaces, BenchmarkTask, task2md
 
 
 def main(
     prelude: str = "data/repos/base-4.20.0.0/src/Prelude.hs",
     ghc_internal: str = "data/source/ghc-internal-9.1001.0.jsonl",
-    output_file: str = "Benchmark-F.json",
+    output_dir: str = "benchmark",
 ):
     ghc_internal = abspath(ghc_internal)
     prelude = abspath(prelude)
@@ -54,18 +53,17 @@ def main(
         .map(lambda f: ghc_internal_dict[f])
         .filter(lambda t: t["code"] != "")
         .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-        .filter(lambda t: t.poly_type in ["Monomorphic", "Parametric"])
-        .filter(lambda t: "Generics.hs" not in t.task_id) # Some functions in Generics.hs are mis-classified in the previous step
         .map(add_dependencies(dependency_dict))
         .map(clean_tab_spaces)
-        .map(lambda x: x.__dict__)
         .value
     )
 
     print(f"Collected {len(tasks_w_dep)} for the benchmark.")
 
-    with open(output_file, "w") as fp:
-        json.dump(tasks_w_dep, fp)
+    for i, t in enumerate(tasks_w_dep):
+        md_path = pjoin(output_dir, f"task_{i}.core.md")
+        with open(md_path, "w") as fp:
+            fp.write(task2md(t))
 
 
 if __name__ == "__main__":

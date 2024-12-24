@@ -4,18 +4,18 @@ Script to run all experiments
 
 from src.experiment import GPT_MODELS, CLAUDE_MODELS, main as run_experiment
 from src.experiment_ollama import OLLAMA_MODELS, OLLAMA_OSS, OLLAMA_CODE
-from src.common import SEED, TEMPERATURE, TOP_P
+from src.common import SEED, TEMPERATURE
 import fire
 
 
 def main(
     input_file: str = "Benchmark-F.removed.json",
-    output_file: str | None = None,
-    option: str = "ollama",
+    log_file: str | None = None,
+    option: str = "gpt",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
     port: int = 11434,
+    repeat: int = 1,
 ):
     assert option in ("gpt", "claude", "ollama-all", "ollama-oss", "ollama-code")
 
@@ -32,16 +32,17 @@ def main(
         case "ollama-code":
             models = OLLAMA_CODE
 
-    for m in models:
-        run_experiment(
-            input_file=input_file,
-            output_file=output_file,
-            model=m,
-            seed=seed,
-            temperature=temperature,
-            top_p=top_p,
-            port=port,
-        )
+    for _ in range(repeat):
+        for m in models:
+            run_experiment(
+                input_file=input_file,
+                output_file=None,
+                model=m,
+                seed=seed,
+                temperature=temperature,
+                port=port,
+                log_file=log_file,
+            )
 
 
 if __name__ == "__main__":

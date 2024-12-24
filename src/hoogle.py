@@ -177,7 +177,7 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper) -> Benchmark
         ):
             banned_fp.write(f"{fn_name}: '{depedencies[i]}'\n")
             print(f"Status: Invalid on '{depedencies[i]}'\n")
-            task.dependencies = None
+            task.dependencies = []
             # Otherwise remove the valid task
             return task
         # Change signature in List.foldr case

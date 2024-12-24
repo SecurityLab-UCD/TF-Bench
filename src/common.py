@@ -1,34 +1,34 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import re
 import copy
 from funcy import lmap
 import sys
 import io
 
+import markdown_to_json
+
 # Default hyper-parameters
-SEED = 123
+SEED = 0
 TEMPERATURE = 0.0
-TOP_P = 1.0
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
-NOTE: all tasks are monomorphic or parametric polymorphic, Do not output any type class."""
+ONLY output the type signature. Do Not Provide any additional commentaries or explanations."""
 
-INSTRUCT_PROMPT = """
-1. Use the lowercase alphabet [a..z] for type variables instead of numbers.
-2. ONLY output the type signature. Do Not Provide any additional commentaries or explanations."""
+INSTRUCT_PROMPT = ""
 
 
 @dataclass
 class BenchmarkTask:
     task_id: str
+    poly_type: str
     signature: str
     code: str
-    poly_type: str
-    dependencies: list[str] | None
+    dependencies: list[str] = field(default_factory=list)
+
 
 def extract_function_name(task: BenchmarkTask) -> str | None:
-    return task.signature.split('::')[0].strip()
+    return task.signature.split("::")[0].strip()
 
 
 def clean_tab_spaces(task: BenchmarkTask) -> BenchmarkTask:
@@ -56,6 +56,8 @@ def get_prompt(task: BenchmarkTask) -> str:
     """get prompt from a task instance"""
 
     fn_name = extract_function_name(task)
+    assert fn_name is not None
+
     code = task.code
     dependencies = (
         "\n".join(map(str.strip, task.dependencies))
@@ -63,8 +65,7 @@ def get_prompt(task: BenchmarkTask) -> str:
         else ""
     )
 
-    if fn_name is not None:
-        prompt = f"""
+    prompt = f"""
 {dependencies}
 \n\n
 {code}
@@ -91,3 +92,54 @@ def silence(func):
             sys.stderr = original_stderr
 
     return wrapper
+
+
+def task2md(task: BenchmarkTask) -> str:
+    """Convert a task object to markdown format, where key will be title and value will be content
+    wrap code block with triple backticks"""
+
+    md = f"""
+# task_id
+{task.task_id}
+
+# poly_type
+{task.poly_type}
+
+# signature
+```haskell
+{task.signature}
+```   
+
+# code
+```haskell
+{task.code}
+```
+
+# dependencies
+"""
+    if task.dependencies is not None:
+        for i, dep in enumerate(task.dependencies):
+            md += f"## {i}\n```haskell\n{dep}\n```\n"
+    return md
+
+
+def md2task(md: str) -> BenchmarkTask:
+    """Convert a markdown string to a task object"""
+
+    raw_dict = markdown_to_json.dictify(md)
+
+    def rm_md_block(text: str) -> str:
+        return text.replace("```\n", "").replace("\n```", "")
+
+    dependencies = []
+    if isinstance(raw_dict["dependencies"], dict):
+        for _, v in raw_dict["dependencies"].items():
+            dependencies.append(rm_md_block(v))
+
+    return BenchmarkTask(
+        task_id=raw_dict["task_id"],
+        poly_type=raw_dict["poly_type"],
+        signature=rm_md_block(raw_dict["signature"]),
+        code=rm_md_block(raw_dict["code"]),
+        dependencies=dependencies,
+    )

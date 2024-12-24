@@ -22,3 +22,6 @@ anthropic==0.34.2
 #token counting
 tiktoken==0.7.0
 requests==2.32.3
+
+# json util
+markdown-to-json==2.1.2

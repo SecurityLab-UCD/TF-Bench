@@ -19,12 +19,12 @@ from src.common import (
     BenchmarkTask,
     SEED,
     TEMPERATURE,
-    TOP_P,
     SYSTEM_PROMPT,
     INSTRUCT_PROMPT,
     get_prompt,
 )
 from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
+from src.postprocessing import postprocess, RESPONSE_STRATEGIES
 
 GPT_MODELS = [
     "gpt-3.5-turbo",
@@ -46,7 +46,6 @@ def get_oai_model(
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
@@ -61,7 +60,6 @@ def get_oai_model(
             # Set parameters to ensure reproducibility
             seed=seed,
             temperature=temperature,
-            top_p=top_p,
         )
 
         content = completion.choices[0].message.content
@@ -75,7 +73,6 @@ def get_ant_model(
     model: str = "claude-3-5-sonnet-20240620",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         message = client.messages.create(
@@ -103,10 +100,10 @@ def get_ant_model(
 def main(
     input_file: str = "Benchmark-F.removed.json",
     output_file: str | None = None,
+    log_file: str | None = None,
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    top_p: float = TOP_P,
     port: int = 11434,
 ):
     assert (
@@ -117,22 +114,25 @@ def main(
         os.makedirs("result", exist_ok=True)
         output_file = f"result/{model}.txt"
 
+    if log_file is None:
+        log_file = "evaluation_log.jsonl"
+
     client: OpenAI | Anthropic | OllamaClient
     generate: Callable[[str], str | None]
 
     if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_model(client, model, seed, temperature, top_p)
+        generate = get_oai_model(client, model, seed, temperature)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
         ), "Please set ANTHROPIC_API_KEY in environment!"
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_model(client, model, seed, temperature, top_p)
+        generate = get_ant_model(client, model, seed, temperature)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
-        generate = get_ollama_model(client, model, seed, temperature, top_p)
+        generate = get_ollama_model(client, model, seed, temperature)
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
@@ -142,6 +142,8 @@ def main(
     gen_results = (
         Chain(responses)
         .map(lambda x: x if x is not None else "")  # convert None to empty string
+        .map(lambda s: postprocess(s, RESPONSE_STRATEGIES))
+        .map(str.strip)
         .value
     )
 
@@ -152,9 +154,9 @@ def main(
     print(eval_acc)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open("evaluation_log.jsonl", "a") as log_file:
+    with open(log_file, "a") as fp:
         logging_result = {"model_name": model, **eval_acc}
-        log_file.write(f"{logging_result}\n")
+        fp.write(f"{json.dumps(logging_result)}\n")
 
 
 if __name__ == "__main__":
