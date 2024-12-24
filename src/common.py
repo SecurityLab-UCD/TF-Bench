@@ -13,8 +13,7 @@ TEMPERATURE = 0.0
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
-ONLY output the type signature. Do Not Provide any additional commentaries or explanations.
-"""
+ONLY output the type signature. Do Not Provide any additional commentaries or explanations."""
 
 INSTRUCT_PROMPT = ""
 
