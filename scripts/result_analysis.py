@@ -7,7 +7,7 @@ import pandas as pd
 
 def main(
     input_evaluation_log_path: str = "evaluation_log.jsonl",
-    output_path: str = "average_results.json",
+    output_path: str = "evaluation_results.json",
 ):
     with open(input_evaluation_log_path, "r") as f:
         logs = f.readlines()
@@ -21,6 +21,9 @@ def main(
         result_dict[model_name].append(result["accuracy"])
 
     df = pd.DataFrame(result_dict)
+    # sort df by mean
+    df = df.reindex(df.mean().sort_values(ascending=False).index, axis=1)
+
     results = [
         {
             "model_name": model_name,
