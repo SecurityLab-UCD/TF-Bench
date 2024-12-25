@@ -6,6 +6,7 @@ from src.experiment import GPT_MODELS, CLAUDE_MODELS, main as run_experiment
 from src.experiment_ollama import OLLAMA_MODELS, OLLAMA_OSS, OLLAMA_CODE
 from src.common import SEED, TEMPERATURE
 import fire
+import sys
 
 
 def main(
@@ -17,7 +18,6 @@ def main(
     port: int = 11434,
     repeat: int = 1,
 ):
-    assert option in ("gpt", "claude", "ollama-all", "ollama-oss", "ollama-code")
 
     models: list[str]
     match option:
@@ -31,6 +31,11 @@ def main(
             models = OLLAMA_OSS
         case "ollama-code":
             models = OLLAMA_CODE
+        case "api":
+            models = GPT_MODELS + CLAUDE_MODELS
+        case _:
+            print(f"Invalid option: {option}", file=sys.stderr)
+            sys.exit(1)
 
     for _ in range(repeat):
         for m in models:
