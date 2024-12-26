@@ -21,7 +21,3 @@ liftA2 _ _ _ = Nothing
 ```haskell
 data Maybe a = Nothing | Just a
 ```
-## 1
-```haskell
-from1 :: f a -> (Rep1 f) a
-```
