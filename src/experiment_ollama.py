@@ -2,7 +2,7 @@
 Experiment script for OSS models using Ollama
 """
 
-from ollama import Client as OllamaClient
+from ollama import Client as OllamaClient, ResponseError
 from typing import Union
 from src.common import (
     SEED,
@@ -62,20 +62,24 @@ def get_model(
     temperature=TEMPERATURE,
 ):
     def generate_type_signature(prompt: str) -> Union[str, None]:
-        response = client.chat(
-            messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT,
+        try:
+            response = client.chat(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": SYSTEM_PROMPT,
+                    },
+                    {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
+                ],
+                model=model,
+                options={
+                    "seed": seed,
+                    "temperature": temperature,
                 },
-                {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
-            ],
-            model=model,
-            options={
-                "seed": seed,
-                "temperature": temperature,
-            },
-        )
+            )
+        except ResponseError as e:
+            print(e)
+            return None
 
         if isinstance(response, dict) and "message" in response:
             message = response["message"]
