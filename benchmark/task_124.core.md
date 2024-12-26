@@ -26,6 +26,6 @@ withFile :: FilePath -> IOMode -> (Handle -> IO r) -> IO r
 ```
 ## 2
 ```haskell
-AppendMode :: IOMode
+data IOMode = ReadMode | WriteMode | AppendMode | ReadWriteMode
 ```
 
