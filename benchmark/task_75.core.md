@@ -19,7 +19,3 @@ filter f (x:xs)
 ```
 
 # dependencies
-## 1
-```haskell
-(:) :: a -> [a] -> [a]
-```

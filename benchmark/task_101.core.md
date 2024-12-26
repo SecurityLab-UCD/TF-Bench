@@ -27,7 +27,3 @@ data Maybe a = Nothing | Just a
 ```haskell
 (==) :: Eq a => a -> a -> Bool
 ```
-## 2
-```haskell
-(:) :: a -> [a] -> [a]
-```

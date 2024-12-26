@@ -27,13 +27,9 @@ foldr1 :: Foldable t => (a -> a -> a) -> t a -> a
 ```
 ## 2
 ```haskell
-(:) :: a -> [a] -> [a]
-```
-## 3
-```haskell
 space :: Char
 ```
-## 4
+## 3
 ```haskell
 emptyStr :: String
 ```

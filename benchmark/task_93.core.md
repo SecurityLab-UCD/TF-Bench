@@ -21,26 +21,19 @@ take n _      | n <= zero =  []
 
 ## 0
 ```haskell
-(:) :: a -> [a] -> [a]
+(<=) :: Ord a => a -> a -> Bool
 ```
 ## 1
 ```haskell
-(<=) :: Ord a => a -> a -> Bool
+(-) :: Num a => a -> a -> a
 ```
 ## 2
 ```haskell
-(-) :: Num a => a -> a -> a
+zero :: Int
 ```
 ## 3
 ```haskell
-zero :: Int
-```
-## 4
-```haskell
 one :: Int
 ```
-## 5
-```haskell
-(:) :: a -> [a] -> [a]
-```
+
 

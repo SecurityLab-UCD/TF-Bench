@@ -19,7 +19,3 @@ takeWhile p (x:xs)
 ```
 
 # dependencies
-## 0
-```haskell
-(:) :: a -> [a] -> [a]
-```

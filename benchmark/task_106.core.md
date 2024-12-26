@@ -20,8 +20,5 @@ unzip =  foldr (\(a,b) ~(as,bs) -> (a:as,b:bs)) ([],[])
 ```haskell
 foldr :: (a -> b -> b) -> b -> [a] -> b
 ```
-## 1
-```haskell
-(:) :: a -> [a] -> [a]
-```
+
 

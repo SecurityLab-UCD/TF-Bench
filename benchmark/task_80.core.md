@@ -22,7 +22,3 @@ null (_:_)   =  False
 ```haskell
 data Bool = False | True
 ```
-## 1
-```haskell
-(:) :: a -> [a] -> [a]
-```

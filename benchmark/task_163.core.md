@@ -25,17 +25,13 @@ xs     !! n | n < zero =  error "negative index"
 ```
 ## 1
 ```haskell
-(:) :: a -> [a] -> [a]
+(-) :: Num a => a -> a -> a
 ```
 ## 2
 ```haskell
-(-) :: Num a => a -> a -> a
-```
-## 3
-```haskell
 zero :: Int
 ```
-## 4
+## 3
 ```haskell
 one :: Int
 ```

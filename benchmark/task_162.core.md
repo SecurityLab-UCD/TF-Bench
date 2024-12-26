@@ -24,7 +24,3 @@ foldl :: (b -> a -> b) -> b -> [a] -> b
 ```haskell
 flip :: (a -> b -> c) -> b -> a -> c
 ```
-## 2
-```haskell
-(:) :: a -> [a] -> [a]
-```

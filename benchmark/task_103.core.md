@@ -17,7 +17,3 @@ zip3 _      _      _      = []
 ```
 
 # dependencies
-## 0
-```haskell
-(:) :: a -> [a] -> [a]
-```

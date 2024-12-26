@@ -28,21 +28,13 @@ break :: (a -> Bool) -> [a] -> ([a],[a])
 ```
 ## 1
 ```haskell
-(:) :: a -> [a] -> [a]
+emptyStr :: String
 ```
 ## 2
 ```haskell
-[] :: [a]
-```
-## 3
-```haskell
-emptyStr :: String
-```
-## 4
-```haskell
 newLine :: Char
 ```
-## 5
+## 3
 ```haskell
 (==) :: Eq a => a -> a -> Bool
 ```

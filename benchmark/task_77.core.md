@@ -21,7 +21,3 @@ last [x]                =  x
 ```
 
 # dependencies
-## 1
-```haskell
-(:) :: a -> [a] -> [a]
-```

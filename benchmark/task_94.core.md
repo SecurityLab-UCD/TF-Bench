@@ -32,10 +32,6 @@ zero :: Int
 ```
 ## 3
 ```haskell
-(:) :: a -> [a] -> [a]
-```
-## 4
-```haskell
 one :: Int
 ```
 

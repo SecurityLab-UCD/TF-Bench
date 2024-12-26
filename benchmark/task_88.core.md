@@ -19,6 +19,3 @@ scanr1 f (x:xs)         =  f x q : qs
 ```
 
 # dependencies
-```haskell
-(:) :: a -> [a] -> [a]
-```

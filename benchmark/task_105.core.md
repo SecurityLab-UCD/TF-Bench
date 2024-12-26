@@ -19,7 +19,4 @@ zipWith3 z = go
 ```
 
 # dependencies
-## 0
-```haskell
-(:) :: a -> [a] -> [a]
-```
+

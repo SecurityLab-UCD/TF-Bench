@@ -19,7 +19,4 @@ span p xs@(x:xs')
 ```
 
 # dependencies
-## 0
-```haskell
-(:) :: a -> [a] -> [a]
-```
+

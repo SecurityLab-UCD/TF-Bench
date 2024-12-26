@@ -18,7 +18,3 @@ zip _as    []     = []
 ```
 
 # dependencies
-## 0
-```haskell
-(:) :: a -> [a] -> [a]
-```
