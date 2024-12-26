@@ -12,7 +12,19 @@ encodeFloat :: Integer -> Int -> Double
 
 # code
 ```haskell
-encodeFloat i (I# j) = D# (integerEncodeDouble# i j)
+encodeFloat i (I_ j) = D_ (integerEncodeDouble_ i j)
 ```
 
 # dependencies
+## 0
+```haskell
+data Double = D_ Double_
+```
+## 1
+```haskell
+integerEncodeDouble_ :: Integer -> Int_ -> Double_
+```
+## 2
+```haskell
+data Int = I_ Int_
+```

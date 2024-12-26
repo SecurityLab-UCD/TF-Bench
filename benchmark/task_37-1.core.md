@@ -12,19 +12,19 @@ encodeFloat :: Integer -> Int -> Float
 
 # code
 ```haskell
-encodeFloat i (I# e) = F# (integerEncodeFloat# i e)
+encodeFloat i (I_ e) = F_ (integerEncodeFloat_ i e)
 ```
 
 # dependencies
 ## 0
 ```haskell
-I# :: Int# -> Int
+data Int = I_ Int_
 ```
 ## 1
 ```haskell
-F# :: Float# -> Float
+data Float = F_ Float_
 ```
 ## 2
 ```haskell
-integerEncodeFloat# :: Integer -> Int# -> Float#
+integerEncodeFloat_ :: Integer -> Int_ -> Float_
 ```

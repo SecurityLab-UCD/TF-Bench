@@ -12,16 +12,16 @@ fromInteger :: Integer -> Int
 
 # code
 ```haskell
-fromInteger i = I# (integerToInt# i)
+fromInteger i = I_ (integerToInt_ i)
 ```
 
 # dependencies
 ## 0
 ```haskell
-integerToInt# :: Integer -> Int#
+integerToInt_ :: Integer -> Int_
 ```
 ## 1
 ```haskell
-I# :: Int# -> Int
+data Int = I_ Int_
 ```
 
