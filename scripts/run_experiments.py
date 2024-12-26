@@ -15,10 +15,11 @@ def main(
     option: str = "gpt",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
-    port: int = 11434,
     repeat: int = 1,
+    pure: bool = False,
 ):
 
+    port: int = 11434
     models: list[str]
     match option:
         case "gpt":
@@ -47,6 +48,7 @@ def main(
                 temperature=temperature,
                 port=port,
                 log_file=log_file,
+                pure=pure,
             )
 
 

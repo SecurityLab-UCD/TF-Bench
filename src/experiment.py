@@ -19,18 +19,17 @@ from src.common import (
     BenchmarkTask,
     SEED,
     TEMPERATURE,
-    SYSTEM_PROMPT,
-    INSTRUCT_PROMPT,
     get_prompt,
+    get_sys_prompt,
 )
 from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
 from src.postprocessing import postprocess, RESPONSE_STRATEGIES
 
 GPT_MODELS = [
-    "gpt-3.5-turbo",
-    "gpt-4-turbo",
-    "gpt-4o",
-    "gpt-4o-mini",
+    "gpt-3.5-turbo-0125",
+    "gpt-4-turbo-2024-04-09",
+    "gpt-4o-2024-11-20",
+    "gpt-4o-mini-2024-07-18",
 ]
 
 CLAUDE_MODELS = [
@@ -46,15 +45,16 @@ def get_oai_model(
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
+    pure: bool = False,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
             messages=[
                 {
                     "role": "system",
-                    "content": SYSTEM_PROMPT,
+                    "content": get_sys_prompt(pure),
                 },
-                {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
+                {"role": "user", "content": prompt},
             ],
             model=model,
             # Set parameters to ensure reproducibility
@@ -73,13 +73,14 @@ def get_ant_model(
     model: str = "claude-3-5-sonnet-20240620",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
+    pure: bool = False,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         try:
             message = client.messages.create(
-                system=SYSTEM_PROMPT,
+                system=get_sys_prompt(pure),
                 messages=[
-                    {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
+                    {"role": "user", "content": prompt},
                 ],
                 model=model,
                 max_tokens=1024,
@@ -109,6 +110,7 @@ def main(
     seed: int = SEED,
     temperature: float = TEMPERATURE,
     port: int = 11434,
+    pure: bool = False,
 ):
     assert (
         model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS
@@ -127,16 +129,16 @@ def main(
     if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_model(client, model, seed, temperature)
+        generate = get_oai_model(client, model, seed, temperature, pure)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
         ), "Please set ANTHROPIC_API_KEY in environment!"
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_model(client, model, seed, temperature)
+        generate = get_ant_model(client, model, seed, temperature, pure)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
-        generate = get_ollama_model(client, model, seed, temperature)
+        generate = get_ollama_model(client, model, seed, temperature, pure)
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]

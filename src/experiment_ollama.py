@@ -4,12 +4,7 @@ Experiment script for OSS models using Ollama
 
 from ollama import Client as OllamaClient, ResponseError
 from typing import Union
-from src.common import (
-    SEED,
-    TEMPERATURE,
-    SYSTEM_PROMPT,
-    INSTRUCT_PROMPT,
-)
+from src.common import SEED, TEMPERATURE, SYSTEM_PROMPT, INSTRUCT_PROMPT, get_sys_prompt
 
 OLLAMA_OSS = [
     "phi3:3.8b",
@@ -57,9 +52,10 @@ OLLAMA_MODELS = OLLAMA_OSS + OLLAMA_CODE
 
 def get_model(
     client: OllamaClient,
-    model: str = "llama3",
+    model: str = "llama3:8b",
     seed=SEED,
     temperature=TEMPERATURE,
+    pure: bool = False,
 ):
     def generate_type_signature(prompt: str) -> Union[str, None]:
         try:
@@ -67,9 +63,9 @@ def get_model(
                 messages=[
                     {
                         "role": "system",
-                        "content": SYSTEM_PROMPT,
+                        "content": get_sys_prompt(pure),
                     },
-                    {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
+                    {"role": "user", "content": prompt},
                 ],
                 model=model,
                 options={

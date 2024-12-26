@@ -22,6 +22,14 @@ Remember that in Haskell:
 so `(:)` is a constructor for list type.
 2. The String type is a list of characters, defined as `type String = [Char]`."""
 
+CORE_PROMPT = """
+For polymorphic types variables, you can use type variables like `a`, `b`, `c`, etc.
+You should start with `a` and increment the alphabet as needed."""
+
+PURE_PROMPT = """
+For polymorphic types variables, you can use type variables like `f1`, `f2`, `f3`, etc.
+You should start with `f1` and increment the number as needed."""
+
 
 @dataclass
 class BenchmarkTask:
@@ -55,6 +63,12 @@ def remove_comments(code: str) -> str:
     # single-line
     code = re.sub(r"--.*", "", code)
     return code
+
+
+def get_sys_prompt(pure: bool) -> str:
+    sys_prompt = SYSTEM_PROMPT + INSTRUCT_PROMPT
+    sys_prompt += PURE_PROMPT if pure else CORE_PROMPT
+    return sys_prompt
 
 
 def get_prompt(task: BenchmarkTask) -> str:
