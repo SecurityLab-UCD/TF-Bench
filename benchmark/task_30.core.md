@@ -12,13 +12,14 @@ round :: (RealFrac a, Integral b) => a -> b
 
 # code
 ```haskell
-round x             =  let (n,r) = properFraction x
-                               m     = if r < zero then n - one else n + one
-                           in case signum (abs r - oneHalf) of
-                                negOne -> n
-                                zero  -> if even n then n else m
-                                one  -> m
-                                _  -> error "Bad value"
+round x =
+  let (n, r) = properFraction x
+      m      = if r < zero then n - one else n + one
+  in case signum (abs r - oneHalf) of
+       negOne -> n
+       zero  -> if even n then n else m
+       one  -> m
+       _  -> error "Bad value"
 ```
 
 # dependencies
