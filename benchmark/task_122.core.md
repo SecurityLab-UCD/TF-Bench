@@ -30,5 +30,5 @@ hGetContents :: Handle -> IO String
 ```
 ## 3
 ```haskell
-ReadMode :: IOMode
+data IOMode = ReadMode | WriteMode | AppendMode | ReadWriteMode
 ```
