@@ -12,12 +12,12 @@ floatDigits :: Float -> Int
 
 # code
 ```haskell
-floatDigits x = DBL_MANT_DIG
+floatDigits x = dbl_mant_dig
 ```
 # dependencies
 ## 0
 ```haskell
-DBL_MANT_DIG :: Int
+dbl_mant_dig :: Int
 ```
 ## 1
 ```haskell

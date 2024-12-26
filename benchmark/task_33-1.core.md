@@ -12,13 +12,13 @@ floatRadix :: Float -> Integer
 
 # code
 ```haskell
-floatRadix x = FLT_RADIX
+floatRadix x = flt_radix
 ```
 
 # dependencies
 ## 0
 ```haskell
-FLT_RADIX :: Integer
+flt_radix :: Integer
 ```
 ## 1
 ```haskell

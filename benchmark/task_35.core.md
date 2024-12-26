@@ -12,17 +12,17 @@ floatRange :: Float -> (Int,Int)
 
 # code
 ```haskell
-floatRange x =  (DBL_MIN_EXP, DBL_MAX_EXP)
+floatRange x =  (dbl_min_exp, dbl_max_exp)
 ```
 
 # dependencies
 ## 0
 ```haskell
-DBL_MIN_EXP :: Int
+dbl_min_exp :: Int
 ```
 ## 1
 ```haskell
-DBL_MAX_EXP :: Int
+dbl_min_exp :: Int
 ```
 ## 2
 ```haskell
