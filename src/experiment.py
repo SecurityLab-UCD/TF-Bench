@@ -30,6 +30,9 @@ GPT_MODELS = [
     "gpt-4-turbo-2024-04-09",
     "gpt-4o-2024-11-20",
     "gpt-4o-mini-2024-07-18",
+    "o1-mini-2024-09-12",
+    "o1-preview-2024-09-12",
+    "o1-2024-12-17",
 ]
 
 CLAUDE_MODELS = [
@@ -38,6 +41,27 @@ CLAUDE_MODELS = [
     "claude-3-sonnet-20240229",
     "claude-3-haiku-20240307",
 ]
+
+
+def get_o1_model(
+    client: OpenAI,
+    model: str = "o1-preview-2024-09-12",
+    seed: int = SEED,
+    temperature: float = TEMPERATURE,
+    pure: bool = False,
+) -> Callable[[str], str | None]:
+    def generate_type_signature(prompt: str) -> str | None:
+        completion = client.chat.completions.create(
+            messages=[
+                {"role": "user", "content": get_sys_prompt(pure) + "\n" + prompt},
+            ],
+            model=model,
+        )
+
+        content = completion.choices[0].message.content
+        return content if isinstance(content, str) else None
+
+    return generate_type_signature
 
 
 def get_oai_model(
@@ -129,7 +153,10 @@ def main(
     if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_model(client, model, seed, temperature, pure)
+        if model.startswith("o1"):
+            generate = get_o1_model(client, model, seed, temperature, pure)
+        else:
+            generate = get_oai_model(client, model, seed, temperature, pure)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
