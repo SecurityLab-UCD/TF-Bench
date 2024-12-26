@@ -77,9 +77,9 @@ def get_ant_model(
     def generate_type_signature(prompt: str) -> str | None:
         try:
             message = client.messages.create(
+                system=SYSTEM_PROMPT,
                 messages=[
                     {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
-                    {"role": "assistant", "content": SYSTEM_PROMPT},
                 ],
                 model=model,
                 max_tokens=1024,
