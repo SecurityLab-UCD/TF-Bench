@@ -22,5 +22,5 @@ foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 ```
 ## 1
 ```haskell
-build :: forall a. (forall b. (a -> b -> b) -> b -> b) -> [a]
+build :: ((a -> b -> b) -> b -> b) -> [a]
 ```

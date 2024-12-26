@@ -18,7 +18,7 @@ concat xs = build (\c n -> foldr (\x y -> foldr c y x) n xs)
 # dependencies
 ## 0
 ```haskell
-build :: forall a. (forall b. (a -> b -> b) -> b -> b) -> [a]
+build :: ((a -> b -> b) -> b -> b) -> [a]
 ```
 ## 1
 ```haskell
