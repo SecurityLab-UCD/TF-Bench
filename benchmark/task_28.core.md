@@ -29,8 +29,13 @@ toInteger :: Integral :: a -> Integer
 ```haskell
 fromInteger :: Integral :: Integer -> a
 ```
-## 2
+## 3
 ```haskell
-(:%) :: RealFrac a => Integer -> Integer -> a
+data  Ratio a = !a :% !a
 ```
+## 4
+```haskell
+type  Rational = Ratio Integer
+```
+
 

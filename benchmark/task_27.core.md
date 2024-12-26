@@ -26,5 +26,9 @@ fromInteger :: Num a => Integer -> a
 ```
 ## 2
 ```haskell
-(:%) :: Integer -> Integer -> Rational
+data  Ratio a = !a :% !a
+```
+## 3
+```haskell
+type  Rational = Ratio Integer
 ```
