@@ -20,9 +20,7 @@ INSTRUCT_PROMPT = """
 Remember that in Haskell:
 1. The list type `[a]` is a polymorphic type, defined as `data [] a = [] | (:) a [a]`,
 so `(:)` is a constructor for list type.
-2. The String type is a list of characters, defined as `type String = [Char]`.
-3. The 
-"""
+2. The String type is a list of characters, defined as `type String = [Char]`."""
 
 
 @dataclass
