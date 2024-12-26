@@ -12,11 +12,15 @@ negate :: Int -> Int
 
 # code
 ```haskell
-negate x = 0 - x
+negate x = zero - x
 ```
 
 # dependencies
 ## 0
 ```haskell
-(-) :: Int -> Int -> Int
+(-) :: Num a => a -> a -> a
+```
+## 1
+```haskell
+zero :: Int
 ```

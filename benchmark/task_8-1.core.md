@@ -12,8 +12,8 @@ toEnum :: Int -> Bool
 
 # code
 ```haskell
-toEnum n | n == 0    = False
-         | n == 1    = True
+toEnum n | n == zero   = False
+         | n == one    = True
          | otherwise = error "bad argument"
 ```
 
@@ -21,4 +21,16 @@ toEnum n | n == 0    = False
 ## 0
 ```haskell
 data Bool = False | True
+```
+## 1
+```haskell
+(==) :: Eq a => a -> a -> Bool
+```
+## 2
+```haskell
+zero :: Int
+```
+## 3
+```haskell
+one :: Int
 ```

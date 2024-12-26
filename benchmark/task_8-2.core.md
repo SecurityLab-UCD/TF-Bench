@@ -12,9 +12,9 @@ toEnum :: Int -> Ordering
 
 # code
 ```haskell
-toEnum n | n == 0 = LT
-         | n == 1 = EQ
-         | n == 2 = GT
+toEnum n | n == zero = LT
+         | n == one  = EQ
+         | n == two  = GT
          | otherwise = error "bad argument"
 ```
 
@@ -22,4 +22,20 @@ toEnum n | n == 0 = LT
 ## 0
 ```haskell
 data Ordering = LT | EQ | GT
+```
+## 1
+```haskell
+(==) :: Eq a => a -> a -> Bool
+```
+## 2
+```haskell
+zero :: Int
+```
+## 3
+```haskell
+one :: Int
+```
+## 4
+```haskell
+two :: Int
 ```

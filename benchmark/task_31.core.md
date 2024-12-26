@@ -12,7 +12,7 @@ ceiling :: (RealFrac a, Integral b) => a -> b
 
 # code
 ```haskell
-ceiling x           =  if r > 0 then n + 1 else n
+ceiling x           =  if r > zero then n + one else n
                            where (n,r) = properFraction x
 ```
 
@@ -28,4 +28,12 @@ properFraction :: (RealFrac a, Integral b) => a -> (b, a)
 ## 2
 ```haskell
 (>) :: Ord a => a -> a -> Bool
+```
+## 3
+```haskell
+zero :: Num a => a
+```
+## 4
+```haskell
+one :: Num a => a
 ```

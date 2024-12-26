@@ -18,7 +18,7 @@ concatMap f = foldr ((++) . f) []
 # dependencies
 ## 0
 ```haskell
-foldr :: (a -> b -> b) -> b -> t a -> b
+foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 ```
 ## 1
 ```haskell

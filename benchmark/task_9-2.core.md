@@ -12,13 +12,25 @@ fromEnum :: Ordering -> Int
 
 # code
 ```haskell
-fromEnum LT = 0
-fromEnum EQ = 1
-fromEnum GT = 2
+fromEnum LT = zero
+fromEnum EQ = one
+fromEnum GT = two
 ```
 
 # dependencies
 ## 0
 ```haskell
 data Ordering = LT | EQ | GT
+```
+## 1
+```haskell
+zero :: Int
+```
+## 2
+```haskell
+one :: Int
+```
+## 3
+```haskell
+two :: Int
 ```

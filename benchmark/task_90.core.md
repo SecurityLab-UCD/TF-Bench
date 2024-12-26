@@ -16,3 +16,6 @@ repeat x = xs where xs = x : xs
 ```
 
 # dependencies
+```haskell
+(:) :: a -> [a] -> [a]
+```

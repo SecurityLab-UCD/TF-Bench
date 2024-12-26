@@ -12,7 +12,7 @@ showParen :: Bool -> ShowS -> ShowS
 
 # code
 ```haskell
-showParen b p   =  if b then showChar '(' . p . showChar ')' else p
+showParen b p   =  if b then showChar leftParenthesis . p . showChar rightParenthesis else p
 ```
 
 # dependencies
@@ -26,9 +26,13 @@ showChar :: Char -> ShowS
 ```
 ## 2
 ```haskell
-'(', ')' :: Char
+leftParenthesis :: Char
 ```
 ## 3
+```haskell
+rightParenthesis :: Char
+```
+## 4
 ```haskell
 type ShowS = String -> String
 ```

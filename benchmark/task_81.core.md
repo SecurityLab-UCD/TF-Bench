@@ -12,11 +12,15 @@ length :: [a] -> Int
 
 # code
 ```haskell
-length xs = lenAcc xs 0
+length xs = lenAcc xs zero
 ```
 
 # dependencies
 ## 0
 ```haskell
 lenAcc :: [a] -> Int -> Int
+```
+## 1
+```haskell
+zero :: Num a => a
 ```

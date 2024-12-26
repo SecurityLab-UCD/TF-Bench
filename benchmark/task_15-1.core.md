@@ -12,15 +12,20 @@ abs :: Int -> Int
 
 # code
 ```haskell
-abs n  = if n > 0 then n else negate n
+abs n  = if n > zero then n else negate n
 ```
 
 # dependencies
 ## 0
 ```haskell
-(>) :: Int -> Int -> Bool
+(>) :: Ord a => a -> a -> Bool
 ```
 ## 1
 ```haskell
-negate :: Int -> Int
+negate :: Num a => a -> a
 ```
+## 2
+```haskell
+zero :: Int
+```
+

@@ -13,7 +13,7 @@ words :: String -> [String]
 # code
 ```haskell
 words s =  case dropWhile isSpace s of
-                  "" -> []
+                  emptyStr -> []
                   s' -> w : words s''
                     where (w, s'') = break isSpace s'
 ```
@@ -41,5 +41,5 @@ isSpace :: Char -> Bool
 ```
 ## 5
 ```haskell
-"" :: String
+emptyStr :: String
 ```

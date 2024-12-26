@@ -14,7 +14,7 @@ gcd :: Integral a => a -> a -> a
 ```haskell
 gcd x y =  gcd' (abs x) (abs y)
   where 
-    gcd' a 0  =  a
+    gcd' a zero  =  a
     gcd' a b  =  gcd' b (a `rem` b)
 ```
 
@@ -26,4 +26,8 @@ abs :: Num a => a -> a
 ## 1
 ```haskell
 rem :: Integral a => a -> a -> a
+```
+## 2
+```haskell
+zero :: Num a => a
 ```

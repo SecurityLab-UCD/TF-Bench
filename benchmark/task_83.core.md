@@ -30,5 +30,5 @@ getAll :: All -> Bool
 ```
 ## 3
 ```haskell
-All :: Bool -> All
+newtype All = All { getAll :: Bool }
 ```

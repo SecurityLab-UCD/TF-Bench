@@ -22,5 +22,5 @@ isDoubleInfinite :: Double -> Int
 ```
 ##
 ```haskell
-(/=) :: Int -> Int -> Bool
+(/=) :: Eq a => a -> a -> Bool
 ```

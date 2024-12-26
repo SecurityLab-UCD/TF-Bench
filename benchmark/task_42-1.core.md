@@ -12,7 +12,7 @@ isInfinite :: Float -> Bool
 
 # code
 ```haskell
-isInfinite x = 0 /= isFloatInfinite x
+isInfinite x = zero /= isFloatInfinite x
 ```
 
 # dependencies
@@ -22,5 +22,9 @@ isFloatInfinite :: Float -> Int
 ```
 ## 1
 ```haskell
-(/=) :: Int -> Int -> Bool
+(/=) :: Eq a => a -> a -> Bool
+```
+## 2
+```haskell
+zero :: Int
 ```

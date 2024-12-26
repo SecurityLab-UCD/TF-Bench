@@ -12,11 +12,15 @@ recip :: Fractional a => a -> a
 
 # code
 ```haskell
-recip x =  1 / x
+recip x =  one / x
 ```
 
 # dependencies
 ## 0
 ```haskell
 (/) :: Fractional a => a -> a -> a
+```
+## 1
+```haskell
+one :: Fractional a => a
 ```

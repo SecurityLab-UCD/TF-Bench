@@ -30,11 +30,11 @@ foldMap :: Monoid m => (a -> m) -> t a -> m
 ```
 ## 3
 ```haskell
-Dual :: a -> Dual a
+newtype Dual a = Dual { getDual :: a }
 ```
 ## 4
 ```haskell
-Endo :: (a -> a) -> Endo a
+newtype Endo a = Endo { appEndo :: a -> a }
 ```
 ## 5
 ```haskell

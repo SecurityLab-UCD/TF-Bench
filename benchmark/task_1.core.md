@@ -22,11 +22,3 @@ either f _ (Left x)     =  f x
 ```haskell
 data Either a b = Left a | Right b
 ```
-## 1
-```haskell
-Left :: a -> Either a b
-```
-## 2
-```haskell
-Right :: b -> Either a b
-```

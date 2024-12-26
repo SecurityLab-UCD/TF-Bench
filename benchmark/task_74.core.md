@@ -17,3 +17,7 @@ map f (x:xs) = f x : map f xs
 ```
 
 # dependencies
+## 1
+```haskell
+(:) :: a -> [a] -> [a]
+```

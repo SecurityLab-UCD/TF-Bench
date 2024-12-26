@@ -12,17 +12,29 @@ Ad-hoc
 
 # code
 ```haskell
-x ^ y | y < 0 = error "negative"
-      | y == 0 = 1
+x ^ y | y < zero = error "negative"
+      | y == zero = one
       | otherwise = powImpl x y
 ```
 
 # dependencies
 ## 0
 ```haskell
-(<), (==) :: Ord a => a -> a -> Bool
+(<) :: Ord a => a -> a -> Bool
 ```
 ## 1
 ```haskell
+(==) :: Eq a => a -> a -> Bool
+```
+## 2
+```haskell
 powImpl :: (Num a, Integral b) => a -> b -> a
+```
+## 3
+```haskell
+zero :: Num a => a
+```
+## 4
+```haskell
+one :: Num a => a
 ```

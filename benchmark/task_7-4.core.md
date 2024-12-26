@@ -13,11 +13,15 @@ pred :: Int -> Int
 
 # code
 ```haskell
-pred x = x - 1
+pred x = x - one
 ```
 
 # dependencies
 ## 0
 ```haskell
-(-) :: Int -> Int -> Int
+(-) :: Num a => a -> a -> a
+```
+## 1
+```haskell
+one :: Int
 ```

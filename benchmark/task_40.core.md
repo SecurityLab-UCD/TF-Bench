@@ -12,17 +12,17 @@ scaleFloat :: RealFloat a => Int -> a -> a
 
 # code
 ```haskell
-scaleFloat 0 x      = x
-scaleFloat 0 x      = x
-scaleFloat 0 x      = x
+scaleFloat zero x      = x
+scaleFloat zero x      = x
+scaleFloat zero x      = x
 scaleFloat k x
       | isFix       =  x
       | otherwise   =  encodeFloat m (n + clamp b k)
       where (m,n) = decodeFloat x
             (l,h) = floatRange x
             d     = floatDigits x
-            b     = h - l + 4*d
-            isFix = x == 0 || isNaN x || isInfinite x
+            b     = h - l + four*d
+            isFix = x == zero || isNaN x || isInfinite x
 ```
 
 # dependencies
@@ -61,4 +61,16 @@ decodeFloat :: RealFloat a =>  a -> (Integer,Int)
 ## 10
 ```haskell
 isNaN :: RealFloat a => a -> Bool
+```
+## 11
+```haskell
+(==) :: Eq a => a -> a -> Bool
+```
+## 12
+```haskell
+zero :: Int
+```
+## 13
+```haskell
+four :: Int
 ```

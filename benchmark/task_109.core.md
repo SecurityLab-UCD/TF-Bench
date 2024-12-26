@@ -12,8 +12,8 @@ unwords :: [String] -> String
 
 # code
 ```haskell
-unwords [] =  ""
-unwords ws =  foldr1 (\w s -> w ++ ' ':s) ws
+unwords [] =  emptyStr
+unwords ws =  foldr1 (\w s -> w ++ space:s) ws
 ```
 
 # dependencies
@@ -23,7 +23,7 @@ unwords ws =  foldr1 (\w s -> w ++ ' ':s) ws
 ```
 ## 1
 ```haskell
-foldr1 :: (a -> a -> a) -> t a -> a
+foldr1 :: Foldable t => (a -> a -> a) -> t a -> a
 ```
 ## 2
 ```haskell
@@ -31,9 +31,9 @@ foldr1 :: (a -> a -> a) -> t a -> a
 ```
 ## 3
 ```haskell
-[] :: [a]
+space :: Char
 ```
 ## 4
 ```haskell
-' ' :: Char
+emptyStr :: String
 ```

@@ -15,7 +15,7 @@ pred :: Char -> Char
 
 # code
 ```haskell
-pred c = chr (ord c - 1)
+pred c = chr (ord c - one)
 ```
 
 # dependencies
@@ -29,5 +29,9 @@ ord :: Char -> Int
 ```
 ## 2
 ```haskell
-(-) :: Int -> Int -> Int
+(-) :: Num a => a -> a -> a
+```
+## 3
+```haskell
+one :: Int
 ```

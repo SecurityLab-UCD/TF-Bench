@@ -12,15 +12,15 @@ signum :: Int -> Int
 
 # code
 ```haskell
-signum n | n `ltInt` 0 = negate 1
-         | n `eqInt` 0 = 0
-         | otherwise   = 1
+signum n | n `ltInt` zero = negate one
+         | n `eqInt` zero = zero
+         | otherwise      = one
 ```
 
 # dependencies
 ## 0
 ```haskell
-negate :: Int -> Int
+negate :: Num a => a -> a
 ```
 ## 1
 ```haskell
@@ -29,4 +29,12 @@ ltInt :: Int -> Int -> Bool
 ## 2
 ```haskell
 eqInt :: Int -> Int -> Bool
+```
+## 3
+```haskell
+zero :: Int
+```
+## 4
+```haskell
+one :: Int
 ```

@@ -12,7 +12,7 @@ isNaN :: Double -> Bool
 
 # code
 ```haskell
-isNaN x = 0 /= isDoubleNaN x
+isNaN x = zero /= isDoubleNaN x
 ```
 
 # dependencies
@@ -22,5 +22,9 @@ isDoubleNaN :: Double -> Int
 ```
 ## 1
 ```haskell
-(/=) :: Int -> Int -> Bool
+(/=) :: Eq a => a -> a -> Bool
+```
+## 2
+```haskell
+zero :: Int
 ```

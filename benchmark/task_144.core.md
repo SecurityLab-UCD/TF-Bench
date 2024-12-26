@@ -12,11 +12,15 @@ sqrt :: Floating a => a -> a
 
 # code
 ```haskell
-sqrt x =  x ** 0.5
+sqrt x =  x ** oneHalf
 ```
 
 # dependencies
 ## 0
 ```haskell
 (**) :: Floating a => a -> a -> a
+```
+## 1
+```haskell
+oneHalf :: Floating a => a
 ```

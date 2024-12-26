@@ -30,5 +30,5 @@ getAny :: Any -> Bool
 ```
 ## 3
 ```haskell
-Any :: Bool -> Any
+newtype Any = Any {getAny :: Bool}
 ```

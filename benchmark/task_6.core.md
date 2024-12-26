@@ -15,7 +15,7 @@ succ :: Enum a => a -> a
 
 # code
 ```haskell
-succ = toEnum . (+ 1) . fromEnum
+succ = toEnum . (+ one) . fromEnum
 ```
 
 # dependencies
@@ -29,9 +29,13 @@ toEnum :: Enum a => Int -> a
 ```
 ## 2
 ```haskell
-(+) :: Int -> Int -> Int
+(+) :: Num a => a -> a -> a
 ```
 ## 3
 ```haskell
 fromEnum :: Enum a => a -> Int
+```
+## 4
+```haskell
+one :: Int
 ```

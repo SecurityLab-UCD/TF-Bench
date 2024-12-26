@@ -21,3 +21,7 @@ scanl1 f (x:xs)         =  scanl f x xs
 ```haskell
 scanl :: (b -> a -> b) -> b -> [a] -> [b]
 ```
+## 1
+```haskell
+(:) :: a -> [a] -> [a]
+```

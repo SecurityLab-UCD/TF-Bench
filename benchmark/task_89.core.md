@@ -16,3 +16,6 @@ iterate f x =  x : iterate f (f x)
 ```
 
 # dependencies
+```haskell
+(:) :: a -> [a] -> [a]
+```

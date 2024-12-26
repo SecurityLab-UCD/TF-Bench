@@ -12,8 +12,8 @@ lcm :: Integral a => a -> a -> a
 
 # code
 ```haskell
-lcm 0 _ =  0
-lcm _ 0 =  0
+lcm zero _ =  zero
+lcm _ zero =  zero
 lcm x y =  abs ((x `quot` (gcd x y)) * y)
 ```
 
@@ -33,4 +33,8 @@ gcd :: Integral a => a -> a -> a
 ## 3
 ```haskell
 quot :: Integral a => a -> a -> a
+```
+## 4
+```haskell
+zero :: Num a => a
 ```

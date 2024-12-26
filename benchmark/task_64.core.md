@@ -30,5 +30,5 @@ foldMap' :: Monoid m => (a -> m) -> t a -> m
 ```
 ## 3
 ```haskell
-Sum :: a -> Sum a
+newtype Sum a = Sum {getSum :: a}
 ```

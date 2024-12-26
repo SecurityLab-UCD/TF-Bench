@@ -13,8 +13,8 @@ take :: Int -> [a] -> [a]
 # code
 ```haskell
 take _ []              =  []
-take n (x:xs)          =  x : take (n-1) xs
-take n _      | n <= 0 =  []
+take n (x:xs)          =  x : take (n-one) xs
+take n _      | n <= zero =  []
 ```
 
 # dependencies
@@ -33,6 +33,14 @@ take n _      | n <= 0 =  []
 ```
 ## 3
 ```haskell
-0, 1 :: Int
+zero :: Int
+```
+## 4
+```haskell
+one :: Int
+```
+## 5
+```haskell
+(:) :: a -> [a] -> [a]
 ```
 

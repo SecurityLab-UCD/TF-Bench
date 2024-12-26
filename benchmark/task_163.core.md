@@ -12,10 +12,10 @@ Parametric
 
 # code
 ```haskell
-xs     !! n | n < 0 =  error "negative index"
+xs     !! n | n < zero =  error "negative index"
 []     !! _         =  error "too large"
-(x:_)  !! 0         =  x
-(_:xs) !! n         =  xs !! (n-1)
+(x:_)  !! zero         =  x
+(_:xs) !! n         =  xs !! (n-one)
 ```
 
 # dependencies
@@ -30,4 +30,12 @@ xs     !! n | n < 0 =  error "negative index"
 ## 2
 ```haskell
 (-) :: Num a => a -> a -> a
+```
+## 3
+```haskell
+zero :: Int
+```
+## 4
+```haskell
+one :: Int
 ```

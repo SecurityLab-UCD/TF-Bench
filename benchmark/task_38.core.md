@@ -12,7 +12,7 @@ exponent :: RealFloat a => a -> Int
 
 # code
 ```haskell
-exponent x = if m == 0 then 0 else n + floatDigit       
+exponent x = if m == zero then zero else n + floatDigit       
     where (m,n) = decodeFloat x
 ```
 
@@ -28,4 +28,12 @@ floatDigits :: RealFloat a => a -> Int
 ## 2
 ```haskell
 (+) :: Num a => a -> a -> a
+```
+## 3
+```haskell
+(==) :: Eq a => a -> a -> Bool
+```
+## 4
+```haskell
+zero :: Num a => a
 ```

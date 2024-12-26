@@ -20,3 +20,7 @@ tail []                 =  error
 ```
 
 # dependencies
+## 1
+```haskell
+(:) :: a -> [a] -> [a]
+```

@@ -5,6 +5,9 @@ data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Read.hs--readParen
 # poly_type
 Parametric
 
+# note
+modified
+
 # signature
 ```haskell
 readParen :: Bool -> ReadS a -> ReadS a
@@ -15,9 +18,9 @@ readParen :: Bool -> ReadS a -> ReadS a
 readParen b g   =  if b then mandatory else optional
                    where optional r  = g r ++ mandatory r
                          mandatory r =
-                            lex r >>= \("(", s) ->
+                            lex r >>= \([leftParenthesis], s) ->
                             optional s >>= \(x, t) ->
-                            lex t >>= \(")", u) ->
+                            lex t >>= \([rightParenthesis], u) ->
                             return (x, u)
 
 ```
@@ -42,4 +45,12 @@ lex :: String -> [(String, String)]
 ## 4
 ```haskell
 type ReadS a = String -> [(a, String)]
+```
+## 5
+```haskell
+leftParenthesis :: Char
+```
+## 6
+```haskell
+rightParenthesis :: Char
 ```

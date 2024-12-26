@@ -12,7 +12,7 @@ show :: Show a => a -> String
 
 # code
 ```haskell
-show x = shows x ""
+show x = shows x emptyStr
 ```
 
 # dependencies
@@ -26,5 +26,5 @@ type ShowS = String -> String
 ```
 ## 2
 ```haskell
-"" :: String
+emptyStr :: String
 ```

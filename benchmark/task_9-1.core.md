@@ -8,16 +8,27 @@ Monomorphic
 # signature
 ```haskell
 fromEnum :: Bool -> Int
-```   
+```
+
+# note
+modified
 
 # code
 ```haskell
-fromEnum False = 0
-fromEnum True  = 1
+fromEnum False = zero
+fromEnum True  = one
 ```
 
 # dependencies
 ## 0
 ```haskell
 data Bool = False | True
+```
+## 1
+```haskell
+zero :: Int
+```
+## 2
+```haskell
+one :: Int
 ```

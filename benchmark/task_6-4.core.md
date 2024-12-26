@@ -13,11 +13,15 @@ succ :: Int -> Int
 
 # code
 ```haskell
-succ x = x + 1
+succ x = x + one
 ```
 
 # dependencies
 ## 0
 ```haskell
-(+) :: Int -> Int -> Int
+(+) :: Ord a => a -> a -> a
+```
+## 1
+```haskell
+one :: Int
 ```

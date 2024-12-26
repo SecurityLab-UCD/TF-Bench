@@ -12,8 +12,8 @@ lines :: String -> [String]
 
 # code
 ```haskell
-lines "" =  []
-lines s  =  cons (case break (== '\n') s of
+lines emptyStr =  []
+lines s  =  cons (case break (== newLine) s of
        (l, s') -> (l, case s' of
                        []      -> []
                        _:s''   -> lines s''))
@@ -36,11 +36,11 @@ break :: (a -> Bool) -> [a] -> ([a],[a])
 ```
 ## 3
 ```haskell
-"" :: String
+emptyStr :: String
 ```
 ## 4
 ```haskell
-'', '\n' :: Char
+newLine :: Char
 ```
 ## 5
 ```haskell

@@ -21,11 +21,3 @@ maybe n _ Nothing  = n
 ```haskell
 data Maybe a = Nothing | Just a
 ```
-## 1
-```haskell
-Just :: a -> Maybe a
-```
-## 2
-```haskell
-Nothing :: Maybe a
-```

@@ -13,16 +13,16 @@ atan2 :: RealFloat a => a -> a -> a
 # code
 ```haskell
 atan2 y x
-      | x > 0            =  atan (y/x)
-      | x == 0 && y > 0  =  pi/2
-      | x <  0 && y > 0  =  pi + atan (y/x)
-      |(x <= 0 && y < 0)            ||
-       (x <  0 && isNegativeZero y) ||
+      | x > zero            =  atan (y/x)
+      | x == zero && y > zero  =  pi/two
+      | x <  zero && y > zero  =  pi + atan (y/x)
+      |(x <= zero && y < zero)            ||
+       (x <  zero && isNegativeZero y) ||
        (isNegativeZero x && isNegativeZero y)
                          = -atan2 (-y) x
-      | y == 0 && (x < 0 || isNegativeZero x)
+      | y == zero && (x < zero || isNegativeZero x)
                           =  pi    
-      | x==0 && y==0      =  y     
+      | x==zero && y==zero      =  y     
       | otherwise         =  x + y
 ```
 
@@ -50,4 +50,36 @@ pi :: Floating a => a
 ## 5
 ```haskell
 isNegativeZero :: RealFloat a => a -> Bool
+```
+## 6
+```haskell
+(==) :: Eq a => a -> a -> Bool
+```
+## 7
+```haskell
+(<) :: Ord a => a -> a -> Bool
+```
+## 8
+```haskell
+(<=) :: Ord a => a -> a -> Bool
+```
+## 9
+```haskell
+(>) :: Ord a => a -> a -> Bool
+```
+## 10
+```haskell
+(&&) :: Bool -> Bool -> Bool
+```
+## 11
+```haskell
+(||) :: Bool -> Bool -> Bool
+```
+## 12
+```haskell
+zero :: Num a => a
+```
+## 13
+```haskell
+two :: Num a => a
 ```

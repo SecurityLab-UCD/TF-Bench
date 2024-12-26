@@ -12,7 +12,7 @@ even :: Integral a => a -> Bool
 
 # code
 ```haskell
-even n = n `rem` 2 == 0
+even n = n `rem` two == zero
 ```
 
 # dependencies
@@ -23,4 +23,12 @@ rem :: Integral a => a -> a -> a
 ## 1
 ```haskell
 (==) :: Eq a => a -> a -> Bool
+```
+## 2
+```haskell
+two :: Integral a => a
+```
+## 3
+```haskell
+zero :: Integral a => a
 ```

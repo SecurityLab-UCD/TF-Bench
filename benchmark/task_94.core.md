@@ -13,8 +13,8 @@ drop :: Int -> [a] -> [a]
 # code
 ```haskell
 drop _ []              =  []
-drop n (_:xs)          =  drop (n-1) xs
-drop n xs     | n <= 0 =  xs
+drop n (_:xs)          =  drop (n-one) xs
+drop n xs     | n <= zero =  xs
 ```
 
 # dependencies
@@ -28,7 +28,15 @@ drop n xs     | n <= 0 =  xs
 ```
 ## 2
 ```haskell
-0, 1 :: Int
+zero :: Int
+```
+## 3
+```haskell
+(:) :: a -> [a] -> [a]
+```
+## 4
+```haskell
+one :: Int
 ```
 
 

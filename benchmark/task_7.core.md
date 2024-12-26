@@ -15,7 +15,7 @@ pred :: Enum a => a -> a
 
 # code
 ```haskell
-pred = toEnum . (subtract 1) . fromEnum
+pred = toEnum . (subtract one) . fromEnum
 ```
 
 # dependencies
@@ -29,9 +29,13 @@ toEnum :: Enum a => Int -> a
 ```
 ## 2
 ```haskell
-subtract :: Int -> Int -> Int
+subtract :: Num a => a -> a -> a
 ```
 ## 3
 ```haskell
 fromEnum :: Enum a => a -> Int
+```
+## 4
+```haskell
+one :: Int
 ```

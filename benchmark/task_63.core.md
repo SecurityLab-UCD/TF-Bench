@@ -30,5 +30,5 @@ foldMap' :: Monoid m => (a -> m) -> t a -> m
 ```
 ## 3
 ```haskell
-Product :: a -> Product a
+newtype Product a = Product {getProduct :: a}
 ```
