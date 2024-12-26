@@ -6,7 +6,7 @@ import fire
 import os
 from openai import OpenAI
 from ollama import Client as OllamaClient
-from anthropic import Anthropic
+from anthropic import Anthropic, InternalServerError
 import json
 from funcy_chain import Chain
 from dacite import from_dict
@@ -75,18 +75,22 @@ def get_ant_model(
     temperature: float = TEMPERATURE,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
-        message = client.messages.create(
-            messages=[
-                {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
-                {"role": "assistant", "content": SYSTEM_PROMPT},
-            ],
-            model=model,
-            max_tokens=1024,
-            # ! the following parameters are not supported by Claude API
-            # seed=seed,
-            # temperature=temperature,
-            # top_p=top_p,
-        )
+        try:
+            message = client.messages.create(
+                messages=[
+                    {"role": "user", "content": INSTRUCT_PROMPT + "\n" + prompt},
+                    {"role": "assistant", "content": SYSTEM_PROMPT},
+                ],
+                model=model,
+                max_tokens=1024,
+                # ! the following parameters are not supported by Claude API
+                # seed=seed,
+                # temperature=temperature,
+                # top_p=top_p,
+            )
+        except InternalServerError as e:
+            print(e)
+            return None
         contents = message.content
         if len(contents) > 0:
             text = contents[0].text  # type: ignore
