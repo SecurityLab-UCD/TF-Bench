@@ -19,7 +19,7 @@ mapM_ f = foldr c (return ())
 # dependencies
 ## 0
 ```haskell
-(>>) :: forall a b. m a -> m b -> m b
+(>>) :: Monad m => m a -> m b -> m b
 ```
 ## 1
 ```haskell
@@ -27,5 +27,5 @@ foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 ```
 ## 2
 ```haskell
-return :: a -> m a
+return :: Monad m => a -> m a
 ```
