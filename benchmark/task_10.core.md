@@ -26,5 +26,5 @@ toEnum :: Enum a => Int -> a
 ```
 ## 2
 ```haskell
-fromEnum :: Enum => a -> Int
+fromEnum :: Enum a => a -> Int
 ```
