@@ -13,7 +13,7 @@ properFraction :: (RealFrac a, Integral b) => a -> (b,a)
 # code
 ```haskell
 properFraction (x:%y) = (fromInteger (toInteger q), r:%y)
-                          where (q,r) = quotRem x y
+  where (q,r) = quotRem x y
 ```
 
 # dependencies
@@ -23,11 +23,11 @@ quotRem :: Integral a => a -> a -> (a,a)
 ```
 ## 1
 ```haskell
-toInteger :: Integral :: a -> Integer
+toInteger :: Integral => a -> Integer
 ```
 ## 2
 ```haskell
-fromInteger :: Integral :: Integer -> a
+fromInteger :: Integral => Integer -> a
 ```
 ## 3
 ```haskell
