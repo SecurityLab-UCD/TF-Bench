@@ -12,7 +12,7 @@ toRational :: Int -> Rational
 
 # code
 ```haskell
-toRational x = toInteger x :% one
+toRational x = toInteger x `iir` one
 ```
 
 # dependencies
@@ -22,7 +22,7 @@ toInteger :: Int -> Integer
 ```
 ## 1
 ```haskell
-(:%) :: Integer -> Integer -> Rational
+iir :: Integer -> Integer -> Rational
 ```
 ## 2
 ```haskell

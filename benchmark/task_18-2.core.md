@@ -12,13 +12,13 @@ toRational :: Integer -> Rational
 
 # code
 ```haskell
-toRational x =  x :% one
+toRational x =  x `iir` one
 ```
 
 # dependencies
 ## 0
 ```haskell
-(:%) :: Integer -> Integer -> Rational
+iir :: Integer -> Integer -> Rational
 ```
 ## 1
 ```haskell
