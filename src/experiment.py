@@ -30,6 +30,9 @@ GPT_MODELS = [
     "gpt-4-turbo-2024-04-09",
     "gpt-4o-2024-11-20",
     "gpt-4o-mini-2024-07-18",
+]
+
+O1_MODELS = [
     "o1-mini-2024-09-12",
     "o1-preview-2024-09-12",
 ]
@@ -136,7 +139,7 @@ def main(
     pure: bool = False,
 ):
     assert (
-        model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS
+        model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS
     ), f"{model} is not supported."
 
     if output_file is None:
@@ -152,10 +155,11 @@ def main(
     if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        if model.startswith("o1"):
-            generate = get_o1_model(client, model, seed, temperature, pure)
-        else:
-            generate = get_oai_model(client, model, seed, temperature, pure)
+        generate = get_oai_model(client, model, seed, temperature, pure)
+    elif model in O1_MODELS:
+        assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        generate = get_o1_model(client, model, seed, temperature, pure)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ

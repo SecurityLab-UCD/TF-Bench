@@ -2,7 +2,7 @@
 Script to run all experiments
 """
 
-from src.experiment import GPT_MODELS, CLAUDE_MODELS, main as run_experiment
+from src.experiment import GPT_MODELS, CLAUDE_MODELS, O1_MODELS, main as run_experiment
 from src.experiment_ollama import OLLAMA_MODELS, OLLAMA_OSS, OLLAMA_CODE
 from src.common import SEED, TEMPERATURE
 import fire
@@ -24,6 +24,8 @@ def main(
     match option:
         case "gpt":
             models = GPT_MODELS
+        case "o1":
+            models = O1_MODELS
         case "claude":
             models = CLAUDE_MODELS
         case "ollama-all":
