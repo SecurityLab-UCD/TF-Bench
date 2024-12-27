@@ -27,7 +27,7 @@ For polymorphic types variables, you can use type variables like `a`, `b`, `c`, 
 You should start with `a` and increment the alphabet as needed."""
 
 PURE_PROMPT = """
-For polymorphic types variables, you can use type variables like `f1`, `f2`, `f3`, etc.
+For polymorphic types variables, you can use type variables like `t1`, `t2`, `t3`, etc.
 You should start with `f1` and increment the number as needed."""
 
 
