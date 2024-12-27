@@ -28,7 +28,7 @@ You should start with `a` and increment the alphabet as needed."""
 
 PURE_PROMPT = """
 For polymorphic types variables, you can use type variables like `t1`, `t2`, `t3`, etc.
-You should start with `f1` and increment the number as needed."""
+You should start with `t1` and increment the number as needed."""
 
 
 @dataclass
