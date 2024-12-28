@@ -71,8 +71,13 @@ def get_sys_prompt(pure: bool) -> str:
     return sys_prompt
 
 
-def get_prompt(task: BenchmarkTask) -> str:
+def get_prompt(task: BenchmarkTask, full_type: bool = True) -> str:
     """get prompt from a task instance"""
+
+    if full_type:
+        signature = ""
+    else:
+        signature = "->".join(task.signature.split("->")[:-1])
 
     fn_name = extract_function_name(task)
     assert fn_name is not None
@@ -89,7 +94,7 @@ def get_prompt(task: BenchmarkTask) -> str:
 \n\n
 {code}
 --complete the following type signature for '{fn_name}'
-{fn_name} :: 
+{fn_name} :: {signature}
 """
     return prompt
 

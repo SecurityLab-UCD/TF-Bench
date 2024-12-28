@@ -132,6 +132,7 @@ def main(
     input_file: str = "Benchmark-F.removed.json",
     output_file: str | None = None,
     log_file: str | None = None,
+    full_type: bool = True,
     model: str = "gpt-3.5-turbo",
     seed: int = SEED,
     temperature: float = TEMPERATURE,
@@ -173,7 +174,7 @@ def main(
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    prompts = lmap(get_prompt, tasks)
+    prompts = lmap(lambda x: get_prompt(x, full_type), tasks)
     responses = lmap(generate, tqdm(prompts, desc=model))
     gen_results = (
         Chain(responses)
