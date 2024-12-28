@@ -45,8 +45,14 @@ python scripts/preprocess_benchmark.py -i benchmark/ -o Benchmark-F.json
 ### Benchmark-F_pure
 
 ```sh
-python src/type_rewrite.py -d Benchmark-F.json -o Benchmark-F.pure.json
+git clone https://github.com/EYH0602/alpharewrite.git
+cd alpharewrite
+
+stack build
+stack exec alpharewrite-exe 1 Benchmark-F.json > Benchmark-F.pure.json
 ```
+
+For details, please refer to the README of [alpharewrite](https://github.com/EYH0602/alpharewrite.git).
 
 ### Benchmark-F_extended
 
