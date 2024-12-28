@@ -57,6 +57,27 @@ def get_model(
     temperature=TEMPERATURE,
     pure: bool = False,
 ):
+    """
+    Configure and return a function to generate type signatures using an Ollama model.
+
+    Parameters:
+        client (OllamaClient): The Ollama client instance used for sending requests to the model.
+
+        model (str): Name of the model to use for generating type signatures. Must be one of the predefined models in OLLAMA_MODELS.
+                     Default is "llama3:8b".
+
+        seed (int): Random seed to ensure reproducibility in experiments. Default is defined by SEED.
+
+        temperature (float): Sampling temperature for the model's outputs. Higher values
+                             produce more diverse outputs. Default is defined by TEMPERATURE.
+
+        pure (bool): If True, uses the original variable naming in type inference.
+                     If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
+
+    Returns:
+        Callable[[str], Union[str, None]]: A function that takes a prompt string as input and returns the generated type
+                                           signature as a string, or None if the generation fails.
+    """
     def generate_type_signature(prompt: str) -> Union[str, None]:
         try:
             response = client.chat(

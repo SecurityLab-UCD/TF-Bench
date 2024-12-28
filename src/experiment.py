@@ -139,6 +139,39 @@ def main(
     port: int = 11434,
     pure: bool = False,
 ):
+    """
+    Run an experiment using various AI models to generate and evaluate type signatures.
+
+    Parameters:
+        input_file (str): Path to the input JSON file containing benchmark tasks.
+                          Default is "Benchmark-F.removed.json".
+
+        output_file (str | None): Path to the output file where generated type signatures will be saved.
+                                  If None, the output will be saved to "result/{model}.txt". Default is None.
+
+        log_file (str | None): Path to the log file where evaluation metrics will be appended.
+                               If None, defaults to "evaluation_log.jsonl". Default is None.
+
+        full_type (bool): Determines whether to ask the model to predict the full type signature in the prompt.
+                          If True, the model will be asked to complete full type signature.
+                          If False, the model will be asked to complete the return type in type signature. Default is True.
+
+        model (str): Name of the model to use for generating type signatures. Must be one of:
+                     - GPT_MODELS: ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", ...]
+                     - OLLAMA_MODELS, CLAUDE_MODELS, or O1_MODELS.
+                     Default is "gpt-3.5-turbo".
+
+        seed (int): Random seed to ensure reproducibility in experiments. Default is 0.
+
+        temperature (float): Sampling temperature for the model's outputs. Higher values
+                             produce more diverse outputs. Default is 0.0 (deterministic outputs).
+
+        port (int): Port number for connecting to the Ollama server (if using Ollama models).
+                    Ignored for other models. Default is 11434.
+
+        pure (bool): If True, uses the original variable naming in type inference.
+                     If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
+    """
     assert (
         model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS
     ), f"{model} is not supported."
