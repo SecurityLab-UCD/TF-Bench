@@ -71,13 +71,44 @@ def get_sys_prompt(pure: bool) -> str:
     return sys_prompt
 
 
+def remove_return_type(sig: str) -> str:
+    """
+    Removes only the 'something' part after the last top-level '->',
+    but keeps the arrow itself. Ignores arrows inside parentheses.
+    """
+    func_part, type_part = sig.split("::", 1)
+    func_part = func_part.strip() + " ::"
+    type_part = type_part.strip()
+
+    # 2) Find the last top-level arrow by tracking parentheses
+    paren_level = 0
+    last_arrow_index = None
+    i = 0
+    while i < len(type_part) - 1:
+        c = type_part[i]
+        if c == "(":
+            paren_level += 1
+        elif c == ")":
+            paren_level -= 1
+        elif c == "-" and type_part[i + 1] == ">" and paren_level == 0:
+            # Found a top-level arrow
+            last_arrow_index = i
+        i += 1
+
+    # 3) Keep the arrow but remove everything after it
+    if last_arrow_index is not None:
+        # Keep '->' and discard what follows
+        new_type = type_part[: last_arrow_index + 2]
+        return func_part + " " + new_type.rstrip()
+    else:
+        # No top-level arrow found; return as-is
+        return sig
+
+
 def get_prompt(task: BenchmarkTask, full_type: bool = True) -> str:
     """get prompt from a task instance"""
 
-    if full_type:
-        signature = ""
-    else:
-        signature = "->".join(task.signature.split("->")[:-1])
+    signature = "" if full_type else remove_return_type(task.signature)
 
     fn_name = extract_function_name(task)
     assert fn_name is not None
