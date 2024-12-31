@@ -3,7 +3,7 @@
 data/repos/ghc-internal-9.1001.0/src/GHC/Internal/List.hs--head
 
 # poly_type
-Polymorphic
+Parametric
 
 # note
 modified
