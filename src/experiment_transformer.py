@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.common import get_sys_prompt
-from typing import Union
+from typing import Union, List
 import torch
 
 TRANSFORMER_MODELS = ["qwen/Qwen2.5-Math-7B-Instruct", "qwen/Qwen2.5-Math-72B-Instruct"]
@@ -34,14 +34,20 @@ def get_model(
 
             model_inputs = tokenizer([text], return_tensors="pt").to(device)
             generated_ids = model.generate(**model_inputs, max_new_tokens=512)
+            # Slice out only the newly generated tokens
             generated_ids = [
                 output_ids[len(input_ids) :]
                 for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
             ]
-            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[
-                0
-            ]
 
+            # Ensure we have an explicit type here
+            decoded: List[str] = tokenizer.batch_decode(
+                generated_ids, skip_special_tokens=True
+            )
+            if not decoded:
+                return None
+
+            response: str = decoded[0]
             return response
 
         except Exception as e:
