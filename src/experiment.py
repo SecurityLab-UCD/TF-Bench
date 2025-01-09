@@ -23,6 +23,10 @@ from src.common import (
     get_sys_prompt,
 )
 from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
+from src.experiment_transformer import (
+    TRANSFORMER_MODELS,
+    get_model as get_transformer_model,
+)
 from src.postprocessing import postprocess, RESPONSE_STRATEGIES
 
 GPT_MODELS = [
@@ -173,12 +177,14 @@ def main(
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
     """
     assert (
-        model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS
+        model
+        in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS + TRANSFORMER_MODELS
     ), f"{model} is not supported."
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
-        output_file = f"result/{model}.txt"
+        trimmed_model_name = model.split("/")[-1]
+        output_file = f"result/{trimmed_model_name}.txt"
 
     if log_file is None:
         log_file = "evaluation_log.jsonl"
@@ -200,9 +206,11 @@ def main(
         ), "Please set ANTHROPIC_API_KEY in environment!"
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         generate = get_ant_model(client, model, seed, temperature, pure)
-    else:
+    elif model in OLLAMA_MODELS:
         client = OllamaClient(host=f"http://localhost:{port}")
         generate = get_ollama_model(client, model, seed, temperature, pure)
+    else:
+        generate = get_transformer_model(model, pure)
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
