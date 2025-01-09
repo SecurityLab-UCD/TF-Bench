@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+
+plt.rcParams["text.usetex"] = True
 from matplotlib.patches import Ellipse
 import numpy as np
 import pandas as pd
@@ -161,9 +163,9 @@ def main(eval_path: str = "result.xlsx", output_path: str = "model_acc.png"):
         title="Models",
     )
 
-    plt.title("Accuracy on Benchmark-F-Pure vs Accuracy on Benchmark-F", fontsize=14)
-    plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=12)
-    plt.ylabel("Accuracy on Benchmark-F", fontsize=12)
+    # plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=20)
+    plt.xlabel(r"Accuracy on Benchmark-F-$\mathrm{pure}$", fontsize=20)
+    plt.ylabel("Accuracy on Benchmark-F", fontsize=20)
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
