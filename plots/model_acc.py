@@ -26,8 +26,8 @@ def main(eval_path: str = "result.csv", output_path: str = "model_acc.png"):
     df = df_all[(df_all["Accuracy (pure) (%)"] > 20) & (df_all["Accuracy (%)"] > 40)]
 
     model_names = df["Model"]
-    mean_pure = df["Accuracy (pure) (%)"]
-    mean = df["Accuracy (%)"]
+    acc_pure = df["Accuracy (pure) (%)"]
+    acc = df["Accuracy (%)"]
     n_models = len(model_names)
 
     # 1. Use the modern approach for getting colormaps in Matplotlib 3.7+
@@ -66,12 +66,12 @@ def main(eval_path: str = "result.csv", output_path: str = "model_acc.png"):
     # Quick helper
     unfilled_markers = {"+", "x", "1", "2", "3", "4", "|", "_"}
 
-    plt.figure(figsize=(17, 17))
+    plt.figure(figsize=(20, 20))
     cleaned_model_names = remove_dates_from_models(model_names)
 
     # 3. Plot each model, with filled/unfilled markers
     for x, y, label, color, marker in zip(
-        mean_pure, mean, cleaned_model_names, model_colors, model_markers
+        acc_pure, acc, cleaned_model_names, model_colors, model_markers
     ):
         if marker in unfilled_markers:
             plt.scatter(x, y, c=color, marker=marker, s=100)
@@ -81,6 +81,10 @@ def main(eval_path: str = "result.csv", output_path: str = "model_acc.png"):
         plt.text(x, y, label, fontsize=15, ha="right", va="bottom")
 
     # plot linear regression line Accuracy v.s. Accuracy (pure)
+    x = np.array(df_all["Accuracy (pure) (%)"])
+    y = np.array(df_all["Accuracy (%)"])
+    m, b = np.polyfit(x, y, 1)
+    plt.plot(x, m * x + b, "--", color="red")
 
     # plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=20)
     plt.xlabel(r"Accuracy on Benchmark-F-$\mathrm{pure}$", fontsize=20)
