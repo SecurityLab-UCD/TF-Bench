@@ -24,9 +24,9 @@ def remove_dates_from_models(models):
     return cleaned_models
 
 
-def main(eval_path: str = "result.csv", output_path: str = "model_acc.png"):
+def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     # Read the data
-    df_all = pd.read_csv(eval_path)
+    df_all = pd.read_csv(input_path)
 
     # filter out the models with Accuracy (pure) < 20 and Accuracy < 40
     df = df_all[(df_all["Accuracy (pure) (%)"] > 20) & (df_all["Accuracy (%)"] > 40)]
