@@ -7,9 +7,6 @@ import pandas as pd
 import re
 import fire
 
-# If you don't already have sklearn, install or ensure it's available
-from sklearn.decomposition import PCA
-
 
 def remove_dates_from_models(models):
     """
@@ -81,10 +78,9 @@ def main(eval_path: str = "result.csv", output_path: str = "model_acc.png"):
         else:
             plt.scatter(x, y, facecolor=color, edgecolor="black", marker=marker, s=100)
         # Add text label
-        plt.text(x, y, label, fontsize=8, ha="right", va="bottom")
+        plt.text(x, y, label, fontsize=15, ha="right", va="bottom")
 
     # plot linear regression line Accuracy v.s. Accuracy (pure)
-    
 
     # plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=20)
     plt.xlabel(r"Accuracy on Benchmark-F-$\mathrm{pure}$", fontsize=20)
