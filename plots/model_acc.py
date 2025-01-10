@@ -11,7 +11,7 @@ plt.rcParams["text.usetex"] = True
 plt.style.use("_mpl-gallery")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-plt.rcParams["font.size"] = 15
+plt.rcParams["font.size"] = 25
 
 
 def remove_dates_from_models(models):
@@ -68,7 +68,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
                 x, y, facecolor=color, edgecolor="black", marker=marker, s=marker_size
             )
         # Add text label
-        plt.text(x, y, label, fontsize=15, ha="right", va="bottom")
+        plt.text(x, y, label, ha="right", va="bottom", fontsize=15)
 
     # plot linear regression line Accuracy v.s. Accuracy (pure)
     x = np.array(df_all["Accuracy (pure) (%)"])
@@ -81,7 +81,16 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     plt.ylim(55, 90)
 
     # add legend of model plots
-    plt.legend(cleaned_model_names, fontsize=15)
+    # plt.legend(cleaned_model_names)
+    plt.legend(
+        cleaned_model_names,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.08),
+        fancybox=True,
+        shadow=True,
+        ncol=6,
+        fontsize=20,
+    )
 
     # add indicator lines
     # Calculate points on the regression line
@@ -112,7 +121,6 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
         arrow_y + arrow_dy1 - 1,
         "Tend to answer\n by reasoning",
         color="green",
-        fontsize=18,
         ha="left",
         va="bottom",
     )
@@ -131,18 +139,17 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
         alpha=0.5,
     )
     plt.text(
-        arrow_x - arrow_dx2 - 3,
-        arrow_y - arrow_dy2 + 2,
+        arrow_x - arrow_dx2 - 4,
+        arrow_y - arrow_dy2 + 3,
         "Tend to answer by \n connecting superficial memory",
         color="red",
-        fontsize=18,
         ha="left",
         va="top",
     )
 
     # plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=20)
-    plt.xlabel(r"Acc$_\mathrm{pure}$ (\%)", fontsize=20)
-    plt.ylabel(r"Acc (\%)", fontsize=20)
+    plt.xlabel(r"Acc$_\mathrm{pure}$ (\%)")
+    plt.ylabel(r"Acc (\%)")
     plt.grid(alpha=0.3)
     plt.tight_layout()
     # plt.show()
