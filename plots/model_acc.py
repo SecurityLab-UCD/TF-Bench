@@ -121,6 +121,20 @@ def main(eval_path: str = "result.xlsx", output_path: str = "model_acc.png"):
     )
     plt.gca().add_patch(ellipse_green)
 
+    # -----------------------------
+    # ADD LINEAR REGRESSION LINE
+    # -----------------------------
+    # Fit a line to the data
+    slope, intercept = np.polyfit(mean_pure, mean, 1)
+    regression_line = np.poly1d((slope, intercept))
+
+    # Generate x-values for the line
+    x_vals = np.linspace(min(mean_pure), max(mean_pure), 100)
+    y_vals = regression_line(x_vals)
+
+    # Plot the regression line
+    plt.plot(x_vals, y_vals, color="red", linestyle="--", linewidth=2, label="Fit Line")
+
     # (Optional) If you still want a "red" ellipse for "Overfitting Region,"
     # just create another ellipse similarly.
 
