@@ -1,6 +1,15 @@
 import matplotlib.pyplot as plt
 
 plt.rcParams["text.usetex"] = True
+plt.rcParams["text.latex.preamble"] = r"\usepackage{amsmath}"
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",
+        "text.latex.preamble": r"\usepackage{amsmath}",
+    }
+)
+
 from matplotlib.patches import Ellipse
 import numpy as np
 import pandas as pd
@@ -164,7 +173,7 @@ def main(eval_path: str = "result.xlsx", output_path: str = "model_acc.png"):
     )
 
     # plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=20)
-    plt.xlabel(r"Accuracy on Benchmark-F-$\mathrm{pure}$", fontsize=20)
+    plt.xlabel(r"Accuracy on Benchmark-F$_{\text{pure}}$", fontsize=20)
     plt.ylabel("Accuracy on Benchmark-F", fontsize=20)
     plt.grid(alpha=0.3)
     plt.tight_layout()
