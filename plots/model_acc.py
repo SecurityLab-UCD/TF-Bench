@@ -11,7 +11,7 @@ plt.rcParams["text.usetex"] = True
 plt.style.use("_mpl-gallery")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-plt.rcParams["font.size"] = 25
+plt.rcParams["font.size"] = 28
 
 
 def remove_dates_from_models(models):
@@ -68,7 +68,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
                 x, y, facecolor=color, edgecolor="black", marker=marker, s=marker_size
             )
         # Add text label
-        plt.text(x, y, label, ha="right", va="bottom", fontsize=15)
+        # plt.text(x, y, label, ha="right", va="bottom", fontsize=15)
 
     # plot linear regression line Accuracy v.s. Accuracy (pure)
     x = np.array(df_all["Accuracy (pure) (%)"])
@@ -88,8 +88,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
         bbox_to_anchor=(0.5, -0.08),
         fancybox=True,
         shadow=True,
-        ncol=6,
-        fontsize=20,
+        ncol=4,
     )
 
     # add indicator lines
@@ -118,7 +117,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     )
     plt.text(
         arrow_x + arrow_dx1 + 1,
-        arrow_y + arrow_dy1 - 1,
+        arrow_y + arrow_dy1 - 2,
         "Tend to answer\n by reasoning",
         color="green",
         ha="left",
@@ -140,7 +139,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     )
     plt.text(
         arrow_x - arrow_dx2 - 4,
-        arrow_y - arrow_dy2 + 3,
+        arrow_y - arrow_dy2 + 4,
         "Tend to answer by \n connecting superficial memory",
         color="red",
         ha="left",
