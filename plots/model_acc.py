@@ -97,29 +97,29 @@ def main(eval_path: str = "result.xlsx", output_path: str = "model_acc.png"):
     pca = PCA(n_components=2)
     pca.fit(X)
 
-    # Center is just the mean of X
-    center = X.mean(axis=0)
+    # # Center is just the mean of X
+    # center = X.mean(axis=0)
 
-    # Angle of the ellipse is the angle of the first principal component
-    # (We take atan2 of the loadings in the first PCA component)
-    angle = np.degrees(np.arctan2(pca.components_[0, 1], pca.components_[0, 0]))
+    # # Angle of the ellipse is the angle of the first principal component
+    # # (We take atan2 of the loadings in the first PCA component)
+    # angle = np.degrees(np.arctan2(pca.components_[0, 1], pca.components_[0, 0]))
 
-    # Eigenvalues give variances along principal axes;
-    # explained_variance_ is the variance, so sqrt(...) gives stdev
-    width = 2 * np.sqrt(pca.explained_variance_[0]) * 1.5
-    height = 2 * np.sqrt(pca.explained_variance_[1]) * 2
+    # # Eigenvalues give variances along principal axes;
+    # # explained_variance_ is the variance, so sqrt(...) gives stdev
+    # width = 2 * np.sqrt(pca.explained_variance_[0]) * 1.5
+    # height = 2 * np.sqrt(pca.explained_variance_[1]) * 2
 
     # Create and add the ellipse
-    ellipse_green = Ellipse(
-        xy=center,
-        width=width,
-        height=height,
-        angle=angle,
-        color="green",
-        alpha=0.1,
-        label="Aligned Region",
-    )
-    plt.gca().add_patch(ellipse_green)
+    # ellipse_green = Ellipse(
+    #     xy=center,
+    #     width=width,
+    #     height=height,
+    #     angle=angle,
+    #     color="green",
+    #     alpha=0.1,
+    #     label="Aligned Region",
+    # )
+    # plt.gca().add_patch(ellipse_green)
 
     # -----------------------------
     # ADD LINEAR REGRESSION LINE
@@ -174,10 +174,10 @@ def main(eval_path: str = "result.xlsx", output_path: str = "model_acc.png"):
             )
         handles.append(handle)
 
-    # Append the green ellipse handle
-    handles.append(
-        Ellipse((0, 0), 1, 1, angle=0, color="green", alpha=0.3, label="Aligned Region")
-    )
+    # # Append the green ellipse handle
+    # handles.append(
+    #     Ellipse((0, 0), 1, 1, angle=0, color="green", alpha=0.3, label="Aligned Region")
+    # )
 
     plt.legend(
         handles,
