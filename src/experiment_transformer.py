@@ -2,8 +2,23 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.common import get_sys_prompt
 from typing import Union, List
 import torch
+import re
 
 TRANSFORMER_MODELS = ["qwen/Qwen2.5-Math-7B-Instruct", "qwen/Qwen2.5-Math-72B-Instruct"]
+
+
+def qwen_postprocess(text: str):
+    # pattern = r"\\boxed\{(.*?)\}"
+    pattern = r"boxed\{(.*?)\}"
+    match = re.search(pattern, text)
+    extracted_text = match.group(1) if match else text
+    extracted_text = extracted_text.replace(r"\to", "->")
+    extracted_text = extracted_text.replace(r"\rightarrow", "->")
+    extracted_text = extracted_text.replace(r"\times", "->")
+    extracted_text = extracted_text.replace(r"\Rightarrow", "=>")
+    extracted_text = extracted_text.replace(r"\text{", "")
+
+    return extracted_text
 
 
 def get_model(
@@ -33,7 +48,7 @@ def get_model(
             )
 
             model_inputs = tokenizer([text], return_tensors="pt").to(device)
-            generated_ids = model.generate(**model_inputs, max_new_tokens=512)
+            generated_ids = model.generate(**model_inputs, max_new_tokens=1024)
             # Slice out only the newly generated tokens
             generated_ids = [
                 output_ids[len(input_ids) :]
@@ -48,7 +63,8 @@ def get_model(
                 return None
 
             response: str = decoded[0]
-            return response
+
+            return qwen_postprocess(response)
 
         except Exception as e:
             print(e)
