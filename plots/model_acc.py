@@ -77,8 +77,8 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     plt.plot(x, m * x + b, "-", color="grey")
 
     # scale the axes with df
-    plt.xlim(15, 55)
-    plt.ylim(55, 90)
+    plt.xlim(20, 55)
+    plt.ylim(60, 90)
 
     # add legend of model plots
     # plt.legend(cleaned_model_names)
