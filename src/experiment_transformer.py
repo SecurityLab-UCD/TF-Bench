@@ -64,7 +64,12 @@ def get_model(
 
             response: str = decoded[0]
 
-            return qwen_postprocess(response)
+            # Ensure the output from qwen_postprocess is explicitly str or None
+            processed_response = qwen_postprocess(response)
+            if not isinstance(processed_response, str):
+                return None
+
+            return processed_response
 
         except Exception as e:
             print(e)
