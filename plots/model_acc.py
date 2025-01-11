@@ -57,7 +57,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     cleaned_model_names = remove_dates_from_models(model_names)
 
     # 3. Plot each model, with filled/unfilled markers
-    marker_size = 200
+    marker_size = 400
     for x, y, label, color, marker in zip(
         acc_pure, acc, cleaned_model_names, model_colors, model_markers
     ):
