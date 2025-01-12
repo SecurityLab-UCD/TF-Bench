@@ -29,7 +29,8 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     df_all = pd.read_csv(input_path)
 
     # filter out the models with Accuracy (pure) < 20 and Accuracy < 40
-    df = df_all[(df_all["Accuracy (pure) (%)"] > 20) & (df_all["Accuracy (%)"] > 40)]
+    # df = df_all[(df_all["Accuracy (pure) (%)"] > 20) & (df_all["Accuracy (%)"] > 40)]
+    df = df_all
 
     model_names = df["Model"]
     acc_pure = df["Accuracy (pure) (%)"]
@@ -57,9 +58,9 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     cleaned_model_names = remove_dates_from_models(model_names)
 
     # 3. Plot each model, with filled/unfilled markers
-    marker_size = 400
+    marker_size = 300
     for x, y, label, color, marker in zip(
-        acc_pure, acc, cleaned_model_names, model_colors, model_markers
+        acc, acc_pure, cleaned_model_names, model_colors, model_markers
     ):
         if marker in unfilled_markers:
             plt.scatter(x, y, color=color, marker=marker, s=marker_size)
@@ -70,85 +71,29 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
         # Add text label
         # plt.text(x, y, label, ha="right", va="bottom", fontsize=15)
 
-    # plot linear regression line Accuracy v.s. Accuracy (pure)
-    x = np.array(df_all["Accuracy (pure) (%)"])
-    y = np.array(df_all["Accuracy (%)"])
-    m, b = np.polyfit(x, y, 1)
-    plt.plot(x, m * x + b, "-", color="grey")
+    # plot y = x line
+    plt.plot([0, 100], [0, 100], "--", color="grey")
 
     # scale the axes with df
-    plt.xlim(20, 55)
-    plt.ylim(60, 90)
+    plt.ylim(0, 60)
+    plt.xlim(0, 90)
 
     # add legend of model plots
     # plt.legend(cleaned_model_names)
-    plt.legend(
-        cleaned_model_names,
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.08),
-        fancybox=True,
-        shadow=True,
-        ncol=4,
-    )
+    # plt.legend(
+    #     cleaned_model_names,
+    #     loc="upper center",
+    #     bbox_to_anchor=(0.5, -0.08),
+    #     fancybox=True,
+    #     shadow=True,
+    #     ncol=4,
+    # )
 
-    # add indicator lines
-    # Calculate points on the regression line
-    arrow_x = 35
-    arrow_y = m * arrow_x + b
-
-    # Perpendicular slope to the regression line
-    perp_slope = -1 / m
-
-    # Define arrow lengths
-    arrow_length = 10
-
-    # Arrow 1 (near x1, y1)
-    arrow_dx1 = arrow_length / (1 + perp_slope**2) ** 0.5
-    arrow_dy1 = perp_slope * arrow_dx1
-    plt.arrow(
-        arrow_x,
-        arrow_y,
-        arrow_dx1,
-        arrow_dy1,
-        color="green",
-        width=0.1,
-        head_width=0.5,
-        alpha=0.5,
-    )
-    plt.text(
-        arrow_x + arrow_dx1 + 1,
-        arrow_y + arrow_dy1 - 2,
-        "Tend to answer\n by reasoning",
-        color="green",
-        ha="left",
-        va="bottom",
-    )
-
-    # Arrow 2 (near x2, y2)
-    arrow_dx2 = arrow_length / (1 + perp_slope**2) ** 0.5
-    arrow_dy2 = perp_slope * arrow_dx2
-    plt.arrow(
-        arrow_x,
-        arrow_y,
-        -arrow_dx2,
-        -arrow_dy2,
-        color="red",
-        width=0.1,
-        head_width=0.5,
-        alpha=0.5,
-    )
-    plt.text(
-        arrow_x - arrow_dx2 - 4,
-        arrow_y - arrow_dy2 + 4,
-        "Tend to answer by \n connecting superficial memory",
-        color="red",
-        ha="left",
-        va="top",
-    )
+    plt.gca().set_aspect("equal", adjustable="box")
 
     # plt.xlabel("Accuracy on Benchmark-F-Pure", fontsize=20)
-    plt.xlabel(r"Acc$_\mathrm{pure}$ (\%)")
-    plt.ylabel(r"Acc (\%)")
+    plt.xlabel(r"Acc (\%)")
+    plt.ylabel(r"Acc$_\mathrm{pure}$ (\%)")
     plt.grid(alpha=0.3)
     plt.tight_layout()
     # plt.show()
