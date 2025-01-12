@@ -24,6 +24,38 @@ def remove_dates_from_models(models):
     return cleaned_models
 
 
+def save_legend(
+    cleaned_model_names, model_colors, model_markers, legend_path="legend.png"
+):
+    """
+    Save the legend to a separate file.
+    """
+    plt.figure(figsize=(10, 2))
+    markers = [
+        plt.Line2D(
+            [0],
+            [0],
+            color=color,
+            marker=marker,
+            linestyle="",
+            markersize=10,
+            label=label,
+        )
+        for label, color, marker in zip(
+            cleaned_model_names, model_colors, model_markers
+        )
+    ]
+    plt.legend(
+        handles=markers,
+        loc="center",
+        frameon=False,
+        ncol=4,  # Adjust number of columns in the legend
+    )
+    plt.axis("off")
+    plt.savefig(legend_path, dpi=500, bbox_inches="tight")
+    plt.close()
+
+
 def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     # Read the data
     df_all = pd.read_csv(input_path)
@@ -51,9 +83,6 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     # Replace the manual marker assignment
     model_markers = [next(default_markers) for _ in range(n_models)]
 
-    # Quick helper
-    unfilled_markers = {"+", "x", "1", "2", "3", "4", "|", "_"}
-
     plt.figure(figsize=(20, 15))
     cleaned_model_names = remove_dates_from_models(model_names)
 
@@ -62,13 +91,7 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     for x, y, label, color, marker in zip(
         acc, acc_pure, cleaned_model_names, model_colors, model_markers
     ):
-        if marker in unfilled_markers:
-            plt.scatter(x, y, color=color, marker=marker, s=marker_size)
-        else:
-            plt.scatter(
-                x, y, facecolor=color, edgecolor="black", marker=marker, s=marker_size
-            )
-        # Add text label
+        plt.scatter(x, y, color=color, marker=marker, s=marker_size)
         # plt.text(x, y, label, ha="right", va="bottom", fontsize=15)
 
     # plot y = x line
@@ -77,17 +100,6 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     # scale the axes with df
     plt.ylim(0, 60)
     plt.xlim(0, 90)
-
-    # add legend of model plots
-    # plt.legend(cleaned_model_names)
-    # plt.legend(
-    #     cleaned_model_names,
-    #     loc="upper center",
-    #     bbox_to_anchor=(0.5, -0.08),
-    #     fancybox=True,
-    #     shadow=True,
-    #     ncol=4,
-    # )
 
     plt.gca().set_aspect("equal", adjustable="box")
 
@@ -98,6 +110,13 @@ def main(input_path: str = "result.csv", output_path: str = "model_acc.png"):
     plt.tight_layout()
     # plt.show()
     plt.savefig(output_path, dpi=500, bbox_inches="tight")
+
+    save_legend(
+        cleaned_model_names,
+        model_colors,
+        model_markers,
+        legend_path=f"legend_{output_path}",
+    )
 
 
 if __name__ == "__main__":
