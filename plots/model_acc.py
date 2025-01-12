@@ -11,7 +11,7 @@ plt.rcParams["text.usetex"] = True
 plt.style.use("_mpl-gallery")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-plt.rcParams["font.size"] = 28
+plt.rcParams["font.size"] = 35
 
 
 def remove_dates_from_models(models):
@@ -38,7 +38,7 @@ def save_legend(
             color=color,
             marker=marker,
             linestyle="",
-            markersize=10,
+            markersize=30,
             label=label,
         )
         for label, color, marker in zip(
