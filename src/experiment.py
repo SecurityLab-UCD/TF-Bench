@@ -138,6 +138,7 @@ def main(
     temperature: float = TEMPERATURE,
     port: int = 11434,
     pure: bool = False,
+    poly_type: str = "all",
 ):
     """
     Run an experiment using various AI models to generate and evaluate type signatures.
@@ -178,7 +179,7 @@ def main(
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
-        output_file = f"result/{model}.txt"
+        output_file = f"result/{model}-{poly_type}.txt"
 
     if log_file is None:
         log_file = "evaluation_log.jsonl"
@@ -205,7 +206,14 @@ def main(
         generate = get_ollama_model(client, model, seed, temperature, pure)
 
     with open(input_file, "r") as fp:
-        tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
+        if poly_type == "all":
+            tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
+        else:
+            tasks = [
+                from_dict(data_class=BenchmarkTask, data=d)
+                for d in json.load(fp)
+                if d["poly_type"] == poly_type
+            ]
 
     prompts = lmap(lambda x: get_prompt(x, full_type), tasks)
     responses = lmap(generate, tqdm(prompts, desc=model))

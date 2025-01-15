@@ -17,6 +17,7 @@ def main(
     temperature: float = TEMPERATURE,
     repeat: int = 1,
     pure: bool = False,
+    poly_type: str = "all",
 ):
 
     port: int = 11434
@@ -51,6 +52,7 @@ def main(
                 port=port,
                 log_file=log_file,
                 pure=pure,
+                poly_type=poly_type,
             )
 
 
