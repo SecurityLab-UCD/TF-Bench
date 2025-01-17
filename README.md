@@ -52,7 +52,7 @@ stack build
 stack exec alpharewrite-exe 1 Benchmark-F.json > Benchmark-F.pure.json
 ```
 
-For details, please refer to the README of [alpharewrite](https://github.com/EYH0602/alpharewrite.git).
+For details, please refer to the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
 
 ### Benchmark-F_extended
 
