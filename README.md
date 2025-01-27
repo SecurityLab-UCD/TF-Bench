@@ -1,6 +1,6 @@
-# Benchmark-F
+# TF-Bench
 
-Towards Sound Evaluation of Program Logic Understanding with System F
+Towards Sound Evaluation of Program Logic Reasoning with Type Inference under System F
 
 ## Setup
 
@@ -32,9 +32,9 @@ We suggest using virtual environments instead of directly installing the require
 This script will download raw data from [Hackage](https://hackage.haskell.org/),
 and install Python packages in `requirements.txt`.
 
-## Building Benchmark-F
+## Building TF-Bench
 
-### Benchmark-F
+### TF-Bench
 
 This script will build the benchmark (Prelude with NL) from the raw data.
 
@@ -54,9 +54,6 @@ stack exec alpharewrite-exe 1 Benchmark-F.json > Benchmark-F.pure.json
 
 For details, please refer to the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
 
-### Benchmark-F_extended
-
-ToDo
 
 
 ## Experiments
