@@ -1,13 +1,4 @@
 #!/bin/bash
-# Processing command options
-OPTSTRING=":venv"
-# To create venv
-if [ "$1" == "-venv" ]; then
-  echo "===== Creating Python 3.10.0 Virtual Environment ====="
-  pip install virtualenv
-  python3.10 -m venv .venv
-  source .venv/bin/activate
-fi
 # Create the data directory and load package
 echo "===== Downloading Haskell Base Package ====="
 rm -rf data/repos data/source data/filtered
