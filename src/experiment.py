@@ -38,10 +38,13 @@ O1_MODELS = [
 ]
 
 CLAUDE_MODELS = [
-    "claude-3-5-sonnet-20240620",
     "claude-3-opus-20240229",
     "claude-3-sonnet-20240229",
     "claude-3-haiku-20240307",
+    "claude-3-5-sonnet-20240620",
+    "claude-3-5-sonnet-20241022",
+    "claude-3-5-haiku-20241022",
+    "claude-3-7-sonnet-20250219",
 ]
 
 DEEPSEEK_MODELS = [
@@ -99,6 +102,37 @@ def get_oai_model(
     return generate_type_signature
 
 
+def get_ant_ttc_model(
+    client: Anthropic,
+    model: str = "claude-3-7-sonnet-20250219",
+    pure: bool = False,
+) -> Callable[[str], str | None]:
+    def generate_type_signature(prompt: str) -> str | None:
+        try:
+            message = client.beta.messages.create(
+                model=model,
+                thinking={"type": "enabled", "budget_tokens": 1024},
+                system=get_sys_prompt(pure),
+                messages=[
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=2048,
+                betas=["output-128k-2025-02-19"],
+            )
+        except InternalServerError as e:
+            print(e)
+            return None
+
+        try:
+            thinking, answer = message.content
+            text = answer.text  # type: ignore
+            return text if isinstance(text, str) else None
+        except:
+            return None
+
+    return generate_type_signature
+
+
 def get_ant_model(
     client: Anthropic,
     model: str = "claude-3-5-sonnet-20240620",
@@ -143,6 +177,7 @@ def main(
     temperature: float = TEMPERATURE,
     port: int = 11434,
     pure: bool = False,
+    reasoning: bool = False,
 ):
     """
     Run an experiment using various AI models to generate and evaluate type signatures.
@@ -176,6 +211,8 @@ def main(
 
         pure (bool): If True, uses the original variable naming in type inference.
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
+
+        reasoning (bool): If True, uses the reasoning prompt for the model. NOTE: this is not for claude-3-7-sonnet.
     """
     assert (
         model
@@ -205,7 +242,10 @@ def main(
             "ANTHROPIC_API_KEY" in os.environ
         ), "Please set ANTHROPIC_API_KEY in environment!"
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_model(client, model, seed, temperature, pure)
+        if reasoning:
+            generate = get_ant_ttc_model(client, model, pure)
+        else:
+            generate = get_ant_model(client, model, pure)
     elif model in DEEPSEEK_MODELS:
         assert (
             "DEEPSEEK_API_KEY" in os.environ
