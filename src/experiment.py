@@ -44,6 +44,11 @@ CLAUDE_MODELS = [
     "claude-3-haiku-20240307",
 ]
 
+DEEPSEEK_MODELS = [
+    "deepseek-reasoner",
+    "deepseek-chat",
+]
+
 
 def get_o1_model(
     client: OpenAI,
@@ -173,7 +178,8 @@ def main(
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
     """
     assert (
-        model in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS
+        model
+        in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS + DEEPSEEK_MODELS
     ), f"{model} is not supported."
 
     if output_file is None:
@@ -200,6 +206,14 @@ def main(
         ), "Please set ANTHROPIC_API_KEY in environment!"
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         generate = get_ant_model(client, model, seed, temperature, pure)
+    elif model in DEEPSEEK_MODELS:
+        assert (
+            "DEEPSEEK_API_KEY" in os.environ
+        ), "Please set DEEPSEEK_API_KEY in environment!"
+        client = OpenAI(
+            api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"
+        )
+        generate = get_oai_model(client, model, seed, temperature, pure)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
         generate = get_ollama_model(client, model, seed, temperature, pure)
