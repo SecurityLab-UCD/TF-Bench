@@ -29,7 +29,7 @@ This script will download raw data from [Hackage](https://hackage.haskell.org/).
 This script will build the benchmark (Prelude with NL) from the raw data.
 
 ```sh
-python scripts/preprocess_benchmark.py -i benchmark/ -o TF-Bench.json
+uv run reprocess_benchmark.py -i benchmark/ -o TF-Bench.json
 ```
 
 ### TF-Bench_pure
