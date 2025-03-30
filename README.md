@@ -69,7 +69,7 @@ uv run run_all.py --option gpt
 
 ### Open Source Models
 
-We use [Ollama](https://ollama.com/) to manange and run the OSS models.
+We use [Ollama](https://ollama.com/) to manage and run the OSS models.
 
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
