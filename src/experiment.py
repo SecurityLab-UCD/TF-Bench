@@ -6,6 +6,9 @@ from openai import OpenAI
 from anthropic import Anthropic, InternalServerError
 from typing import Callable
 
+from google import genai
+from google.genai import types
+
 from src.common import (
     SEED,
     TEMPERATURE,
@@ -39,12 +42,19 @@ DEEPSEEK_MODELS = [
     "deepseek-chat",
 ]
 
+GEMINI_MODELS = [
+    "gemini-2.5-pro-preview-03-25",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-pro",
+]
+
 
 def get_o1_model(
     client: OpenAI,
     model: str = "o1-preview-2024-09-12",
-    seed: int = SEED,
-    temperature: float = TEMPERATURE,
     pure: bool = False,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
@@ -64,8 +74,6 @@ def get_o1_model(
 def get_oai_model(
     client: OpenAI,
     model: str = "gpt-3.5-turbo",
-    seed: int = SEED,
-    temperature: float = TEMPERATURE,
     pure: bool = False,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
@@ -78,9 +86,6 @@ def get_oai_model(
                 {"role": "user", "content": prompt},
             ],
             model=model,
-            # Set parameters to ensure reproducibility
-            seed=seed,
-            temperature=temperature,
         )
 
         content = completion.choices[0].message.content
@@ -123,8 +128,6 @@ def get_ant_ttc_model(
 def get_ant_model(
     client: Anthropic,
     model: str = "claude-3-5-sonnet-20240620",
-    seed: int = SEED,
-    temperature: float = TEMPERATURE,
     pure: bool = False,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
@@ -136,10 +139,6 @@ def get_ant_model(
                 ],
                 model=model,
                 max_tokens=1024,
-                # ! the following parameters are not supported by Claude API
-                # seed=seed,
-                # temperature=temperature,
-                # top_p=top_p,
             )
         except InternalServerError as e:
             print(e)

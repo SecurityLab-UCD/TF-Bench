@@ -24,6 +24,7 @@ from src.experiment import (
     GPT_MODELS,
     CLAUDE_MODELS,
     DEEPSEEK_MODELS,
+    GEMINI_MODELS,
     get_ant_model,
     get_ant_ttc_model,
     get_oai_model,
@@ -83,7 +84,12 @@ def main(
     """
     assert (
         model
-        in GPT_MODELS + OLLAMA_MODELS + CLAUDE_MODELS + O1_MODELS + DEEPSEEK_MODELS
+        in GPT_MODELS
+        + OLLAMA_MODELS
+        + CLAUDE_MODELS
+        + O1_MODELS
+        + DEEPSEEK_MODELS
+        + GEMINI_MODELS
     ), f"{model} is not supported."
 
     if output_file is None:
@@ -99,11 +105,11 @@ def main(
     if model in GPT_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_model(client, model, seed, temperature, pure)
+        generate = get_oai_model(client, model, pure)
     elif model in O1_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_o1_model(client, model, seed, temperature, pure)
+        generate = get_o1_model(client, model, pure)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
@@ -120,7 +126,16 @@ def main(
         client = OpenAI(
             api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"
         )
-        generate = get_oai_model(client, model, seed, temperature, pure)
+        generate = get_oai_model(client, model, pure)
+    elif model in GEMINI_MODELS:
+        assert (
+            "GEMINI_API_KEY" in os.environ
+        ), "Please set GEMINI_API_KEY in environment!"
+        client = OpenAI(
+            api_key=os.environ["GEMINI_API_KEY"],
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+        generate = get_oai_model(client, model)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
         generate = get_ollama_model(client, model, seed, temperature, pure)
