@@ -32,3 +32,6 @@ dependencies = [
     "tree-sitter-haskell==0.21.0",
     "types-requests>=2.31.0",
 ]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
