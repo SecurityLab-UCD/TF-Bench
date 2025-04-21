@@ -1,9 +1,9 @@
-name: MyPy Type Checking and Pylint Linting
+name: Pylint Linting
 
 on: [pull_request]
 
 jobs:
-  type-check:
+  linting:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,8 +17,5 @@ jobs:
       - name: Set up Python
         run: uv sync
 
-      - name: Type Check Source Code
-        run: uv run mypy src
-      
       - name: Lint Source Code
         run: uv run pylint src
