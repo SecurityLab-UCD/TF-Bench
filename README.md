@@ -31,16 +31,16 @@ git clone https://github.com/SecurityLab-UCD/alpharewrite.git
 cd alpharewrite
 
 stack build
-stack exec alpharewrite-exe 1 TF-Bench.json > TF-Bench.pure.json
+stack exec alpharewrite-exe 1 ../tfb.json > ../tfb.pure.json
 
 cd ..
 ```
 
-For details, please refer to the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
+For details, please take a look at the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
 
-## Download Pre-build Benchmark
+## Download Pre-built Benchmark
 
-You can also download our pre-build benchmark from [Zenodo](https://doi.org/10.5281/zenodo.14751813).
+You can also download our pre-built benchmark from [Zenodo](https://doi.org/10.5281/zenodo.14751813).
 
 <a href="https://doi.org/10.5281/zenodo.14751813"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.14751813.svg" alt="DOI"></a>
 
@@ -51,7 +51,7 @@ You can also download our pre-build benchmark from [Zenodo](https://doi.org/10.5
 To run single model:
 
 ```sh
-export OPENAI_API_KEY=<OPENAI_API_KEY> # make sure your API key is in environment
+export OPENAI_API_KEY=<OPENAI_API_KEY> # make sure your API key is in the environment
 uv run main.py -i TF-Bench.json -m gpt-3.5-turbo
 ```
 
@@ -67,7 +67,7 @@ We use [Ollama](https://ollama.com/) to manage and run the OSS models.
 
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
-ollama serve # start your own instance instead of system service
+ollama serve # start your own instance instead of a system service
 uv run ollama_pull.sh # install required models
 ```
 
