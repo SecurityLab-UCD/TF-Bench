@@ -244,7 +244,7 @@ def main(
     # Also transform them back into dictionaries for json format
     filtered = (
         (tasks_w_dep)
-        .filter(lambda d: d.dependencies != None)
+        .filter(lambda d: d.dependencies)
         .map(lambda x: x.__dict__)
         .value
     )
