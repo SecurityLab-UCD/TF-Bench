@@ -1,0 +1,24 @@
+name: MyPy Type Checking and Pylint Linting
+
+on: [pull_request]
+
+jobs:
+  type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv sync
+
+      - name: Type Check Source Code
+        run: uv run mypy src
+      
+      - name: Lint Source Code
+        run: uv run pylint src
