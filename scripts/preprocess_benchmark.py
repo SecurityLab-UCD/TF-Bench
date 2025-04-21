@@ -8,7 +8,7 @@ from src.common import md2task, BenchmarkTask
 from funcy import lmap
 
 
-def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "Benchmark-F.json"):
+def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "tfb.json"):
 
     # read in all files ending with .md in the input_raw_benchmark_path
     tasks: list[BenchmarkTask] = []

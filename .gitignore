@@ -173,6 +173,8 @@ result/
 evaluation_log.txt
 banned.txt
 
+alpharewrite/
+
 *.pdf
 *.png
 *.csv
