@@ -9,11 +9,7 @@ from typing import Callable
 from google import genai
 from google.genai import types
 
-from src.common import (
-    SEED,
-    TEMPERATURE,
-    get_sys_prompt,
-)
+from src.common import get_sys_prompt
 
 GPT_MODELS = [
     "gpt-3.5-turbo-0125",
@@ -54,7 +50,7 @@ GEMINI_MODELS = [
 ]
 
 
-def get_o1_model(
+def get_oai_ttc_model(
     client: OpenAI,
     model: str = "o1-preview-2024-09-12",
     pure: bool = False,
@@ -100,17 +96,18 @@ def get_ant_ttc_model(
     client: Anthropic,
     model: str = "claude-3-7-sonnet-20250219",
     pure: bool = False,
+    thinking_budget: int = 100,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         try:
             message = client.beta.messages.create(
                 model=model,
-                thinking={"type": "enabled", "budget_tokens": 1024},
+                thinking={"type": "enabled", "budget_tokens": thinking_budget},
                 system=get_sys_prompt(pure),
                 messages=[
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=2048,
+                max_tokens=thinking_budget + 100,  # signature max tokens is 31
                 betas=["output-128k-2025-02-19"],
             )
         except InternalServerError as e:

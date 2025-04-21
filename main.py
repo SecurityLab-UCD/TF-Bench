@@ -14,8 +14,6 @@ from anthropic import Anthropic
 import fire
 from src.common import (
     BenchmarkTask,
-    SEED,
-    TEMPERATURE,
     get_prompt,
 )
 
@@ -28,7 +26,7 @@ from src.experiment import (
     get_ant_model,
     get_ant_ttc_model,
     get_oai_model,
-    get_o1_model,
+    get_oai_ttc_model,
 )
 from src.experiment_ollama import OLLAMA_MODELS, get_model as get_ollama_model
 from src.postprocessing import postprocess, RESPONSE_STRATEGIES
@@ -36,43 +34,21 @@ from src.evaluation import evaluate
 
 
 def main(
-    input_file: str = "Benchmark-F.removed.json",
-    output_file: str | None = None,
-    log_file: str | None = None,
-    full_type: bool = True,
-    model: str = "gpt-3.5-turbo",
-    seed: int = SEED,
-    temperature: float = TEMPERATURE,
+    model: str,
     port: int = 11434,
     pure: bool = False,
     reasoning: bool = False,
+    output_file: str | None = None,
+    log_file: str = "evaluation_log.jsonl",
 ):
     """
     Run an experiment using various AI models to generate and evaluate type signatures.
 
     Parameters:
-        input_file (str): Path to the input JSON file containing benchmark tasks.
-                          Default is "Benchmark-F.removed.json".
-
-        output_file (str | None): Path to the output file where generated type signatures will be saved.
-                                  If None, the output will be saved to "result/{model}.txt". Default is None.
-
-        log_file (str | None): Path to the log file where evaluation metrics will be appended.
-                               If None, defaults to "evaluation_log.jsonl". Default is None.
-
-        full_type (bool): Determines whether to ask the model to predict the full type signature in the prompt.
-                          If True, the model will be asked to complete full type signature.
-                          If False, the model will be asked to complete the return type in type signature. Default is True.
-
         model (str): Name of the model to use for generating type signatures. Must be one of:
                      - GPT_MODELS: ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", ...]
                      - OLLAMA_MODELS, CLAUDE_MODELS, or O1_MODELS.
                      Default is "gpt-3.5-turbo".
-
-        seed (int): Random seed to ensure reproducibility in experiments. Default is 0.
-
-        temperature (float): Sampling temperature for the model's outputs. Higher values
-                             produce more diverse outputs. Default is 0.0 (deterministic outputs).
 
         port (int): Port number for connecting to the Ollama server (if using Ollama models).
                     Ignored for other models. Default is 11434.
@@ -92,12 +68,16 @@ def main(
         + GEMINI_MODELS
     ), f"{model} is not supported."
 
+    # hard-coding benchmark file path for experiment
+    input_file = "tfb.pure.jsonl" if pure else "tfb.jsonl"
+    input_file = os.path.abspath(input_file)
+    assert os.path.exists(
+        input_file
+    ), f"{input_file} does not exist! Please download or build it first."
+
     if output_file is None:
         os.makedirs("result", exist_ok=True)
         output_file = f"result/{model}.txt"
-
-    if log_file is None:
-        log_file = "evaluation_log.jsonl"
 
     client: OpenAI | Anthropic | OllamaClient
     generate: Callable[[str], str | None]
@@ -109,7 +89,7 @@ def main(
     elif model in O1_MODELS:
         assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_o1_model(client, model, pure)
+        generate = get_oai_ttc_model(client, model, pure)
     elif model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
@@ -138,12 +118,12 @@ def main(
         generate = get_oai_model(client, model)
     else:
         client = OllamaClient(host=f"http://localhost:{port}")
-        generate = get_ollama_model(client, model, seed, temperature, pure)
+        generate = get_ollama_model(client, model, pure)
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
-    prompts = lmap(lambda x: get_prompt(x, full_type), tasks)
+    prompts = lmap(get_prompt, tasks)
     responses = lmap(generate, tqdm(prompts, desc=model))
     gen_results = (
         Chain(responses)
