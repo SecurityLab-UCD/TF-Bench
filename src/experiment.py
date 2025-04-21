@@ -7,18 +7,18 @@ from anthropic import Anthropic, InternalServerError
 from typing import Callable
 
 from google import genai
-from google.genai import types
+from google.genai.types import GenerateContentConfig, ThinkingConfig
 
-from src.common import get_sys_prompt
+from src.common import get_sys_prompt, MAX_TOKENS
 
-GPT_MODELS = [
+OAI_MODELS = [
     "gpt-3.5-turbo-0125",
     "gpt-4-turbo-2024-04-09",
     "gpt-4o-2024-11-20",
     "gpt-4o-mini-2024-07-18",
 ]
 
-O1_MODELS = [
+OAI_TTC_MODELS = [
     "o1-mini-2024-09-12",
     "o1-preview-2024-09-12",
     "o1-2024-12-17",
@@ -32,6 +32,9 @@ CLAUDE_MODELS = [
     "claude-3-5-sonnet-20240620",
     "claude-3-5-sonnet-20241022",
     "claude-3-5-haiku-20241022",
+]
+
+CLAUDE_TTC_MODELS = [
     "claude-3-7-sonnet-20250219",
 ]
 
@@ -41,12 +44,16 @@ DEEPSEEK_MODELS = [
 ]
 
 GEMINI_MODELS = [
-    "gemini-2.5-pro-preview-03-25",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
     "gemini-1.5-flash",
     "gemini-1.5-flash-8b",
     "gemini-1.5-pro",
+]
+
+GEMINI_TTC_MODELS = [
+    "gemini-2.5-flash-preview-04-17",
+    "gemini-2.5-pro-preview-03-25",
 ]
 
 
@@ -58,9 +65,10 @@ def get_oai_ttc_model(
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
             messages=[
-                {"role": "user", "content": get_sys_prompt(pure) + "\n" + prompt},
+                {"role": "user", "content": get_sys_prompt(pure) + "\n\n" + prompt},
             ],
             model=model,
+            max_tokens=MAX_TOKENS,
         )
 
         content = completion.choices[0].message.content
@@ -84,6 +92,7 @@ def get_oai_model(
                 {"role": "user", "content": prompt},
             ],
             model=model,
+            max_tokens=MAX_TOKENS,
         )
 
         content = completion.choices[0].message.content
@@ -95,8 +104,8 @@ def get_oai_model(
 def get_ant_ttc_model(
     client: Anthropic,
     model: str = "claude-3-7-sonnet-20250219",
+    thinking_budget: int = 1000,
     pure: bool = False,
-    thinking_budget: int = 100,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         try:
@@ -107,7 +116,7 @@ def get_ant_ttc_model(
                 messages=[
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=thinking_budget + 100,  # signature max tokens is 31
+                max_tokens=thinking_budget + MAX_TOKENS,
                 betas=["output-128k-2025-02-19"],
             )
         except InternalServerError as e:
@@ -137,7 +146,7 @@ def get_ant_model(
                     {"role": "user", "content": prompt},
                 ],
                 model=model,
-                max_tokens=1024,
+                max_tokens=MAX_TOKENS,
             )
         except InternalServerError as e:
             print(e)
@@ -148,5 +157,48 @@ def get_ant_model(
             return text if isinstance(text, str) else None
         else:
             return None
+
+    return generate_type_signature
+
+
+def get_gemini_model(
+    client: genai.Client,
+    model: str = "gemini-2.0-flash-lite",
+    pure: bool = False,
+) -> Callable[[str], str | None]:
+    def generate_type_signature(prompt: str) -> str | None:
+        response = client.models.generate_content(
+            model=model,
+            contents=[prompt],
+            config=GenerateContentConfig(
+                system_instruction=[get_sys_prompt(pure)],
+                max_output_tokens=MAX_TOKENS,
+            ),
+        )
+        return response.text if isinstance(response.text, str) else None
+
+    return generate_type_signature
+
+
+def get_gemini_ttc_model(
+    client: genai.Client,
+    model: str = "gemini-2.5-flash-preview-04-17",
+    thinking_budget: int = 1000,
+    pure: bool = False,
+) -> Callable[[str], str | None]:
+    def generate_type_signature(prompt: str) -> str | None:
+        response = client.models.generate_content(
+            model=model,
+            contents=[prompt],
+            config=GenerateContentConfig(
+                system_instruction=[get_sys_prompt(pure)],
+                thinking_config=ThinkingConfig(
+                    thinking_budget=thinking_budget,  # type: ignore
+                    include_thoughts=False,
+                ),
+                max_output_tokens=thinking_budget + MAX_TOKENS,
+            ),
+        )
+        return response.text if isinstance(response.text, str) else None
 
     return generate_type_signature

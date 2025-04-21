@@ -8,8 +8,6 @@ import io
 import markdown_to_json
 
 # Default hyper-parameters
-SEED = 0
-TEMPERATURE = 0.0
 MAX_TOKENS = 100
 
 SYSTEM_PROMPT = """
