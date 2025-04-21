@@ -25,6 +25,8 @@ GPT_MODELS = [
 O1_MODELS = [
     "o1-mini-2024-09-12",
     "o1-preview-2024-09-12",
+    "o1-2024-12-17",
+    "o3-mini-2025-01-31",
 ]
 
 CLAUDE_MODELS = [
