@@ -68,7 +68,7 @@ We use [Ollama](https://ollama.com/) to manage and run the OSS models.
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
 ollama serve # start your own instance instead of a system service
-uv run ollama_pull.sh # install required models
+uv run --project . scripts/ollama_pull.sh # install required models
 ```
 
 ```sh
