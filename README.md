@@ -16,20 +16,12 @@ uv sync # create a virtual environment, and install dependencies
 
 ## Building TF-Bench From Scratch (Optional)
 
-### Getting Required Data
-
-```sh
-./scripts/init.sh
-```
-
-This script will download raw data from [Hackage](https://hackage.haskell.org/).
-
 ### TF-Bench
 
 This script will build the benchmark (Prelude with NL) from the raw data.
 
 ```sh
-uv run reprocess_benchmark.py -i benchmark/ -o TF-Bench.json
+uv run --project . scripts/preprocess_benchmark.py
 ```
 
 ### TF-Bench_pure
@@ -40,6 +32,8 @@ cd alpharewrite
 
 stack build
 stack exec alpharewrite-exe 1 TF-Bench.json > TF-Bench.pure.json
+
+cd ..
 ```
 
 For details, please refer to the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
