@@ -19,6 +19,7 @@ dependencies = [
     "ollama==0.2.1",
     "openai==1.30.5",
     "pathos>=0.3.3",
+    "pylint>=3.3.6",
     "pytest>=8.0.0",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
