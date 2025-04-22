@@ -42,6 +42,7 @@ def main(
     model: str,
     port: int = 11434,
     pure: bool = False,
+    thinking_budget: int = 1000,
     output_file: str | None = None,
     log_file: str = "evaluation_log.jsonl",
 ):
@@ -103,7 +104,7 @@ def main(
         generate = get_ant_model(client, model, pure)
     elif model in CLAUDE_TTC_MODELS:
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_ttc_model(client, model, pure)
+        generate = get_ant_ttc_model(client, model, pure, thinking_budget)
 
     elif model in DEEPSEEK_MODELS:
         assert (
@@ -125,7 +126,7 @@ def main(
             "GOOGLE_API_KEY" in os.environ
         ), "Please set GOOGLE_API_KEY in environment!"
         client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
-        generate = get_gemini_ttc_model(client, model, pure)
+        generate = get_gemini_ttc_model(client, model, pure, thinking_budget)
 
     else:
         client = OllamaClient(host=f"http://localhost:{port}")

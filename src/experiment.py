@@ -104,8 +104,8 @@ def get_oai_model(
 def get_ant_ttc_model(
     client: Anthropic,
     model: str = "claude-3-7-sonnet-20250219",
-    thinking_budget: int = 1000,
     pure: bool = False,
+    thinking_budget: int = 1000,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         try:
@@ -183,8 +183,8 @@ def get_gemini_model(
 def get_gemini_ttc_model(
     client: genai.Client,
     model: str = "gemini-2.5-flash-preview-04-17",
-    thinking_budget: int = 1000,
     pure: bool = False,
+    thinking_budget: int = 1000,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         response = client.models.generate_content(
@@ -193,7 +193,7 @@ def get_gemini_ttc_model(
             config=GenerateContentConfig(
                 system_instruction=[get_sys_prompt(pure)],
                 thinking_config=ThinkingConfig(
-                    thinking_budget=thinking_budget,  # type: ignore
+                    thinking_budget=thinking_budget,  
                     include_thoughts=False,
                 ),
                 max_output_tokens=thinking_budget + MAX_TOKENS,
