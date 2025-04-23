@@ -21,7 +21,7 @@ uv sync # create a virtual environment, and install dependencies
 This script will build the benchmark (Prelude with NL) from the raw data.
 
 ```sh
-uv run --project . scripts/preprocess_benchmark.py
+uv run scripts/preprocess_benchmark.py
 ```
 
 ### TF-Bench_pure
