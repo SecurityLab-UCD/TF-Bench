@@ -8,7 +8,7 @@ import io
 import markdown_to_json
 
 # Default hyper-parameters
-MAX_TOKENS = 100
+MAX_TOKENS = 1024
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.

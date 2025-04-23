@@ -702,20 +702,21 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.30.5"
+version = "1.75.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "distro" },
     { name = "httpx" },
+    { name = "jiter" },
     { name = "pydantic" },
     { name = "sniffio" },
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/ba/c9f709476a9e22c1faf4566661127bd42f3e2b5002ec0d6e2ef884c535bb/openai-1.30.5.tar.gz", hash = "sha256:5366562eb2c5917e6116ae0391b7ae6e3acd62b0ae3f565ada32b35d8fcfa106", size = 178135 }
+sdist = { url = "https://files.pythonhosted.org/packages/99/b1/318f5d4c482f19c5fcbcde190801bfaaaec23413cda0b88a29f6897448ff/openai-1.75.0.tar.gz", hash = "sha256:fb3ea907efbdb1bcfd0c44507ad9c961afd7dce3147292b54505ecfd17be8fd1", size = 429492 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/62/63419a90b502aa5a590c83ffbd30f0a93fe15aeb63d0374e898e612f4f03/openai-1.30.5-py3-none-any.whl", hash = "sha256:2ad95e926de0d2e09cde632a9204b0a6dca4a03c2cdcc84329b01f355784355a", size = 320672 },
+    { url = "https://files.pythonhosted.org/packages/80/9a/f34f163294345f123673ed03e77c33dee2534f3ac1f9d18120384457304d/openai-1.75.0-py3-none-any.whl", hash = "sha256:fe6f932d2ded3b429ff67cc9ad118c71327db32eb9d32dd723de3acfca337125", size = 646972 },
 ]
 
 [[package]]
@@ -1244,7 +1245,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.8.3" },
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "ollama", specifier = ">=0.2.1" },
-    { name = "openai", specifier = "==1.30.5" },
+    { name = "openai", specifier = "==1.75.0" },
     { name = "pathos", specifier = ">=0.3.3" },
     { name = "pylint", specifier = ">=3.3.6" },
     { name = "pytest", specifier = ">=8.0.0" },

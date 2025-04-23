@@ -68,7 +68,6 @@ def get_oai_ttc_model(
                 {"role": "user", "content": get_sys_prompt(pure) + "\n\n" + prompt},
             ],
             model=model,
-            max_tokens=MAX_TOKENS,
         )
 
         content = completion.choices[0].message.content
@@ -92,7 +91,6 @@ def get_oai_model(
                 {"role": "user", "content": prompt},
             ],
             model=model,
-            max_tokens=MAX_TOKENS,
         )
 
         content = completion.choices[0].message.content
@@ -172,7 +170,6 @@ def get_gemini_model(
             contents=[prompt],
             config=GenerateContentConfig(
                 system_instruction=[get_sys_prompt(pure)],
-                max_output_tokens=MAX_TOKENS,
             ),
         )
         return response.text if isinstance(response.text, str) else None
@@ -193,10 +190,9 @@ def get_gemini_ttc_model(
             config=GenerateContentConfig(
                 system_instruction=[get_sys_prompt(pure)],
                 thinking_config=ThinkingConfig(
-                    thinking_budget=thinking_budget,  
+                    thinking_budget=thinking_budget,
                     include_thoughts=False,
                 ),
-                max_output_tokens=thinking_budget + MAX_TOKENS,
             ),
         )
         return response.text if isinstance(response.text, str) else None
