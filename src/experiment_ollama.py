@@ -64,11 +64,6 @@ def get_ollama_model(
         model (str): Name of the model to use for generating type signatures. Must be one of the predefined models in OLLAMA_MODELS.
                      Default is "llama3:8b".
 
-        seed (int): Random seed to ensure reproducibility in experiments. Default is defined by SEED.
-
-        temperature (float): Sampling temperature for the model's outputs. Higher values
-                             produce more diverse outputs. Default is defined by TEMPERATURE.
-
         pure (bool): If True, uses the original variable naming in type inference.
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
 
