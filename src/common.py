@@ -8,8 +8,7 @@ import io
 import markdown_to_json
 
 # Default hyper-parameters
-SEED = 0
-TEMPERATURE = 0.0
+MAX_TOKENS = 1024
 
 SYSTEM_PROMPT = """
 Act as a static analysis tool for type inference.
@@ -105,10 +104,8 @@ def remove_return_type(sig: str) -> str:
         return sig
 
 
-def get_prompt(task: BenchmarkTask, full_type: bool = True) -> str:
+def get_prompt(task: BenchmarkTask) -> str:
     """get prompt from a task instance"""
-
-    signature = "" if full_type else remove_return_type(task.signature)
 
     fn_name = extract_function_name(task)
     assert fn_name is not None
@@ -125,7 +122,7 @@ def get_prompt(task: BenchmarkTask, full_type: bool = True) -> str:
 \n\n
 {code}
 --complete the following type signature for '{fn_name}'
-{fn_name} :: {signature}
+{fn_name} ::
 """
     return prompt
 

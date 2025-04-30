@@ -10,14 +10,14 @@ dependencies = [
     "fire==0.5.0",
     "funcy==2.0",
     "funcy-chain==0.2.0",
-    "google-genai>=1.2.0",
+    "google-genai>=1.11.0",
     "groq==0.8.0",
     "hypothesis>=6.98.6",
     "markdown-to-json==2.1.2",
     "matplotlib>=3.8.3",
     "numpy>=1.26.4",
-    "ollama==0.2.1",
-    "openai==1.30.5",
+    "ollama>=0.2.1",
+    "openai==1.75.0",
     "pathos>=0.3.3",
     "pylint>=3.3.6",
     "pytest>=8.0.0",
@@ -35,3 +35,5 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
+[tool.uv]
+package = true
