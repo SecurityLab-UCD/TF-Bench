@@ -42,7 +42,7 @@ def main(
     model: str,
     port: int = 11434,
     pure: bool = False,
-    thinking_budget: int = 1000,
+    thinking_budget: int = 1024,
     output_file: str | None = None,
     log_file: str = "evaluation_log.jsonl",
 ):

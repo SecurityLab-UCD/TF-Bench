@@ -103,7 +103,7 @@ def get_ant_ttc_model(
     client: Anthropic,
     model: str = "claude-3-7-sonnet-20250219",
     pure: bool = False,
-    thinking_budget: int = 1000,
+    thinking_budget: int = 1024,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         try:
@@ -181,7 +181,7 @@ def get_gemini_ttc_model(
     client: genai.Client,
     model: str = "gemini-2.5-flash-preview-04-17",
     pure: bool = False,
-    thinking_budget: int = 1000,
+    thinking_budget: int = 1024,
 ) -> Callable[[str], str | None]:
     def generate_type_signature(prompt: str) -> str | None:
         response = client.models.generate_content(
