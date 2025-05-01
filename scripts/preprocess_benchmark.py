@@ -13,7 +13,7 @@ def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "tfb.js
     # read in all files ending with .md in the input_raw_benchmark_path
     tasks: list[BenchmarkTask] = []
     for file in os.listdir(input_raw_benchmark_path):
-        if not file.endswith(".core.md"):
+        if not file.endswith(".hs.md"):
             continue
         with open(os.path.join(input_raw_benchmark_path, file), "r") as f:
             data = f.read()
