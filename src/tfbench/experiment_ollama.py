@@ -88,12 +88,9 @@ def get_ollama_model(
             print(e)
             return None
 
-        if isinstance(response, dict) and "message" in response:
-            message = response["message"]
-            if isinstance(message, dict) and "content" in message:
-                content = message["content"]
-                if isinstance(content, str):
-                    return content
+        message = response.message
+        if message.content:
+            return str(message.content)
 
         return None
 
