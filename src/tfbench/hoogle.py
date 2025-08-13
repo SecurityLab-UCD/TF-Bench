@@ -1,18 +1,18 @@
 # importing the requests library
 from io import TextIOWrapper
-from src.hs_parser.ast_util import AST
+from tfbench.hs_parser.ast_util import AST
 import json
 from dacite import from_dict
 import fire
 from funcy_chain import Chain
 import requests
 from urllib.parse import quote
-from src.common import BenchmarkTask, extract_function_name
-from src.hs_parser import HASKELL_LANGUAGE
+from tfbench.common import BenchmarkTask, extract_function_name
+from tfbench.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from tree_sitter import Node
 from funcy import lmap
-from src.manual import MANUAL_TASKS
+from tfbench.manual import MANUAL_TASKS
 
 
 def get_all_first_child(ast: AST, type: str) -> list[Node]:

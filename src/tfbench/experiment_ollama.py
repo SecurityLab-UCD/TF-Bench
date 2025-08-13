@@ -4,7 +4,7 @@ Experiment script for OSS models using Ollama
 
 from ollama import Client as OllamaClient, ResponseError
 from typing import Union
-from src.common import get_sys_prompt
+from tfbench.common import get_sys_prompt
 
 OLLAMA_OSS = [
     "phi3:3.8b",

@@ -1,6 +1,6 @@
 import pytest
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST, ASTLoc
+from tfbench.hs_parser import HASKELL_LANGUAGE
+from tfbench.hs_parser.ast_util import AST, ASTLoc
 from hypothesis import given
 import hypothesis.strategies as st
 from funcy_chain import Chain

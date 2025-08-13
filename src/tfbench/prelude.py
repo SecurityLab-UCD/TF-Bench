@@ -6,10 +6,10 @@ from funcy import lmap
 from funcy_chain import Chain
 from dacite import from_dict
 
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST
-from src.add_dependency import add_dependencies
-from src.common import clean_tab_spaces, BenchmarkTask, task2md
+from tfbench.hs_parser import HASKELL_LANGUAGE
+from tfbench.hs_parser.ast_util import AST
+from tfbench.add_dependency import add_dependencies
+from tfbench.common import clean_tab_spaces, BenchmarkTask, task2md
 
 
 def main(

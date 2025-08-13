@@ -4,7 +4,7 @@ import json
 import os
 import markdown_to_json
 import fire
-from src.common import md2task, BenchmarkTask
+from tfbench.common import md2task, BenchmarkTask
 from funcy import lmap
 
 

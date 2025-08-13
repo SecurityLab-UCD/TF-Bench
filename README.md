@@ -1,6 +1,6 @@
 # TF-Bench
 
-Towards Sound Evaluation of Program Logic Reasoning with Type Inference under System F
+Evaluating Program Semantics Reasoning with Type Inference in System _F_
 
 ## Setup
 

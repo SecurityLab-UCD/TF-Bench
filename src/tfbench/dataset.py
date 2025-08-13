@@ -10,10 +10,10 @@ from enum import IntEnum
 import json
 from tqdm import tqdm
 from funcy import lmap
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST, HaskellFunction
-from src.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
-from src.common import remove_comments
+from tfbench.hs_parser import HASKELL_LANGUAGE
+from tfbench.hs_parser.ast_util import AST, HaskellFunction
+from tfbench.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
+from tfbench.common import remove_comments
 
 
 def wrap_repo(s: str) -> str:

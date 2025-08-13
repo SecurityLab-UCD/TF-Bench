@@ -13,12 +13,12 @@ from anthropic import Anthropic
 from google import genai
 
 import fire
-from src.common import (
+from tfbench.common import (
     BenchmarkTask,
     get_prompt,
 )
 
-from src.experiment import (
+from tfbench.experiment import (
     OAI_MODELS,
     OAI_TTC_MODELS,
     CLAUDE_MODELS,
@@ -33,9 +33,9 @@ from src.experiment import (
     get_gemini_model,
     get_gemini_ttc_model,
 )
-from src.experiment_ollama import OLLAMA_MODELS, get_ollama_model
-from src.postprocessing import postprocess, RESPONSE_STRATEGIES
-from src.evaluation import evaluate
+from tfbench.experiment_ollama import OLLAMA_MODELS, get_ollama_model
+from tfbench.postprocessing import postprocess, RESPONSE_STRATEGIES
+from tfbench.evaluation import evaluate
 
 
 def main(

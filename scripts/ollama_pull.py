@@ -1,5 +1,5 @@
 # script to pull all ollama models
-from src.experiment_ollama import OLLAMA_MODELS
+from tfbench.experiment_ollama import OLLAMA_MODELS
 import subprocess
 from tqdm import tqdm
 

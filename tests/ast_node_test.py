@@ -1,14 +1,14 @@
 # importing the requests library
-from src.hs_parser.ast_util import AST
+from tfbench.hs_parser.ast_util import AST
 import json
 from dacite import from_dict
 import fire
 from funcy_chain import Chain
 import requests
 from urllib.parse import quote
-from src.common import BenchmarkTask
-from src.common import extract_function_name
-from src.hs_parser import HASKELL_LANGUAGE
+from tfbench.common import BenchmarkTask
+from tfbench.common import extract_function_name
+from tfbench.hs_parser import HASKELL_LANGUAGE
 from functools import lru_cache
 from pprint import pprint
 from tree_sitter import Node

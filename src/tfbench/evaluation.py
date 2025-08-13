@@ -1,8 +1,8 @@
 import fire
 import json
 import logging
-from src.common import BenchmarkTask
-from src.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
+from tfbench.common import BenchmarkTask
+from tfbench.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 from funcy_chain import Chain
 from dacite import from_dict
 from itertools import starmap

@@ -5,7 +5,7 @@ import json
 from funcy_chain import Chain
 import pandas
 
-from src.common import BenchmarkTask, get_prompt
+from tfbench.common import BenchmarkTask, get_prompt
 
 
 def main(input_file="tfb.json"):

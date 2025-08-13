@@ -9,7 +9,7 @@ from typing import Callable
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
-from src.common import get_sys_prompt, MAX_TOKENS
+from tfbench.common import get_sys_prompt, MAX_TOKENS
 
 OAI_MODELS = [
     "gpt-3.5-turbo-0125",

@@ -1,9 +1,9 @@
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST, ASTLoc, HaskellFunction
+from tfbench.hs_parser import HASKELL_LANGUAGE
+from tfbench.hs_parser.ast_util import AST, ASTLoc, HaskellFunction
 from hypothesis import given
 import hypothesis.strategies as st
 from funcy_chain import Chain
-from src.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
+from tfbench.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
 
 
 def test_polymorphism():
