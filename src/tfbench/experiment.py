@@ -2,10 +2,10 @@
 Experiment script for OpenAI models
 """
 
-from openai import OpenAI
-from anthropic import Anthropic, InternalServerError
 from typing import Callable
 
+from openai import OpenAI
+from anthropic import Anthropic, InternalServerError
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
@@ -64,6 +64,8 @@ def get_oai_ttc_model(
     model: str = "o1-preview-2024-09-12",
     pure: bool = False,
 ) -> Callable[[str], str | None]:
+    """OpenAI Reasoning Models"""
+
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
             messages=[
@@ -83,6 +85,8 @@ def get_oai_model(
     model: str = "gpt-3.5-turbo",
     pure: bool = False,
 ) -> Callable[[str], str | None]:
+    """Regular OpenAI Models"""
+
     def generate_type_signature(prompt: str) -> str | None:
         completion = client.chat.completions.create(
             messages=[
@@ -107,6 +111,8 @@ def get_ant_ttc_model(
     pure: bool = False,
     thinking_budget: int = 1024,
 ) -> Callable[[str], str | None]:
+    "Claude Reasoning Models"
+
     def generate_type_signature(prompt: str) -> str | None:
         try:
             message = client.beta.messages.create(
@@ -138,6 +144,8 @@ def get_ant_model(
     model: str = "claude-3-5-sonnet-20240620",
     pure: bool = False,
 ) -> Callable[[str], str | None]:
+    """Claude regular Models"""
+
     def generate_type_signature(prompt: str) -> str | None:
         try:
             message = client.messages.create(
@@ -155,8 +163,8 @@ def get_ant_model(
         if len(contents) > 0:
             text = contents[0].text  # type: ignore
             return text if isinstance(text, str) else None
-        else:
-            return None
+
+        return None
 
     return generate_type_signature
 
@@ -166,6 +174,8 @@ def get_gemini_model(
     model: str = "gemini-2.0-flash-lite",
     pure: bool = False,
 ) -> Callable[[str], str | None]:
+    """Gemini Models"""
+
     def generate_type_signature(prompt: str) -> str | None:
         response = client.models.generate_content(
             model=model,
@@ -185,6 +195,8 @@ def get_gemini_ttc_model(
     pure: bool = False,
     thinking_budget: int = 1024,
 ) -> Callable[[str], str | None]:
+    """Gemini Reasoning Models"""
+
     def generate_type_signature(prompt: str) -> str | None:
         response = client.models.generate_content(
             model=model,

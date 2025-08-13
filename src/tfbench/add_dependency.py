@@ -1,17 +1,18 @@
-import fire
-import funcy
-from funcy_chain import Chain
-import logging
 import json
+from typing import Iterable
+
+import fire
+from funcy_chain import Chain
 from dacite import from_dict
+
 from tfbench.common import extract_function_name
 from tfbench.hs_parser import HASKELL_LANGUAGE
 from tfbench.hs_parser.ast_util import AST
 from tfbench.common import BenchmarkTask
-from typing import Iterable
 
 
 def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
+    """dependency mapping from function names to their signatures"""
     return {
         fn_name: t.signature
         for t in tasks
@@ -48,6 +49,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
 
 def _is_input(code: str, call: str) -> bool:
+    """check if a function call is an input to the task"""
     inputs: list[list[str]] = (
         Chain(code.splitlines())
         .filter(lambda l: "=" in l)
@@ -60,6 +62,8 @@ def _is_input(code: str, call: str) -> bool:
 
 
 def add_dependencies(dependency_dict: dict[str, str]):
+    """add dependencies to benchmark tasks"""
+
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
         calls: Iterable[str] = get_func_calls(task)
         calls = filter(lambda c: not _is_input(task.code, c), calls)
@@ -73,6 +77,7 @@ def main(
     input_file: str = "data/source/base-4.20.0.0.jsonl",
     output_file: str = "out.jsonl",
 ):
+    """add dependency to a task json file"""
     with open(input_file, "r") as fp:
         tasks: list[BenchmarkTask] = (
             Chain(fp.readlines())

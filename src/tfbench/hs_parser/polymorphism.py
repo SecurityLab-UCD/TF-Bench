@@ -20,6 +20,7 @@ class PolymorphicType(str, Enum):
 
 
 def to_type_node(type_signature: Node) -> Node:
+    """Get the type node from a type signature."""
     type_nodes = type_signature.children_by_field_name("type")
     assert len(type_nodes) == 1, "each type signature should has only 1 `type` child"
     return type_nodes[0]

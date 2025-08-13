@@ -1,25 +1,25 @@
 """main script to build Haskell dataset"""
 
+from enum import IntEnum
+import os
+import logging
+import json
+
 import fire
 from returns.result import Success, Failure
 from returns.io import IOResult, IOSuccess, IOFailure
 from funcy_chain import Chain
-import os
-import logging
-from enum import IntEnum
-import json
 from tqdm import tqdm
 from funcy import lmap
+
 from tfbench.hs_parser import HASKELL_LANGUAGE
 from tfbench.hs_parser.ast_util import AST, HaskellFunction
-from tfbench.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
+from tfbench.hs_parser.polymorphism import get_polymorphic_type
 from tfbench.common import remove_comments
 
 
 def wrap_repo(s: str) -> str:
-    # NOTE: this is a placeholder function
-    # the implementation depends on how the repo is downloaded
-    # please refer to HMTypes4Py repo
+    """NOTE: this is a placeholder function"""
     return s
 
 
@@ -44,6 +44,7 @@ def collect_hs_files(root: str):
 
 
 def collect_from_file(file_path: str) -> list[dict[str, str]]:
+    """extract benchmark tasks from a Haskell file"""
     with open(file_path, "r", errors="replace") as fp:
         code = fp.read()
 
@@ -66,6 +67,7 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
 def collect_from_repo(
     repo_id: str, repo_root: str, source_root: str
 ) -> IOResult[int, CollectionErrorCode]:
+    """Collect all tasks from a Haskell repository"""
     repo_path = os.path.join(repo_root, wrap_repo(repo_id))
     if not os.path.exists(repo_path) or not os.path.isdir(repo_path):
         return IOFailure(CollectionErrorCode.REPO_NOT_FOUND)
@@ -98,6 +100,7 @@ def main(
     repo_root: str = "data/repos",
     oroot: str = "data/source",
 ):
+    """script to extract benchmark tasks from Haskell repositories"""
     with open(input_repo_list_path) as fp:
         repo_id_list = [l.strip() for l in fp.readlines()]
 

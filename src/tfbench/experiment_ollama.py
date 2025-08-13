@@ -2,8 +2,8 @@
 Experiment script for OSS models using Ollama
 """
 
-from ollama import Client as OllamaClient, ResponseError
 from typing import Union
+from ollama import Client as OllamaClient, ResponseError
 from tfbench.common import get_sys_prompt
 
 OLLAMA_OSS = [
@@ -61,15 +61,17 @@ def get_ollama_model(
     Parameters:
         client (OllamaClient): The Ollama client instance used for sending requests to the model.
 
-        model (str): Name of the model to use for generating type signatures. Must be one of the predefined models in OLLAMA_MODELS.
-                     Default is "llama3:8b".
+        model (str): Name of the model to use for generating type signatures.
+                    Must be one of the predefined models in OLLAMA_MODELS.
+                    Default is "llama3:8b".
 
         pure (bool): If True, uses the original variable naming in type inference.
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
 
     Returns:
-        Callable[[str], Union[str, None]]: A function that takes a prompt string as input and returns the generated type
-                                           signature as a string, or None if the generation fails.
+        Callable[[str], Union[str, None]]:
+            A function that takes a prompt string as input and returns the generated type
+            signature as a string, or None if the generation fails.
     """
 
     def generate_type_signature(prompt: str) -> Union[str, None]:

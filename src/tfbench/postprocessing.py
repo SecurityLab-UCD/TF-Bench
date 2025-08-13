@@ -2,6 +2,9 @@ import re
 from functools import reduce
 from typing import Callable
 
+# pylint: disable=missing-function-docstring
+# function docstring for postprocessing is disable since too simple
+
 
 def char_list_to_str(text: str) -> str:
     return text.replace("[Char]", "String")

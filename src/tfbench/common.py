@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 import re
 import copy
-from funcy import lmap
 import sys
 import io
 
+from funcy import lmap
 import markdown_to_json
 
 # Default hyper-parameters
@@ -40,10 +40,16 @@ class BenchmarkTask:
 
 
 def extract_function_name(task: BenchmarkTask) -> str | None:
+    """get function name from a task
+    For example, given a task with signature 'foo :: Int -> Int',
+    it will return 'foo'.
+    """
     return task.signature.split("::")[0].strip()
 
 
 def clean_tab_spaces(task: BenchmarkTask) -> BenchmarkTask:
+    """remove tab spaces from the code"""
+
     def clean(s: str) -> str:
         return re.sub(r"[ \t]+", " ", s)
 
@@ -56,6 +62,7 @@ def clean_tab_spaces(task: BenchmarkTask) -> BenchmarkTask:
 
 
 def remove_comments(code: str) -> str:
+    """remove Haskell comments"""
     # multi-line
     # code = re.sub(r"\{\-[\s\S]*?\-\}", "", code)
     code = re.sub(r"\{\-.*?\-\}", "", code, flags=re.DOTALL)
@@ -65,6 +72,7 @@ def remove_comments(code: str) -> str:
 
 
 def get_sys_prompt(pure: bool) -> str:
+    """helper function to get system prompt for pure version of TF-Bench"""
     sys_prompt = SYSTEM_PROMPT + INSTRUCT_PROMPT
     sys_prompt += PURE_PROMPT if pure else CORE_PROMPT
     return sys_prompt
@@ -99,9 +107,9 @@ def remove_return_type(sig: str) -> str:
         # Keep '->' and discard what follows
         new_type = type_part[: last_arrow_index + 2]
         return func_part + " " + new_type.rstrip()
-    else:
-        # No top-level arrow found; return as-is
-        return sig
+
+    # No top-level arrow found; return as-is
+    return sig
 
 
 def get_prompt(task: BenchmarkTask) -> str:

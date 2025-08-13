@@ -1,7 +1,7 @@
 import json
-import fire
-import os
 from os.path import join as pjoin, abspath, exists
+
+import fire
 from funcy import lmap
 from funcy_chain import Chain
 from dacite import from_dict
@@ -17,6 +17,7 @@ def main(
     ghc_internal: str = "data/source/ghc-internal-9.1001.0.jsonl",
     output_dir: str = "benchmark",
 ):
+    """extract tasks from Haskell prelude"""
     ghc_internal = abspath(ghc_internal)
     prelude = abspath(prelude)
     assert exists(ghc_internal) and exists(prelude)

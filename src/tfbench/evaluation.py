@@ -1,12 +1,14 @@
-import fire
 import json
 import logging
-from tfbench.common import BenchmarkTask
-from tfbench.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
-from funcy_chain import Chain
-from dacite import from_dict
 from itertools import starmap
 import re
+
+import fire
+from funcy_chain import Chain
+from dacite import from_dict
+
+from tfbench.common import BenchmarkTask
+from tfbench.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 
 
 def tokenize_type_signature(sig: str) -> list[str]:
@@ -64,6 +66,7 @@ def alpha_equiv(s1: str, s2: str) -> bool:
 
 
 def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
+    """evaluate a single task against its result by alpha equivalence"""
     ground_truth = postprocess(task.signature, TASK_STRATEGIES)
     result = postprocess(result, RESPONSE_STRATEGIES)
     return alpha_equiv(ground_truth, result)
@@ -72,6 +75,7 @@ def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
 def evaluate(
     benchmark_f: list[BenchmarkTask], results: list[str]
 ) -> dict[str, int | float]:
+    """evaluate all generation results"""
 
     assert len(benchmark_f) == len(results)
     eval_results = starmap(evaluate_one_task, zip(benchmark_f, results))
@@ -89,6 +93,7 @@ def main(
     benchmark_file: str = "Benchmark-F.jsonl",
     results_file: str = "data/experiment/gpt_generated_responses.jsonl",
 ):
+    """script to run all evaluation tasks"""
     with open(benchmark_file, "r") as file:
         benchmark_f: list[BenchmarkTask] = (
             Chain(file.readlines())

@@ -1,9 +1,10 @@
+from typing import Optional
+from dataclasses import dataclass
+
 from tree_sitter import Language, Parser, Tree, Node
 from returns.maybe import Maybe, Nothing, Some
-from dataclasses import dataclass
 from funcy_chain import Chain
 from funcy import lmap
-from typing import Optional
 
 
 @dataclass
@@ -240,6 +241,7 @@ class AST:
 
     @staticmethod
     def get_nodes_start_bytes(nodes: list[Node]) -> dict[str, int]:
+        """Get the start byte positions of nodes by their names."""
         start_bytes: dict[str, int] = {}
 
         for node in nodes:
