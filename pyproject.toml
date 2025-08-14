@@ -85,3 +85,6 @@ warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = false
 plugins = ["returns.contrib.mypy.returns_plugin"]
+
+[tool.ruff]
+exclude = ["tests/", "plots/"]

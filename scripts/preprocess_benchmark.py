@@ -2,10 +2,11 @@
 
 import json
 import os
-import markdown_to_json
+
 import fire
-from tfbench.common import md2task, BenchmarkTask
 from funcy import lmap
+
+from tfbench.common import md2task, BenchmarkTask
 
 
 def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "tfb.json"):

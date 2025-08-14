@@ -3,6 +3,7 @@ Experiment script for OpenAI models
 """
 
 from typing import Callable
+import logging
 
 from openai import OpenAI
 from anthropic import Anthropic, InternalServerError
@@ -133,7 +134,8 @@ def get_ant_ttc_model(
             thinking, answer = message.content
             text = answer.text  # type: ignore
             return text if isinstance(text, str) else None
-        except:
+        except Exception as e:
+            logging.error(f"Error processing message content: {e}")
             return None
 
     return generate_type_signature

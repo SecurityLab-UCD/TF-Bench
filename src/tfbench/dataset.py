@@ -102,7 +102,7 @@ def main(
 ):
     """script to extract benchmark tasks from Haskell repositories"""
     with open(input_repo_list_path) as fp:
-        repo_id_list = [l.strip() for l in fp.readlines()]
+        repo_id_list = [line.strip() for line in fp.readlines()]
 
     logging.info(f"Loaded {len(repo_id_list)} repos to be processed")
     num_func = 0

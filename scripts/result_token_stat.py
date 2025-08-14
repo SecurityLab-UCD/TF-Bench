@@ -1,11 +1,11 @@
+import json
+
 import tiktoken
 import fire
 from dacite import from_dict
-import json
-from funcy_chain import Chain
 import pandas
 
-from tfbench.common import BenchmarkTask, get_prompt
+from tfbench.common import BenchmarkTask
 
 
 def main(input_file="tfb.json"):
@@ -19,6 +19,7 @@ def main(input_file="tfb.json"):
     print(f"max: {df.token_count.max()}")
     print(f"min: {df.token_count.min()}")
     print(f"avg: {df.token_count.mean()}")
+
 
 if __name__ == "__main__":
     fire.Fire(main)

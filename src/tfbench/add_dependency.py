@@ -52,8 +52,8 @@ def _is_input(code: str, call: str) -> bool:
     """check if a function call is an input to the task"""
     inputs: list[list[str]] = (
         Chain(code.splitlines())
-        .filter(lambda l: "=" in l)
-        .map(lambda l: l.split("=")[0])
+        .filter(lambda line: "=" in line)
+        .map(lambda line: line.split("=")[0])
         .map(str.strip)
         .map(str.split)
         .value
