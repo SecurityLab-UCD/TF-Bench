@@ -1,7 +1,6 @@
 from typing import get_args
 
 from openai import OpenAI, NOT_GIVEN
-from openai.types.shared_params.reasoning import Reasoning
 from openai.types.shared.reasoning_effort import ReasoningEffort
 
 from ..env import ENV

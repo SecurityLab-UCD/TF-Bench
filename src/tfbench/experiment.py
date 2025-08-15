@@ -5,91 +5,10 @@ Experiment script for OpenAI models
 from typing import Callable
 import logging
 
-from anthropic import Anthropic, InternalServerError
 
 from .lm import get_sys_prompt, MAX_TOKENS
-
-
-CLAUDE_MODELS = [
-    "claude-3-opus-20240229",
-    "claude-3-sonnet-20240229",
-    "claude-3-haiku-20240307",
-    "claude-3-5-sonnet-20240620",
-    "claude-3-5-sonnet-20241022",
-    "claude-3-5-haiku-20241022",
-]
-
-CLAUDE_TTC_MODELS = [
-    "claude-3-7-sonnet-20250219",
-]
 
 DEEPSEEK_MODELS = [
     "deepseek-reasoner",
     "deepseek-chat",
 ]
-
-
-def get_ant_ttc_model(
-    client: Anthropic,
-    model: str = "claude-3-7-sonnet-20250219",
-    pure: bool = False,
-    thinking_budget: int = 1024,
-) -> Callable[[str], str | None]:
-    "Claude Reasoning Models"
-
-    def generate_type_signature(prompt: str) -> str | None:
-        try:
-            message = client.beta.messages.create(
-                model=model,
-                thinking={"type": "enabled", "budget_tokens": thinking_budget},
-                system=get_sys_prompt(pure),
-                messages=[
-                    {"role": "user", "content": prompt},
-                ],
-                max_tokens=thinking_budget + MAX_TOKENS,
-                betas=["output-128k-2025-02-19"],
-            )
-        except InternalServerError as e:
-            print(e)
-            return None
-
-        try:
-            thinking, answer = message.content
-            text = answer.text  # type: ignore
-            return text if isinstance(text, str) else None
-        except Exception as e:
-            logging.error(f"Error processing message content: {e}")
-            return None
-
-    return generate_type_signature
-
-
-def get_ant_model(
-    client: Anthropic,
-    model: str = "claude-3-5-sonnet-20240620",
-    pure: bool = False,
-) -> Callable[[str], str | None]:
-    """Claude regular Models"""
-
-    def generate_type_signature(prompt: str) -> str | None:
-        try:
-            message = client.messages.create(
-                system=get_sys_prompt(pure),
-                messages=[
-                    {"role": "user", "content": prompt},
-                ],
-                model=model,
-                max_tokens=MAX_TOKENS,
-            )
-        except InternalServerError as e:
-            print(e)
-            return None
-        contents = message.content
-        if len(contents) > 0:
-            text = contents[0].text  # type: ignore
-            return text if isinstance(text, str) else None
-
-        return None
-
-    return generate_type_signature
-

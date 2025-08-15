@@ -29,7 +29,14 @@ GEMINI_TTC_MODELS = [
 
 
 class GeminiChat(LM):
-    """Wrapper class for `google-genai` SDK for chat models"""
+    """Wrapper class for `google-genai` SDK for chat models
+    NOTE: this class is only used for legacy Gemini models (2.0-flash) that cannot "think".
+
+    For reasoning models with "thinking" disabled, please use `GeminiReasoning`
+    with `reasoning_effort` set to "off".
+    We keep this implementation since there are default thinking config for each model,
+    and `thinking_config=None` has different behavior with `thinking_budget=0`.
+    """
 
     def __init__(self, model_name: str, pure: bool = False):
         super().__init__(model_name=model_name, pure=pure)
@@ -39,6 +46,7 @@ class GeminiChat(LM):
         self.client = genai.Client(api_key=api_key)
 
     def _gen(self, prompt: str) -> LMAnswer:
+        """generation function for legacy Gemini models (2.0)"""
 
         response = self.client.models.generate_content(
             model=self.model_name,
