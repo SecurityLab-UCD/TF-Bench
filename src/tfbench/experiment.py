@@ -5,28 +5,12 @@ Experiment script for OpenAI models
 from typing import Callable
 import logging
 
-from openai import OpenAI
 from anthropic import Anthropic, InternalServerError
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
-from tfbench.common import get_sys_prompt, MAX_TOKENS
+from .lm import get_sys_prompt, MAX_TOKENS
 
-OAI_MODELS = [
-    "gpt-3.5-turbo-0125",
-    "gpt-4-turbo-2024-04-09",
-    "gpt-4o-2024-11-20",
-    "gpt-4o-mini-2024-07-18",
-]
-
-OAI_TTC_MODELS = [
-    "o1-mini-2024-09-12",
-    "o1-preview-2024-09-12",
-    "o1-2024-12-17",
-    "o3-mini-2025-01-31",
-    "o3-2025-04-16",
-    "o4-mini-2025-04-16",
-]
 
 CLAUDE_MODELS = [
     "claude-3-opus-20240229",
@@ -59,51 +43,6 @@ GEMINI_TTC_MODELS = [
     "gemini-2.5-pro-preview-03-25",
 ]
 
-
-def get_oai_ttc_model(
-    client: OpenAI,
-    model: str = "o1-preview-2024-09-12",
-    pure: bool = False,
-) -> Callable[[str], str | None]:
-    """OpenAI Reasoning Models"""
-
-    def generate_type_signature(prompt: str) -> str | None:
-        completion = client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": get_sys_prompt(pure) + "\n\n" + prompt},
-            ],
-            model=model,
-        )
-
-        content = completion.choices[0].message.content
-        return content if isinstance(content, str) else None
-
-    return generate_type_signature
-
-
-def get_oai_model(
-    client: OpenAI,
-    model: str = "gpt-3.5-turbo",
-    pure: bool = False,
-) -> Callable[[str], str | None]:
-    """Regular OpenAI Models"""
-
-    def generate_type_signature(prompt: str) -> str | None:
-        completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": get_sys_prompt(pure),
-                },
-                {"role": "user", "content": prompt},
-            ],
-            model=model,
-        )
-
-        content = completion.choices[0].message.content
-        return content if isinstance(content, str) else None
-
-    return generate_type_signature
 
 
 def get_ant_ttc_model(

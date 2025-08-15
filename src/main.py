@@ -18,9 +18,8 @@ from tfbench.common import (
     get_prompt,
 )
 
+from tfbench.lm._openai import OAI_MODELS, OAI_TTC_MODELS
 from tfbench.experiment import (
-    OAI_MODELS,
-    OAI_TTC_MODELS,
     CLAUDE_MODELS,
     CLAUDE_TTC_MODELS,
     DEEPSEEK_MODELS,
@@ -28,8 +27,6 @@ from tfbench.experiment import (
     GEMINI_TTC_MODELS,
     get_ant_model,
     get_ant_ttc_model,
-    get_oai_model,
-    get_oai_ttc_model,
     get_gemini_model,
     get_gemini_ttc_model,
 )
@@ -87,16 +84,16 @@ def main(
     client: OpenAI | Anthropic | OllamaClient | genai.Client
     generate: Callable[[str], str | None]
 
-    if model in OAI_MODELS:
-        assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_model(client, model, pure)
+    # if model in OAI_MODELS:
+    #     assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
+    #     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    #     generate = get_oai_model(client, model, pure)
 
-    elif model in OAI_TTC_MODELS:
-        assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        generate = get_oai_ttc_model(client, model, pure)
-    elif model in CLAUDE_MODELS:
+    # elif model in OAI_TTC_MODELS:
+    #     assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
+    #     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    #     generate = get_oai_ttc_model(client, model, pure)
+    if model in CLAUDE_MODELS:
         assert (
             "ANTHROPIC_API_KEY" in os.environ
         ), "Please set ANTHROPIC_API_KEY in environment!"
@@ -106,14 +103,14 @@ def main(
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         generate = get_ant_ttc_model(client, model, pure, thinking_budget)
 
-    elif model in DEEPSEEK_MODELS:
-        assert (
-            "DEEPSEEK_API_KEY" in os.environ
-        ), "Please set DEEPSEEK_API_KEY in environment!"
-        client = OpenAI(
-            api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"
-        )
-        generate = get_oai_model(client, model, pure)
+    # elif model in DEEPSEEK_MODELS:
+    #     assert (
+    #         "DEEPSEEK_API_KEY" in os.environ
+    #     ), "Please set DEEPSEEK_API_KEY in environment!"
+    #     client = OpenAI(
+    #         api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"
+    #     )
+    #     generate = get_oai_model(client, model, pure)
 
     elif model in GEMINI_MODELS:
         assert (
