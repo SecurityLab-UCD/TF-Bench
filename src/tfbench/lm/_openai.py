@@ -1,8 +1,7 @@
 from openai import OpenAI, NOT_GIVEN
 
 from ..env import ENV
-from .prompts import get_sys_prompt
-from ._types import LMResponse, LM, ReasoningEffort
+from ._types import LM, ReasoningEffort, LMAnswer
 
 OAI_MODELS = [
     "gpt-3.5-turbo-0125",
@@ -43,7 +42,7 @@ class OpenAIChatCompletion(LM):
         assert api_key, "Please set OPENAI_API_KEY in environment!"
         self.client = OpenAI(api_key=api_key)
 
-    def _gen(self, prompt: str) -> LMResponse:
+    def _gen(self, prompt: str) -> LMAnswer:
         """Generate using OpenAI SDK's Chat Completions API."""
         completion = self.client.chat.completions.create(
             messages=[
@@ -56,7 +55,9 @@ class OpenAIChatCompletion(LM):
             model=self.model_name,
         )
 
-        return completion.choices[0].message.content
+        return LMAnswer(
+            answer=completion.choices[0].message.content,
+        )
 
 
 class OpenAIResponses(LM):
@@ -76,7 +77,7 @@ class OpenAIResponses(LM):
 
         self.effort = effort
 
-    def _gen(self, prompt: str) -> LMResponse:
+    def _gen(self, prompt: str) -> LMAnswer:
         """Generate using OpenAI SDK's Responses API."""
         response = self.client.responses.create(
             model=self.model_name,
@@ -90,4 +91,4 @@ class OpenAIResponses(LM):
                 else NOT_GIVEN
             ),
         )
-        return response.output_text
+        return LMAnswer(answer=response.output_text)

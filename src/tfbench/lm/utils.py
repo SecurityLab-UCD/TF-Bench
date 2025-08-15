@@ -1,5 +1,8 @@
-from ._types import LMResponse, LM, ReasoningEffort
+import logging
 
+from returns.result import ResultE, Success, Failure, Result
+
+from ._types import LM, ReasoningEffort, LMAnswer
 from ._openai import (
     OpenAIChatCompletion,
     OpenAIResponses,
@@ -26,3 +29,14 @@ def is_supported(model_name: str) -> bool:
     """check if the model is supported"""
     all_models = OAI_MODELS + OAI_TTC_MODELS + OAI_O5
     return model_name in all_models
+
+
+def extract_response(response: ResultE[LMAnswer]) -> str:
+    """Extract the answer from the LMAnswer or return an empty string if None."""
+    match response:
+        case Success(r):
+            return r.answer or ""
+        case Failure(e):
+            logging.error(f"Error generating response: {e}")
+            return ""
+    return ""

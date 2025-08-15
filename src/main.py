@@ -7,12 +7,7 @@ from funcy_chain import Chain
 from funcy import lmap
 from tqdm import tqdm
 from dacite import from_dict
-
-
-from openai import OpenAI
-from ollama import Client as OllamaClient
-from anthropic import Anthropic
-from google import genai
+from returns.result import ResultE, Success, Failure
 
 import fire
 from tfbench.common import (
@@ -20,22 +15,9 @@ from tfbench.common import (
     get_prompt,
 )
 
-from tfbench.lm._openai import OAI_MODELS, OAI_TTC_MODELS
-from tfbench.experiment import (
-    CLAUDE_MODELS,
-    CLAUDE_TTC_MODELS,
-    DEEPSEEK_MODELS,
-    GEMINI_MODELS,
-    GEMINI_TTC_MODELS,
-    get_ant_model,
-    get_ant_ttc_model,
-    get_gemini_model,
-    get_gemini_ttc_model,
-)
-from tfbench.experiment_ollama import OLLAMA_MODELS, get_ollama_model
 from tfbench.postprocessing import postprocess, RESPONSE_STRATEGIES
 from tfbench.evaluation import evaluate
-from tfbench.lm import is_supported, router
+from tfbench.lm import is_supported, router, LMAnswer, extract_response
 
 
 def main(
@@ -82,10 +64,13 @@ def main(
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
     prompts = lmap(get_prompt, tasks)
-    responses = lmap(client.generate, tqdm(prompts, desc=model))
+    responses: list[ResultE[LMAnswer]] = lmap(
+        client.generate, tqdm(prompts, desc=model)
+    )
+
     gen_results = (
         Chain(responses)
-        .map(lambda x: x if x is not None else "")  # convert None to empty string
+        .map(extract_response)
         .map(lambda s: postprocess(s, RESPONSE_STRATEGIES))
         .map(str.strip)
         .value
