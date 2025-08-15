@@ -46,6 +46,14 @@ You can also download our pre-built benchmark from [Zenodo](https://doi.org/10.5
 
 ## Benchmarking!
 
+Please have your API key ready in `.env`.
+Please note that the `.env` in the repository is tracked by git,
+we recommend telling your git to ignore its changes by
+
+```sh
+git update-index --assume-unchanged .env
+```
+
 ### GPT Models
 
 To run single model:
