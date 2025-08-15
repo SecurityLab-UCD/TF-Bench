@@ -9,7 +9,9 @@ from ._openai import (
 )
 
 
-def router(model_name: str, pure: bool, effort: ReasoningEffort | None) -> LM | None:
+def router(
+    model_name: str, pure: bool, effort: ReasoningEffort | None = None
+) -> LM | None:
     """Route the model name to the appropriate LM class."""
     if model_name in OAI_MODELS:
         return OpenAIChatCompletion(model_name=model_name, pure=pure)
@@ -20,7 +22,7 @@ def router(model_name: str, pure: bool, effort: ReasoningEffort | None) -> LM | 
     return None
 
 
-def is_model_supported(model_name: str) -> bool:
+def is_supported(model_name: str) -> bool:
     """check if the model is supported"""
     all_models = OAI_MODELS + OAI_TTC_MODELS + OAI_O5
     return model_name in all_models

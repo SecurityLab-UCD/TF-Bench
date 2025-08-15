@@ -1,6 +1,8 @@
 import os
 from typing import Callable
 import json
+import logging
+
 from funcy_chain import Chain
 from funcy import lmap
 from tqdm import tqdm
@@ -33,6 +35,7 @@ from tfbench.experiment import (
 from tfbench.experiment_ollama import OLLAMA_MODELS, get_ollama_model
 from tfbench.postprocessing import postprocess, RESPONSE_STRATEGIES
 from tfbench.evaluation import evaluate
+from tfbench.lm import is_supported, router
 
 
 def main(
@@ -58,17 +61,7 @@ def main(
         pure (bool): If True, uses the original variable naming in type inference.
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
     """
-    assert (
-        model
-        in OAI_MODELS
-        + OAI_TTC_MODELS
-        + OLLAMA_MODELS
-        + DEEPSEEK_MODELS
-        + CLAUDE_MODELS
-        + CLAUDE_TTC_MODELS
-        + GEMINI_MODELS
-        + GEMINI_TTC_MODELS
-    ), f"{model} is not supported."
+    assert is_supported(model), f"{model} is not supported."
 
     # hard-coding benchmark file path for experiment
     input_file = "tfb.pure.json" if pure else "tfb.json"
@@ -79,61 +72,17 @@ def main(
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
-        output_file = f"result/{model}.txt"
+        output_file = os.path.abspath(f"result/{model}.txt")
+    logging.info(f"Writing generation results in {output_file}.")
 
-    client: OpenAI | Anthropic | OllamaClient | genai.Client
-    generate: Callable[[str], str | None]
-
-    # if model in OAI_MODELS:
-    #     assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
-    #     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    #     generate = get_oai_model(client, model, pure)
-
-    # elif model in OAI_TTC_MODELS:
-    #     assert "OPENAI_API_KEY" in os.environ, "Please set OPEN_API_KEY in environment!"
-    #     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    #     generate = get_oai_ttc_model(client, model, pure)
-    if model in CLAUDE_MODELS:
-        assert (
-            "ANTHROPIC_API_KEY" in os.environ
-        ), "Please set ANTHROPIC_API_KEY in environment!"
-        client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_model(client, model, pure)
-    elif model in CLAUDE_TTC_MODELS:
-        client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        generate = get_ant_ttc_model(client, model, pure, thinking_budget)
-
-    # elif model in DEEPSEEK_MODELS:
-    #     assert (
-    #         "DEEPSEEK_API_KEY" in os.environ
-    #     ), "Please set DEEPSEEK_API_KEY in environment!"
-    #     client = OpenAI(
-    #         api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"
-    #     )
-    #     generate = get_oai_model(client, model, pure)
-
-    elif model in GEMINI_MODELS:
-        assert (
-            "GOOGLE_API_KEY" in os.environ
-        ), "Please set GOOGLE_API_KEY in environment!"
-        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
-        generate = get_gemini_model(client, model, pure)
-    elif model in GEMINI_TTC_MODELS:
-        assert (
-            "GOOGLE_API_KEY" in os.environ
-        ), "Please set GOOGLE_API_KEY in environment!"
-        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
-        generate = get_gemini_ttc_model(client, model, pure, thinking_budget)
-
-    else:
-        client = OllamaClient(host=f"http://localhost:{port}")
-        generate = get_ollama_model(client, model, pure)
+    client = router(model, pure)
+    assert client, f"Failed to create client for {model}."
 
     with open(input_file, "r") as fp:
         tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
 
     prompts = lmap(get_prompt, tasks)
-    responses = lmap(generate, tqdm(prompts, desc=model))
+    responses = lmap(client.generate, tqdm(prompts, desc=model))
     gen_results = (
         Chain(responses)
         .map(lambda x: x if x is not None else "")  # convert None to empty string
