@@ -1,8 +1,9 @@
 import logging
+from typing import Literal, get_args, cast, TypeAlias
 
 from returns.result import ResultE, Success, Failure, Result
 
-from ._types import LM, ReasoningEffort, LMAnswer
+from ._types import LM, LMAnswer
 from ._openai import (
     OpenAIChatCompletion,
     OpenAIResponses,
@@ -10,18 +11,47 @@ from ._openai import (
     OAI_TTC_MODELS,
     OAI_O5,
 )
+from ._google import GeminiChat, GeminiReasoning, GEMINI_MODELS, GEMINI_TTC_MODELS
+
+from openai.types.shared.reasoning_effort import ReasoningEffort as OAIReasoningEffort
+from ._google import GeminiReasoningEffort
 
 
-def router(
-    model_name: str, pure: bool, effort: ReasoningEffort | None = None
-) -> LM | None:
+def _assert_valid_effort(model: str, effort: str | None, effort_cls):
+    """Check if the given effort is valid for the model."""
+    assert effort in get_args(
+        effort_cls
+    ), f"`{effort}` is not a valid reasoning effort for {model}."
+
+
+def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
     """Route the model name to the appropriate LM class."""
     if model_name in OAI_MODELS:
         return OpenAIChatCompletion(model_name=model_name, pure=pure)
+
     if model_name in OAI_TTC_MODELS:
         return OpenAIResponses(model_name=model_name, pure=pure)
+
     if model_name in OAI_O5:
-        return OpenAIResponses(model_name=model_name, pure=pure, effort=effort)
+        _assert_valid_effort(model_name, effort, OAIReasoningEffort)
+        # cast is safe here after assertion
+        return OpenAIResponses(
+            model_name=model_name,
+            pure=pure,
+            effort=cast(OAIReasoningEffort, effort),
+        )
+
+    if model_name in GEMINI_MODELS:
+        return GeminiChat(model_name=model_name, pure=pure)
+
+    if model_name in GEMINI_TTC_MODELS:
+        _assert_valid_effort(model_name, effort, GeminiReasoningEffort)
+        return GeminiReasoning(
+            model_name=model_name,
+            pure=pure,
+            effort=cast(GeminiReasoningEffort, effort),
+        )
+
     return None
 
 

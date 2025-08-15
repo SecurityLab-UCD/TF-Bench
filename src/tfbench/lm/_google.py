@@ -1,0 +1,108 @@
+"""Inference helper for Google Gemini"""
+
+from typing import Literal
+from enum import Enum
+
+from google import genai
+from google.genai.types import GenerateContentConfig, ThinkingConfig
+
+from ..env import ENV
+from ._types import LM, LMAnswer
+
+GEMINI_MODELS = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    # ! gemini-1.5 models are deprecated
+    # "gemini-1.5-flash",
+    # "gemini-1.5-flash-8b",
+    # "gemini-1.5-pro",
+]
+
+GEMINI_TTC_MODELS = [
+    "gemini-2.5-flash-preview-04-17",
+    "gemini-2.5-pro-preview-03-25",
+]
+
+
+class GeminiChat(LM):
+    """Wrapper class for `google-genai` SDK for chat models"""
+
+    def __init__(self, model_name: str, pure: bool = False):
+        super().__init__(model_name=model_name, pure=pure)
+
+        api_key = ENV.get("GEMINI_API_KEY")
+        assert api_key, "Please set GEMINI_API_KEY in environment!"
+        self.client = genai.Client(api_key=api_key)
+
+    def _gen(self, prompt: str) -> LMAnswer:
+
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[prompt],
+            config=GenerateContentConfig(
+                system_instruction=[self.instruction],
+            ),
+        )
+        return LMAnswer(answer=response.text)
+
+
+GeminiReasoningEffort = Literal["low", "medium", "high", "dynamic", "off"]
+
+EFFORT_TOKEN_MAP: dict[GeminiReasoningEffort, int] = {
+    "low": 512,
+    "medium": 1024,
+    "high": 2048,
+    "dynamic": -1,
+    "off": 0,
+}
+
+
+class GeminiReasoning(LM):
+    """Wrapper class for `google-genai` SDK for reasoning models"""
+
+    def __init__(
+        self,
+        model_name: str,
+        pure: bool = False,
+        effort: GeminiReasoningEffort = "dynamic",
+    ):
+        super().__init__(model_name=model_name, pure=pure)
+
+        api_key = ENV.get("GEMINI_API_KEY")
+        assert api_key, "Please set GEMINI_API_KEY in environment!"
+        self.client = genai.Client(api_key=api_key)
+
+        self.effort: GeminiReasoningEffort = effort
+
+    def _gen(self, prompt: str) -> LMAnswer:
+
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[prompt],
+            config=GenerateContentConfig(
+                system_instruction=[self.instruction],
+                thinking_config=ThinkingConfig(
+                    thinking_budget=EFFORT_TOKEN_MAP[self.effort],
+                    include_thoughts=True,
+                ),
+            ),
+        )
+
+        if not response.candidates:
+            raise ValueError("No candidates returned from Gemini model.")
+
+        candidate = response.candidates[0]
+        if not candidate.content or not candidate.content.parts:
+            raise ValueError("No content in the candidate response.")
+
+        answer = ""
+        thinking = ""
+        for part in candidate.content.parts:
+            if not part.text:
+                continue
+            if part.thought:
+                thinking += part.text
+            else:
+                answer += part.text
+
+        return LMAnswer(answer=answer, reasoning_steps=thinking)

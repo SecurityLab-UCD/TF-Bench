@@ -3,7 +3,8 @@ import logging
 from .prompts import get_sys_prompt
 from .settings import MAX_TOKENS
 from ._openai import OpenAIChatCompletion, OpenAIResponses
-from ._types import LM, ReasoningEffort, LMAnswer
+from ._google import GeminiChat, GeminiReasoning
+from ._types import LM, LMAnswer
 from .utils import router, is_supported, extract_response
 
 logging.getLogger("openai").setLevel(logging.ERROR)
@@ -14,9 +15,10 @@ __all__ = [
     "MAX_TOKENS",
     "LMAnswer",
     "LM",
-    "ReasoningEffort",
     "OpenAIChatCompletion",
     "OpenAIResponses",
+    "GeminiChat",
+    "GeminiReasoning",
     "router",
     "is_supported",
     "extract_response",

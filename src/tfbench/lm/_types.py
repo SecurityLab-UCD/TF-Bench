@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import StrEnum
 from dataclasses import dataclass
+from typing import Literal
 
 from returns.result import safe
 from tenacity import (
@@ -16,14 +17,6 @@ from .prompts import get_sys_prompt
 class LMAnswer:
     answer: str | None
     reasoning_steps: str | None = None
-
-
-class ReasoningEffort(StrEnum):
-    """Enum for reasoning effort levels."""
-
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
 
 
 class LM(ABC):

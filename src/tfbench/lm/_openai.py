@@ -1,7 +1,11 @@
+from typing import get_args
+
 from openai import OpenAI, NOT_GIVEN
+from openai.types.shared_params.reasoning import Reasoning
+from openai.types.shared.reasoning_effort import ReasoningEffort
 
 from ..env import ENV
-from ._types import LM, ReasoningEffort, LMAnswer
+from ._types import LM, LMAnswer
 
 OAI_MODELS = [
     "gpt-3.5-turbo-0125",
@@ -67,25 +71,32 @@ class OpenAIResponses(LM):
     """
 
     def __init__(
-        self, model_name: str, pure: bool = False, effort: ReasoningEffort | None = None
+        self,
+        model_name: str,
+        pure: bool = False,
+        effort: ReasoningEffort = None,
     ):
+        """OpenAI Responses SDK Client
+        If `effort` is None (not provided), we disable reasoning mode.
+        """
         super().__init__(model_name=model_name, pure=pure)
 
         api_key = ENV.get("OPENAI_API_KEY")
         assert api_key, "Please set OPENAI_API_KEY in environment!"
         self.client = OpenAI(api_key=api_key)
 
-        self.effort = effort
+        self.effort: ReasoningEffort = effort
 
     def _gen(self, prompt: str) -> LMAnswer:
         """Generate using OpenAI SDK's Responses API."""
+
         response = self.client.responses.create(
             model=self.model_name,
             instructions=self.instruction,
             input=prompt,
             reasoning=(
                 {
-                    "effort": self.effort.value,
+                    "effort": self.effort,
                 }
                 if self.effort
                 else NOT_GIVEN

@@ -6,8 +6,6 @@ from typing import Callable
 import logging
 
 from anthropic import Anthropic, InternalServerError
-from google import genai
-from google.genai.types import GenerateContentConfig, ThinkingConfig
 
 from .lm import get_sys_prompt, MAX_TOKENS
 
@@ -29,20 +27,6 @@ DEEPSEEK_MODELS = [
     "deepseek-reasoner",
     "deepseek-chat",
 ]
-
-GEMINI_MODELS = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-pro",
-]
-
-GEMINI_TTC_MODELS = [
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-preview-03-25",
-]
-
 
 
 def get_ant_ttc_model(
@@ -109,47 +93,3 @@ def get_ant_model(
 
     return generate_type_signature
 
-
-def get_gemini_model(
-    client: genai.Client,
-    model: str = "gemini-2.0-flash-lite",
-    pure: bool = False,
-) -> Callable[[str], str | None]:
-    """Gemini Models"""
-
-    def generate_type_signature(prompt: str) -> str | None:
-        response = client.models.generate_content(
-            model=model,
-            contents=[prompt],
-            config=GenerateContentConfig(
-                system_instruction=[get_sys_prompt(pure)],
-            ),
-        )
-        return response.text if isinstance(response.text, str) else None
-
-    return generate_type_signature
-
-
-def get_gemini_ttc_model(
-    client: genai.Client,
-    model: str = "gemini-2.5-flash-preview-04-17",
-    pure: bool = False,
-    thinking_budget: int = 1024,
-) -> Callable[[str], str | None]:
-    """Gemini Reasoning Models"""
-
-    def generate_type_signature(prompt: str) -> str | None:
-        response = client.models.generate_content(
-            model=model,
-            contents=[prompt],
-            config=GenerateContentConfig(
-                system_instruction=[get_sys_prompt(pure)],
-                thinking_config=ThinkingConfig(
-                    thinking_budget=thinking_budget,
-                    include_thoughts=False,
-                ),
-            ),
-        )
-        return response.text if isinstance(response.text, str) else None
-
-    return generate_type_signature
