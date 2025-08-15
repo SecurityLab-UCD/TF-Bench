@@ -19,8 +19,12 @@ GEMINI_MODELS = [
 ]
 
 GEMINI_TTC_MODELS = [
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-preview-03-25",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    # ! gemini-2.5-preview models are deprecated
+    # "gemini-2.5-flash-preview-04-17",
+    # "gemini-2.5-pro-preview-03-25",
 ]
 
 
@@ -64,15 +68,20 @@ class GeminiReasoning(LM):
         self,
         model_name: str,
         pure: bool = False,
-        effort: GeminiReasoningEffort = "dynamic",
+        effort: GeminiReasoningEffort | None = None,
     ):
+        """Initialize the GeminiReasoning model.
+        effort (GeminiReasoningEffort, optional): Defaults to None, which is `dynamic`.
+        """
+
         super().__init__(model_name=model_name, pure=pure)
 
         api_key = ENV.get("GEMINI_API_KEY")
         assert api_key, "Please set GEMINI_API_KEY in environment!"
         self.client = genai.Client(api_key=api_key)
 
-        self.effort: GeminiReasoningEffort = effort
+        # default to dynamic if effort is None
+        self.effort: GeminiReasoningEffort = effort or "dynamic"
 
     def _gen(self, prompt: str) -> LMAnswer:
 

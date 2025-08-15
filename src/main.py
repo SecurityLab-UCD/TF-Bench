@@ -24,7 +24,7 @@ def main(
     model: str,
     port: int = 11434,
     pure: bool = False,
-    thinking_budget: int = 1024,
+    effort: str | None = None,
     output_file: str | None = None,
     log_file: str = "evaluation_log.jsonl",
 ):
@@ -57,7 +57,7 @@ def main(
         output_file = os.path.abspath(f"result/{model}.txt")
     logging.info(f"Writing generation results in {output_file}.")
 
-    client = router(model, pure)
+    client = router(model, pure, effort)
     assert client, f"Failed to create client for {model}."
 
     with open(input_file, "r") as fp:

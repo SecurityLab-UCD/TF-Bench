@@ -19,9 +19,10 @@ from ._google import GeminiReasoningEffort
 
 def _assert_valid_effort(model: str, effort: str | None, effort_cls):
     """Check if the given effort is valid for the model."""
-    assert effort in get_args(
-        effort_cls
-    ), f"`{effort}` is not a valid reasoning effort for {model}."
+    if effort:
+        assert effort in get_args(
+            effort_cls
+        ), f"`{effort}` is not a valid reasoning effort for {model}."
 
 
 def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
@@ -57,7 +58,9 @@ def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
 
 def is_supported(model_name: str) -> bool:
     """check if the model is supported"""
-    all_models = OAI_MODELS + OAI_TTC_MODELS + OAI_O5
+    all_models = (
+        OAI_MODELS + OAI_TTC_MODELS + OAI_O5 + GEMINI_MODELS + GEMINI_TTC_MODELS
+    )
     return model_name in all_models
 
 
