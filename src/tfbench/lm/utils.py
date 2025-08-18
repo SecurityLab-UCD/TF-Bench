@@ -1,5 +1,6 @@
 import logging
-from typing import Literal, get_args, cast, TypeAlias
+from typing import Literal, get_args, cast, TypeAlias, Any, Union, get_origin
+from types import UnionType
 
 from returns.result import ResultE, Success, Failure, Result
 
@@ -19,12 +20,26 @@ from ._google import GeminiReasoningEffort
 from ._types import ReasoningEffort
 
 
-def _assert_valid_effort(model: str, effort: str | None, effort_cls):
+def _literal_options(tp: Any) -> set[str]:
+    """Collect string values from Literal[...] inside tp (handles Unions)."""
+    origin = get_origin(tp)
+    if origin is Literal:
+        # Direct Literal["a", "b", ...]
+        return set(get_args(tp))
+    if origin is Union or (UnionType is not None and origin is UnionType):
+        vals: set[str] = set()
+        for arg in get_args(tp):
+            vals |= _literal_options(arg)
+        return vals
+    return set()  # not a Literal or Union of Literals
+
+
+def _assert_valid_effort(model: str, effort: str | None, effort_cls: Any) -> None:
     """Check if the given effort is valid for the model."""
-    if effort:
-        assert effort in get_args(
-            effort_cls
-        ), f"`{effort}` is not a valid reasoning effort for {model}."
+    if effort is None:
+        return
+    allowed = _literal_options(effort_cls)
+    assert effort in allowed, f"`{effort}` is not a valid reasoning effort for {model}."
 
 
 def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
