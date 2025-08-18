@@ -12,9 +12,11 @@ from ._openai import (
     OAI_O5,
 )
 from ._google import GeminiChat, GeminiReasoning, GEMINI_MODELS, GEMINI_TTC_MODELS
+from ._anthropic import ClaudeChat, ClaudeReasoning, CLAUDE_MODELS, CLAUDE_TTC_MODELS
 
 from openai.types.shared.reasoning_effort import ReasoningEffort as OAIReasoningEffort
 from ._google import GeminiReasoningEffort
+from ._types import ReasoningEffort
 
 
 def _assert_valid_effort(model: str, effort: str | None, effort_cls):
@@ -51,6 +53,17 @@ def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
             model_name=model_name,
             pure=pure,
             effort=cast(GeminiReasoningEffort, effort),
+        )
+
+    if model_name in CLAUDE_MODELS:
+        return ClaudeChat(model_name=model_name, pure=pure)
+
+    if model_name in CLAUDE_TTC_MODELS:
+        _assert_valid_effort(model_name, effort, ReasoningEffort)
+        return ClaudeReasoning(
+            model_name=model_name,
+            pure=pure,
+            effort=cast(ReasoningEffort, effort),
         )
 
     return None

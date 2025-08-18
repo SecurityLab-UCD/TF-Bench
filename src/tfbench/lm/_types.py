@@ -37,3 +37,13 @@ class LM(ABC):
     @abstractmethod
     def _gen(self, prompt) -> LMAnswer:
         """The actual generation method for different clients"""
+
+
+ReasoningEffort = Literal["low", "medium", "high", "off"]
+
+EFFORT_TOKEN_MAP: dict[str, int] = {
+    "low": 1024,
+    "medium": 4096,
+    "high": 8192,
+    "off": 0,
+}

@@ -1,13 +1,13 @@
 """Inference helper for Google Gemini"""
 
-from typing import Literal
+from typing import Literal, Mapping
 from enum import Enum
 
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
 from ..env import ENV
-from ._types import LM, LMAnswer
+from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
 
 GEMINI_MODELS = [
     "gemini-2.0-flash",
@@ -26,6 +26,13 @@ GEMINI_TTC_MODELS = [
     # "gemini-2.5-flash-preview-04-17",
     # "gemini-2.5-pro-preview-03-25",
 ]
+
+GeminiReasoningEffort = ReasoningEffort | Literal["dynamic"]
+# Upcast to a Mapping with the *wider* key type
+GEMINI_MAP: dict[str, int] = {
+    **EFFORT_TOKEN_MAP,
+    "dynamic": -1,
+}
 
 
 class GeminiChat(LM):
@@ -58,17 +65,6 @@ class GeminiChat(LM):
         return LMAnswer(answer=response.text)
 
 
-GeminiReasoningEffort = Literal["low", "medium", "high", "dynamic", "off"]
-
-EFFORT_TOKEN_MAP: dict[GeminiReasoningEffort, int] = {
-    "low": 512,
-    "medium": 1024,
-    "high": 2048,
-    "dynamic": -1,
-    "off": 0,
-}
-
-
 class GeminiReasoning(LM):
     """Wrapper class for `google-genai` SDK for reasoning models"""
 
@@ -79,7 +75,7 @@ class GeminiReasoning(LM):
         effort: GeminiReasoningEffort | None = None,
     ):
         """Initialize the GeminiReasoning model.
-        effort (GeminiReasoningEffort, optional): Defaults to None, which is `dynamic`.
+        effort (ReasoningEffort, optional): Defaults to None, which is `dynamic`.
         """
 
         super().__init__(model_name=model_name, pure=pure)
@@ -89,7 +85,7 @@ class GeminiReasoning(LM):
         self.client = genai.Client(api_key=api_key)
 
         # default to dynamic if effort is None
-        self.effort: GeminiReasoningEffort = effort or "dynamic"
+        self.effort = effort or "dynamic"
 
     def _gen(self, prompt: str) -> LMAnswer:
 
