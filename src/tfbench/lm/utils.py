@@ -72,7 +72,13 @@ def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
 def is_supported(model_name: str) -> bool:
     """check if the model is supported"""
     all_models = (
-        OAI_MODELS + OAI_TTC_MODELS + OAI_O5 + GEMINI_MODELS + GEMINI_TTC_MODELS
+        OAI_MODELS
+        + OAI_TTC_MODELS
+        + OAI_O5
+        + GEMINI_MODELS
+        + GEMINI_TTC_MODELS
+        + CLAUDE_MODELS
+        + CLAUDE_TTC_MODELS
     )
     return model_name in all_models
 
