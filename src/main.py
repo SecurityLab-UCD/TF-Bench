@@ -17,7 +17,7 @@ from tfbench.common import (
 
 from tfbench.postprocessing import postprocess, RESPONSE_STRATEGIES
 from tfbench.evaluation import evaluate
-from tfbench.lm import is_supported, router, LMAnswer, extract_response
+from tfbench.lm import router, LMAnswer, extract_response
 
 
 def main(
@@ -43,7 +43,6 @@ def main(
         pure (bool): If True, uses the original variable naming in type inference.
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
     """
-    assert is_supported(model), f"{model} is not supported."
 
     # hard-coding benchmark file path for experiment
     input_file = "tfb.pure.json" if pure else "tfb.json"
@@ -54,6 +53,9 @@ def main(
 
     if output_file is None:
         os.makedirs("result", exist_ok=True)
+        if "/" in model:
+            dir_name = model.split("/")[0]
+            os.makedirs(f"result/{dir_name}", exist_ok=True)
         output_file = os.path.abspath(f"result/{model}.txt")
     logging.info(f"Writing generation results in {output_file}.")
 
@@ -76,6 +78,7 @@ def main(
         .value
     )
 
+    # writing results
     with open(output_file, "w", errors="ignore") as file:
         file.write("\n".join(gen_results))
 
