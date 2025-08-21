@@ -14,7 +14,7 @@ from ._openai import (
 )
 from ._google import GeminiChat, GeminiReasoning, GEMINI_MODELS, GEMINI_TTC_MODELS
 from ._anthropic import ClaudeChat, ClaudeReasoning, CLAUDE_MODELS, CLAUDE_TTC_MODELS
-from ._vllm import VLLMGen
+from ._vllm import VLLMChat
 
 from openai.types.shared.reasoning_effort import ReasoningEffort as OAIReasoningEffort
 from ._google import GeminiReasoningEffort
@@ -43,7 +43,7 @@ def _assert_valid_effort(model: str, effort: str | None, effort_cls: Any) -> Non
     assert effort in allowed, f"`{effort}` is not a valid reasoning effort for {model}."
 
 
-def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
+def router(model_name: str, pure: bool, effort: str | None = None) -> LM:
     """Route the model name to the appropriate LM class."""
     if model_name in OAI_MODELS:
         return OpenAIChatCompletion(model_name=model_name, pure=pure)
@@ -82,7 +82,7 @@ def router(model_name: str, pure: bool, effort: str | None = None) -> LM | None:
             effort=cast(ReasoningEffort, effort),
         )
 
-    return VLLMGen(model_name=model_name, pure=pure)
+    return VLLMChat(model_name=model_name, pure=pure)
 
 
 def extract_response(response: ResultE[LMAnswer]) -> str:

@@ -4,7 +4,7 @@ from .prompts import get_sys_prompt
 from .settings import MAX_TOKENS
 from ._openai import OpenAIChatCompletion, OpenAIResponses
 from ._google import GeminiChat, GeminiReasoning
-from ._vllm import VLLMGen
+from ._vllm import VLLMChat
 from ._types import LM, LMAnswer
 from .utils import router, extract_response
 
@@ -22,5 +22,5 @@ __all__ = [
     "GeminiReasoning",
     "router",
     "extract_response",
-    "VLLMGen",
+    "VLLMChat",
 ]
