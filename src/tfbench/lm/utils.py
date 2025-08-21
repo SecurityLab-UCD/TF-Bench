@@ -3,6 +3,7 @@ from typing import Literal, get_args, cast, TypeAlias, Any, Union, get_origin
 from types import UnionType
 
 from returns.result import ResultE, Success, Failure, Result
+from openai.types.shared.reasoning_effort import ReasoningEffort as OAIReasoningEffort
 
 from ._types import LM, LMAnswer
 from ._openai import (
@@ -14,9 +15,8 @@ from ._openai import (
 )
 from ._google import GeminiChat, GeminiReasoning, GEMINI_MODELS, GEMINI_TTC_MODELS
 from ._anthropic import ClaudeChat, ClaudeReasoning, CLAUDE_MODELS, CLAUDE_TTC_MODELS
-from ._vllm import VLLMChat
+from ._vllm import VLLMChat, VLLMOpenAIChatCompletion
 
-from openai.types.shared.reasoning_effort import ReasoningEffort as OAIReasoningEffort
 from ._google import GeminiReasoningEffort
 from ._types import ReasoningEffort
 
@@ -43,7 +43,12 @@ def _assert_valid_effort(model: str, effort: str | None, effort_cls: Any) -> Non
     assert effort in allowed, f"`{effort}` is not a valid reasoning effort for {model}."
 
 
-def router(model_name: str, pure: bool, effort: str | None = None) -> LM:
+def router(
+    model_name: str,
+    pure: bool,
+    effort: str | None = None,
+    use_vllm_server: bool = False,
+) -> LM:
     """Route the model name to the appropriate LM class."""
     if model_name in OAI_MODELS:
         return OpenAIChatCompletion(model_name=model_name, pure=pure)
@@ -81,6 +86,10 @@ def router(model_name: str, pure: bool, effort: str | None = None) -> LM:
             pure=pure,
             effort=cast(ReasoningEffort, effort),
         )
+
+    # all allow lists are exhausted, use vLLM
+    if use_vllm_server:
+        return VLLMOpenAIChatCompletion(model_name=model_name, pure=pure)
 
     return VLLMChat(model_name=model_name, pure=pure)
 

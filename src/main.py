@@ -22,11 +22,11 @@ from tfbench.lm import router, LMAnswer, extract_response
 
 def main(
     model: str,
-    port: int = 11434,
     pure: bool = False,
     effort: str | None = None,
     output_file: str | None = None,
     log_file: str = "evaluation_log.jsonl",
+    use_vllm_server: bool = False,
 ):
     """
     Run an experiment using various AI models to generate and evaluate type signatures.
@@ -37,11 +37,9 @@ def main(
                      - OLLAMA_MODELS, CLAUDE_MODELS, or O1_MODELS.
                      Default is "gpt-3.5-turbo".
 
-        port (int): Port number for connecting to the Ollama server (if using Ollama models).
-                    Ignored for other models. Default is 11434.
-
         pure (bool): If True, uses the original variable naming in type inference.
                      If False, uses rewritten variable naming (e.g., `v1`, `v2`, ...). Default is False.
+
     """
 
     # hard-coding benchmark file path for experiment
@@ -59,7 +57,7 @@ def main(
         output_file = os.path.abspath(f"result/{model}.txt")
     logging.info(f"Writing generation results in {output_file}.")
 
-    client = router(model, pure, effort)
+    client = router(model, pure, effort, use_vllm_server)
     assert client, f"Failed to create client for {model}."
 
     with open(input_file, "r") as fp:

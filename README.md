@@ -69,9 +69,40 @@ To run all GPT models:
 uv run run_all.py --option gpt
 ```
 
-### Open Source Models
+### Open Source Models with vLLM
 
-We use [Ollama](https://ollama.com/) to manage and run the OSS models.
+#### OpenAI-Compatible Server
+
+First, launch the vLLM OpenAI-Compatible Server (with default values, please check vLLM's doc for setting your own):
+
+```sh
+vllm serve openai/gpt-oss-120b --tensor-parallel-size 2 --async-scheduling
+```
+
+Then, run the benchmark:
+
+```sh
+uv run main.py -i Benchmark-F.json -m vllm_openai_chat_completion
+```
+
+NOTE: if you set your API key, host, and port when launching the vLLM server,
+please add them to the `.env` file as well.
+Please modify `.env` for your vLLM api-key, host, and port.
+If they are left empty, the default values ("", "localhost", "8000") will be used.
+We do not recommend using the default values on machine connect to the public web,
+as they are not secure.
+
+```
+VLLM_API_KEY=
+VLLM_HOST=
+VLLM_PORT=
+```
+
+### (deprecated) Open Source Models with Ollama
+
+We use [Ollama](https://ollama.com/) to manage and run the OSS models reported in the Appendix.
+We switched to vLLM for better performance and SDK design.
+Although the Ollama option is still available, we recommend using vLLM instead.
 
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
