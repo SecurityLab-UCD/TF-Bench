@@ -21,7 +21,7 @@ uv sync # create a virtual environment, and install dependencies
 This script will build the benchmark (Prelude with NL) from the raw data.
 
 ```sh
-uv run scripts/preprocess_benchmark.py
+uv run scripts/preprocess_benchmark.py -o tfb.json
 ```
 
 ### TF-Bench_pure
@@ -36,7 +36,7 @@ stack exec alpharewrite-exe 1 ../tfb.json > ../tfb.pure.json
 cd ..
 ```
 
-For details, please take a look at the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
+For details, please check out the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
 
 ## Download Pre-built Benchmark
 
@@ -98,24 +98,22 @@ VLLM_HOST=
 VLLM_PORT=
 ```
 
-### (deprecated) Open Source Models with Ollama
+### (_deprecated_) Open Source Models with Ollama
 
 We use [Ollama](https://ollama.com/) to manage and run the OSS models reported in the Appendix.
 We switched to vLLM for better performance and SDK design.
-Although the Ollama option is still available, we recommend using vLLM instead.
+Although the Ollama option is still available,
+it is no longer maintained.
+We recommend using vLLM instead.
 
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
 ollama serve # start your own instance instead of a system service
-uv run --project . scripts/ollama_pull.sh # install required models
+uv run scripts/ollama_pull.sh # install required models
 ```
 
-```sh
-uv run main.py -i Benchmark-F.json -m llama3:70b
-```
-
-To run all Ollama models:
+Run the benchmark.
 
 ```sh
-uv run run_all.py --option ollama
+uv run scripts/experiment_ollama.py -m llama3:8b
 ```
