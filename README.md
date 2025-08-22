@@ -76,7 +76,7 @@ uv run run_all.py --option gpt
 First, launch the vLLM OpenAI-Compatible Server (with default values, please check vLLM's doc for setting your own):
 
 ```sh
-vllm serve openai/gpt-oss-120b --tensor-parallel-size 2 --async-scheduling
+uv run vllm serve openai/gpt-oss-120b --tensor-parallel-size 2 --async-scheduling
 ```
 
 Then, run the benchmark:
