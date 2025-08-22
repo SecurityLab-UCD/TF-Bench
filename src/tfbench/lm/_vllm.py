@@ -67,6 +67,8 @@ class VLLMOpenAIChatCompletion(LM):
         return LMAnswer(
             answer=message.content,
             reasoning_steps=(
-                message.reasoning_steps if hasattr(message, "reasoning_steps") else None
+                message.reasoning_content  # type: ignore
+                if hasattr(message, "reasoning_content")
+                else None
             ),
         )
