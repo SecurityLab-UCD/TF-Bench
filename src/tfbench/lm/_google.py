@@ -56,7 +56,7 @@ class GeminiChat(LM):
 
         response = self.client.models.generate_content(
             model=self.model_name,
-            contents=[prompt],
+            contents=prompt,
             config=GenerateContentConfig(
                 system_instruction=[self.instruction],
             ),
@@ -90,7 +90,7 @@ class GeminiReasoning(LM):
 
         response = self.client.models.generate_content(
             model=self.model_name,
-            contents=[prompt],
+            contents=prompt,
             config=GenerateContentConfig(
                 system_instruction=[self.instruction],
                 thinking_config=ThinkingConfig(

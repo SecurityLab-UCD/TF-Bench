@@ -17,6 +17,8 @@ jobs:
       - name: Set up Python
         run: uv sync
 
+      - name: install mypy
+        run: uv pip install mypy
+
       - name: Type Check Source Code
-        run: uv run mypy src
-      
+        run: mypy src
