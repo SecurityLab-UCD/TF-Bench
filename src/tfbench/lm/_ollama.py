@@ -22,10 +22,10 @@ class OllamaChat(LM):
 
     def _gen(self, prompt: str) -> LMAnswer:
         response: ChatResponse = chat(
-            model="gemma3",
+            model=self.model_name,
             messages=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": self.instruction,
                 },
                 {
@@ -36,6 +36,6 @@ class OllamaChat(LM):
             think=True,
         )
         return LMAnswer(
-            answer=response.message.content,  # type: ignore
-            reasoning_steps=response.message.thinking,  # type: ignore
+            answer=response.message.content,
+            reasoning_steps=response.message.thinking,
         )
