@@ -16,6 +16,7 @@ from ._openai import (
 from ._google import GeminiChat, GeminiReasoning, GEMINI_MODELS, GEMINI_TTC_MODELS
 from ._anthropic import ClaudeChat, ClaudeReasoning, CLAUDE_MODELS, CLAUDE_TTC_MODELS
 from ._vllm import VLLMChat, VLLMOpenAIChatCompletion
+from ._ollama import OllamaChat, OLLAMA_TTC_MODELS
 
 from ._google import GeminiReasoningEffort
 from ._types import ReasoningEffort
@@ -86,6 +87,9 @@ def router(
             pure=pure,
             effort=cast(ReasoningEffort, effort),
         )
+
+    if model_name in OLLAMA_TTC_MODELS:
+        return OllamaChat(model_name=model_name, pure=pure)
 
     # all allow lists are exhausted, use vLLM
     if use_vllm_server:

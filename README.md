@@ -69,7 +69,34 @@ To run all GPT models:
 uv run run_all.py --option gpt
 ```
 
-### Open Source Models with vLLM
+### Open Source Models with Ollama
+
+We use [Ollama](https://ollama.com/) to manage and run the OSS models reported in the Appendix.
+We switched to vLLM for better performance and SDK design.
+Although the Ollama option is still available,
+it is no longer maintained.
+We recommend using vLLM instead.
+
+```sh
+curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
+ollama serve # start your own instance instead of a system service
+```
+
+NOTE: we required the ollama version at least 0.9.0 to enable thinking parsers.
+We use 0.11.7 for our experiments.
+
+```sh
+> ollama --version
+ollama version is 0.11.7
+```
+
+Run the benchmark.
+
+```sh
+uv run scripts/experiment_ollama.py -m llama3:8b
+```
+
+### (WIP) Running Your Model with vLLM
 
 #### OpenAI-Compatible Server
 
@@ -96,24 +123,4 @@ as they are not secure.
 VLLM_API_KEY=
 VLLM_HOST=
 VLLM_PORT=
-```
-
-### (_deprecated_) Open Source Models with Ollama
-
-We use [Ollama](https://ollama.com/) to manage and run the OSS models reported in the Appendix.
-We switched to vLLM for better performance and SDK design.
-Although the Ollama option is still available,
-it is no longer maintained.
-We recommend using vLLM instead.
-
-```sh
-curl -fsSL https://ollama.com/install.sh | sh # install ollama, you need sudo for this
-ollama serve # start your own instance instead of a system service
-uv run scripts/ollama_pull.sh # install required models
-```
-
-Run the benchmark.
-
-```sh
-uv run scripts/experiment_ollama.py -m llama3:8b
 ```
