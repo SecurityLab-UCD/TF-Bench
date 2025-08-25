@@ -95,7 +95,7 @@ class GeminiReasoning(LM):
             config=GenerateContentConfig(
                 system_instruction=[self.instruction],
                 thinking_config=ThinkingConfig(
-                    thinking_budget=EFFORT_TOKEN_MAP[self.effort],
+                    thinking_budget=GEMINI_MAP[self.effort],
                     include_thoughts=True,
                 ),
             ),
