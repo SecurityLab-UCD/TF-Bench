@@ -21,4 +21,4 @@ jobs:
         run: uv pip install pylint
 
       - name: Lint Source Code
-        run: pylint src
+        run: uv run pylint src

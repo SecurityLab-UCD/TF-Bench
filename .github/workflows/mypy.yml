@@ -21,4 +21,4 @@ jobs:
         run: uv pip install mypy
 
       - name: Type Check Source Code
-        run: mypy src
+        run: uv run mypy src
