@@ -63,6 +63,7 @@ disable = [
     "too-many-statements",
     "unspecified-encoding",
     "missing-class-docstring",
+    "too-few-public-methods",        # LM only have 1 public method
 ]
 fail-under = 9
 max-line-length = 120
