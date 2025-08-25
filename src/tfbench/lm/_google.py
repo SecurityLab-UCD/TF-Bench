@@ -1,7 +1,6 @@
 """Inference helper for Google Gemini"""
 
-from typing import Literal, Mapping
-from enum import Enum
+from typing import Literal
 
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig

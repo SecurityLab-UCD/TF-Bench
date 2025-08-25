@@ -1,8 +1,8 @@
 import logging
-from typing import Literal, get_args, cast, TypeAlias, Any, Union, get_origin
+from typing import Literal, get_args, cast, Any, Union, get_origin
 from types import UnionType
 
-from returns.result import ResultE, Success, Failure, Result
+from returns.result import ResultE, Success, Failure
 from openai.types.shared.reasoning_effort import ReasoningEffort as OAIReasoningEffort
 
 from ._types import LM, LMAnswer

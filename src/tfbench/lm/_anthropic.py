@@ -1,5 +1,4 @@
-from typing import Callable
-from anthropic import Anthropic, InternalServerError, NOT_GIVEN
+from anthropic import Anthropic
 from ..env import ENV
 from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
 from .settings import MAX_TOKENS

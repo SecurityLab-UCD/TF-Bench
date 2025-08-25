@@ -1,5 +1,4 @@
 import os
-from typing import Callable
 import json
 import logging
 
@@ -7,7 +6,7 @@ from funcy_chain import Chain
 from funcy import lmap
 from tqdm import tqdm
 from dacite import from_dict
-from returns.result import ResultE, Success, Failure
+from returns.result import ResultE
 
 import fire
 from tfbench.common import (

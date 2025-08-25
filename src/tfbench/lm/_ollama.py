@@ -36,6 +36,6 @@ class OllamaChat(LM):
             think=True,
         )
         return LMAnswer(
-            answer=response.message.content,
-            reasoning_steps=response.message.thinking,
+            answer=response.message.content,  # type: ignore
+            reasoning_steps=response.message.thinking,  # type: ignore
         )

@@ -1,10 +1,10 @@
-from vllm import LLM, SamplingParams
+from vllm import LLM
 from vllm.entrypoints.chat_utils import ChatCompletionMessageParam
 
 from openai import OpenAI
 
 from ..env import ENV
-from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
+from ._types import LM, LMAnswer
 
 
 _CHAT_TEMPLATE = """# Instructions
