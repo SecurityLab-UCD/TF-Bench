@@ -10,6 +10,7 @@ from tfbench.common import md2task, BenchmarkTask
 
 
 def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "tfb.json"):
+    """Process pre-extracted tasks from Markdown to JSON"""
 
     # read in all files ending with .md in the input_raw_benchmark_path
     tasks: list[BenchmarkTask] = []
