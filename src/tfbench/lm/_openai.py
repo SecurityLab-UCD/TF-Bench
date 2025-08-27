@@ -3,7 +3,7 @@ import os
 from openai import OpenAI, NOT_GIVEN
 from openai.types.shared.reasoning_effort import ReasoningEffort
 
-from ._types import LM, LMAnswer
+from ._types import LM, LMAnswer, NoneResponseError
 
 OAI_MODELS = [
     "gpt-3.5-turbo-0125",
@@ -57,8 +57,12 @@ class OpenAIChatCompletion(LM):
             model=self.model_name,
         )
 
+        content = completion.choices[0].message.content
+        if content is None:
+            raise NoneResponseError(self.model_name)
+
         return LMAnswer(
-            answer=completion.choices[0].message.content,
+            answer=content,
         )
 
 

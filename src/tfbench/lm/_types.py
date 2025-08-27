@@ -14,7 +14,7 @@ from .prompts import get_sys_prompt
 
 @dataclass
 class LMAnswer:
-    answer: str | None
+    answer: str
     reasoning_steps: str | None = None
 
 
@@ -46,3 +46,8 @@ EFFORT_TOKEN_MAP: dict[str, int] = {
     "high": 8192,
     "off": 0,
 }
+
+
+class NoneResponseError(Exception):
+    def __init__(self, model: str):
+        super().__init__(f"None response from model: {model}")

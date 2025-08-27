@@ -20,6 +20,7 @@ dependencies = [
     "numpy>=1.26.4",
     "ollama==0.5.3",
     "openai==1.99.9",
+    "orjson>=3.11.3",
     "pyarrow>=21.0.0",
     "pytest>=8.0.0",
     "python-dotenv==1.0.1",
@@ -67,6 +68,12 @@ disable = [
 ]
 fail-under = 9
 max-line-length = 120
+
+[tool.pylint]
+extension-pkg-whitelist = [
+    "orjson", # https://github.com/pylint-dev/pylint/issues/9762
+]
+
 
 [tool.pylint.typecheck]
 generated-members = ["cv2.*", "skimage.metrics.*"]

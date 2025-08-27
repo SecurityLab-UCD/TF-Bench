@@ -6,7 +6,7 @@ import os
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
-from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
+from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP, NoneResponseError
 
 GEMINI_MODELS = [
     "gemini-2.0-flash",
@@ -61,7 +61,10 @@ class GeminiChat(LM):
                 system_instruction=[self.instruction],
             ),
         )
-        return LMAnswer(answer=response.text)
+        content = response.text
+        if content is None:
+            raise NoneResponseError(self.model_name)
+        return LMAnswer(answer=content)
 
 
 class GeminiReasoning(LM):
@@ -105,7 +108,7 @@ class GeminiReasoning(LM):
 
         candidate = response.candidates[0]
         if not candidate.content or not candidate.content.parts:
-            raise ValueError("No content in the candidate response.")
+            raise NoneResponseError(self.model_name)
 
         answer = ""
         thinking = ""
