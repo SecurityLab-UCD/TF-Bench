@@ -1,14 +1,10 @@
-import json
-import logging
 from itertools import starmap
 import re
+from typing import TypedDict
 
-import fire
-from funcy_chain import Chain
-from dacite import from_dict
-
-from tfbench.common import BenchmarkTask
-from tfbench.postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
+from .common import BenchmarkTask
+from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
+from .lm import LMAnswer
 
 
 def tokenize_type_signature(sig: str) -> list[str]:
@@ -65,16 +61,20 @@ def alpha_equiv(s1: str, s2: str) -> bool:
     return n1 == n2
 
 
-def evaluate_one_task(task: BenchmarkTask, result: str) -> bool:
+def evaluate_one_task(task: BenchmarkTask, result: LMAnswer) -> bool:
     """evaluate a single task against its result by alpha equivalence"""
-    ground_truth = postprocess(task.signature, TASK_STRATEGIES)
-    result = postprocess(result, RESPONSE_STRATEGIES)
-    return alpha_equiv(ground_truth, result)
+    ground_truth = postprocess(task.signature, TASK_STRATEGIES).strip()
+    predicted = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
+    return alpha_equiv(ground_truth, predicted)
 
 
-def evaluate(
-    benchmark_f: list[BenchmarkTask], results: list[str]
-) -> dict[str, int | float]:
+class EvalResult(TypedDict):
+    total: int
+    n_correct: int
+    accuracy: float
+
+
+def evaluate(benchmark_f: list[BenchmarkTask], results: list[LMAnswer]) -> EvalResult:
     """evaluate all generation results"""
 
     assert len(benchmark_f) == len(results)
@@ -87,27 +87,3 @@ def evaluate(
         "n_correct": n_correct,
         "accuracy": acc,
     }
-
-
-def main(
-    benchmark_file: str = "Benchmark-F.jsonl",
-    results_file: str = "data/experiment/gpt_generated_responses.jsonl",
-):
-    """script to run all evaluation tasks"""
-    with open(benchmark_file, "r") as file:
-        benchmark_f: list[BenchmarkTask] = (
-            Chain(file.readlines())
-            .map(json.loads)
-            .map(lambda d: from_dict(data_class=BenchmarkTask, data=d))
-            .value
-        )
-    with open(results_file, "r") as file:
-        results: list[str] = Chain(file.readlines()).map(json.loads).value
-
-    eval_acc = evaluate(benchmark_f, results)
-    logging.info(json.dumps(eval_acc, indent=2))
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    fire.Fire(main)
