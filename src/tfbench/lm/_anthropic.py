@@ -1,5 +1,5 @@
+import os
 from anthropic import Anthropic
-from ..env import ENV
 from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
 from .settings import MAX_TOKENS
 
@@ -30,7 +30,7 @@ class ClaudeChat(LM):
         """Initialize the Claude model client."""
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("ANTHROPIC_API_KEY")
+        api_key = os.getenv("ANTHROPIC_API_KEY")
         assert api_key, "Please set ANTHROPIC_API_KEY in environment!"
         self.client = Anthropic(api_key=api_key)
 
@@ -66,7 +66,7 @@ class ClaudeReasoning(LM):
         """Initialize the Claude model client."""
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("ANTHROPIC_API_KEY")
+        api_key = os.getenv("ANTHROPIC_API_KEY")
         assert api_key, "Please set ANTHROPIC_API_KEY in environment!"
         self.client = Anthropic(api_key=api_key)
 

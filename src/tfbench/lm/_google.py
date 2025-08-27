@@ -1,11 +1,11 @@
 """Inference helper for Google Gemini"""
 
 from typing import Literal
+import os
 
 from google import genai
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
-from ..env import ENV
 from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
 
 GEMINI_MODELS = [
@@ -47,7 +47,7 @@ class GeminiChat(LM):
     def __init__(self, model_name: str, pure: bool = False):
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY")
         assert api_key, "Please set GEMINI_API_KEY in environment!"
         self.client = genai.Client(api_key=api_key)
 
@@ -79,7 +79,7 @@ class GeminiReasoning(LM):
 
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY")
         assert api_key, "Please set GEMINI_API_KEY in environment!"
         self.client = genai.Client(api_key=api_key)
 
