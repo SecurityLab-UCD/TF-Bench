@@ -1,6 +1,6 @@
 import os
 from anthropic import Anthropic
-from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP
+from ._types import LM, LMAnswer, ReasoningEffort, EFFORT_TOKEN_MAP, NoneResponseError
 from .settings import MAX_TOKENS
 
 CLAUDE_MODELS = [
@@ -52,7 +52,7 @@ class ClaudeChat(LM):
                 break
 
         if text is None:
-            raise ValueError("No text content returned from the model.")
+            raise NoneResponseError(self.model_name)
 
         return LMAnswer(answer=text)
 
@@ -97,7 +97,7 @@ class ClaudeReasoning(LM):
             if text and thinking:
                 break
 
-        if text is None or thinking is None:
-            raise ValueError("No text content returned from the model.")
+        if text is None:
+            raise NoneResponseError(self.model_name)
 
         return LMAnswer(answer=text, reasoning_steps=thinking)

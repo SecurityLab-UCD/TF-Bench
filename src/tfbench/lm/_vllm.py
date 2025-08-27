@@ -4,15 +4,7 @@ from vllm.entrypoints.chat_utils import ChatCompletionMessageParam
 from openai import OpenAI
 
 from ..env import ENV
-from ._types import LM, LMAnswer
-
-
-_CHAT_TEMPLATE = """# Instructions
-{instruction}
-
-## Task
-{task}
-"""
+from ._types import LM, LMAnswer, NoneResponseError
 
 
 class VLLMChat(LM):
@@ -64,8 +56,12 @@ class VLLMOpenAIChatCompletion(LM):
         )
 
         message = completion.choices[0].message
+        content = message.content
+        if content is None:
+            raise NoneResponseError(self.model_name)
+
         return LMAnswer(
-            answer=message.content,
+            answer=content,
             reasoning_steps=(
                 message.reasoning_content  # type: ignore
                 if hasattr(message, "reasoning_content")
