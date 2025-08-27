@@ -45,7 +45,7 @@ def run_one_model(
             case Success(r):
                 gen_results.append(r)
                 if output_file:
-                    with open(output_file, "ab", errors="ignore") as file:
+                    with open(output_file, "ab") as file:
                         file.write(orjson.dumps(r, option=orjson.OPT_APPEND_NEWLINE))
             case Failure(e):
                 logging.error(f"Error generating response: {e}")

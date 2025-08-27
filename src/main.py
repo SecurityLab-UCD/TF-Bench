@@ -1,4 +1,3 @@
-import logging
 from os.path import join as pjoin, abspath
 import os
 
@@ -42,10 +41,11 @@ def main(
 
     def _eval(pure: bool):
         split = "pure" if pure else "base"
-        logging.info(f"Running {model} on TF-Bench ({split}):")
+        print(f"Running {model} on TF-Bench ({split}):")
         match _run(pure=False):
             case Success((mean, std)):
-                logging.info(f"Accuracy: {mean:.4f} ± {std:.4f}")
+                print(f"Accuracy: {mean:.4f} ± {std:.4f}")
+                print("====================================")
                 with open(log_file, "ab") as f:
                     f.write(
                         orjson.dumps(
