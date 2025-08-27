@@ -21,7 +21,6 @@ def main(
     effort: str | None = None,
     output_file: str | None = None,
     log_file: str = "evaluation_log.jsonl",
-    use_vllm_server: bool = False,
 ):
     """
     Run an experiment using various AI models to generate and evaluate type signatures.
@@ -45,7 +44,7 @@ def main(
         output_file = os.path.abspath(f"result/{model}.txt")
     logging.info(f"Writing generation results in {output_file}.")
 
-    client = router(model, pure, effort, use_vllm_server)
+    client = router(model, pure, effort)
     assert client, f"Failed to create client for {model}."
 
     tasks = load_from_hf("pure" if pure else "base")

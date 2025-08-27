@@ -47,7 +47,6 @@ def router(
     model_name: str,
     pure: bool,
     effort: str | None = None,
-    use_vllm_server: bool = False,
 ) -> LM | None:
     """Route the model name to the appropriate LM class."""
     if model_name in OAI_MODELS:
