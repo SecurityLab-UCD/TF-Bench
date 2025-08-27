@@ -5,18 +5,14 @@ import logging
 from funcy_chain import Chain
 from funcy import lmap
 from tqdm import tqdm
-from dacite import from_dict
 from returns.result import ResultE
-
 import fire
-from tfbench.common import (
-    BenchmarkTask,
-    get_prompt,
-)
 
+from tfbench.common import get_prompt
 from tfbench.postprocessing import postprocess, RESPONSE_STRATEGIES
 from tfbench.evaluation import evaluate
 from tfbench.lm import router, LMAnswer, extract_response
+from tfbench.load import load_from_hf
 
 
 def main(
@@ -41,13 +37,6 @@ def main(
 
     """
 
-    # hard-coding benchmark file path for experiment
-    input_file = "tfb.pure.json" if pure else "tfb.json"
-    input_file = os.path.abspath(input_file)
-    assert os.path.exists(
-        input_file
-    ), f"{input_file} does not exist! Please download or build it first."
-
     if output_file is None:
         os.makedirs("result", exist_ok=True)
         if "/" in model:
@@ -59,9 +48,7 @@ def main(
     client = router(model, pure, effort, use_vllm_server)
     assert client, f"Failed to create client for {model}."
 
-    with open(input_file, "r") as fp:
-        tasks = [from_dict(data_class=BenchmarkTask, data=d) for d in json.load(fp)]
-
+    tasks = load_from_hf("pure" if pure else "base")
     prompts = lmap(get_prompt, tasks)
     responses: list[ResultE[LMAnswer]] = lmap(
         client.generate, tqdm(prompts, desc=model)
