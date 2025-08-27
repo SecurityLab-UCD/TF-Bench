@@ -42,7 +42,7 @@ def main(
     def _eval(pure: bool):
         split = "pure" if pure else "base"
         print(f"Running {model} on TF-Bench ({split}):")
-        match _run(pure=False):
+        match _run(pure=pure):
             case Success((mean, std)):
                 print(f"Accuracy: {mean:.4f} ± {std:.4f}")
                 print("====================================")
