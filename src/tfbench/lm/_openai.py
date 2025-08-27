@@ -1,7 +1,8 @@
+import os
+
 from openai import OpenAI, NOT_GIVEN
 from openai.types.shared.reasoning_effort import ReasoningEffort
 
-from ..env import ENV
 from ._types import LM, LMAnswer
 
 OAI_MODELS = [
@@ -39,7 +40,7 @@ class OpenAIChatCompletion(LM):
     def __init__(self, model_name: str, pure: bool = False):
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         assert api_key, "Please set OPENAI_API_KEY in environment!"
         self.client = OpenAI(api_key=api_key)
 
@@ -78,7 +79,7 @@ class OpenAIResponses(LM):
         """
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         assert api_key, "Please set OPENAI_API_KEY in environment!"
         self.client = OpenAI(api_key=api_key)
 
