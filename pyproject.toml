@@ -21,6 +21,7 @@ dependencies = [
     "ollama==0.5.3",
     "openai==1.99.9",
     "orjson>=3.11.3",
+    "orjsonl>=1.0.0",
     "pyarrow>=21.0.0",
     "pytest>=8.0.0",
     "python-dotenv==1.0.1",

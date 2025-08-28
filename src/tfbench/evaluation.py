@@ -2,6 +2,8 @@ from itertools import starmap
 import re
 from typing import TypedDict
 
+import numpy as np
+
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 from .lm import LMAnswer
@@ -87,3 +89,9 @@ def evaluate(benchmark_f: list[BenchmarkTask], results: list[LMAnswer]) -> EvalR
         "n_correct": n_correct,
         "accuracy": acc,
     }
+
+
+def analysis_multi_runs(results: list[EvalResult]) -> tuple[float, float]:
+    """calculate mean and std of accuracy of multiple runs"""
+    accs = list(map(lambda r: r["accuracy"], results))
+    return np.mean(accs).item(), np.std(accs).item()

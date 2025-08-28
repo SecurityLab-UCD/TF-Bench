@@ -1,6 +1,11 @@
 from typing import Any, Mapping, cast
 from datasets import load_dataset
+
+from dacite import from_dict
+from orjsonl import orjsonl
+
 from .common import BenchmarkTask
+from .lm import LMAnswer
 
 
 def _cast(data_entry) -> BenchmarkTask:
@@ -14,7 +19,7 @@ def _cast(data_entry) -> BenchmarkTask:
     )
 
 
-def load_from_hf(split: str = "base") -> list[BenchmarkTask]:
+def load_tfb_from_hf(split: str = "base") -> list[BenchmarkTask]:
     """Load TF-Bench dataset from HuggingFace Hub.
 
     Args:
@@ -26,3 +31,9 @@ def load_from_hf(split: str = "base") -> list[BenchmarkTask]:
 
     dataset = load_dataset("SecLabUCD/TF-Bench", split=split)
     return [_cast(d) for d in dataset]
+
+
+def load_gen_results_jsonl(result_file: str) -> list[LMAnswer]:
+    """load generation results from a jsonl file"""
+    objs: list[dict[str, str | None]] = orjsonl.load(result_file)  # type: ignore
+    return [from_dict(LMAnswer, obj) for obj in objs]

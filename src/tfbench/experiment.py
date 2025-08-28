@@ -11,7 +11,7 @@ import orjson
 from .common import get_prompt
 from .evaluation import evaluate, EvalResult
 from .lm import router, LMAnswer
-from .load import load_from_hf
+from .load import load_tfb_from_hf
 
 
 def run_one_model(
@@ -37,7 +37,7 @@ def run_one_model(
     if not client:
         return Failure(Exception(f"Failed to create client for {model}."))
 
-    tasks = load_from_hf("pure" if pure else "base")
+    tasks = load_tfb_from_hf("pure" if pure else "base")
     gen_results: list[LMAnswer] = []
     for task in tqdm(tasks, desc=model):
         prompt = get_prompt(task)

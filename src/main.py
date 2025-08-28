@@ -2,16 +2,10 @@ from os.path import join as pjoin, abspath
 import os
 
 import fire
-import numpy as np
 import orjson
 from returns.result import Success, Failure
-from tfbench import run_one_model, EvalResult
 
-
-def analysis(results: list[EvalResult]):
-    """calculate mean and std of accuracy of multiple runs"""
-    accs = list(map(lambda r: r["accuracy"], results))
-    return np.mean(accs), np.std(accs)
+from tfbench import run_one_model, analysis_multi_runs
 
 
 def main(
@@ -24,12 +18,11 @@ def main(
 
     def _run(pure: bool):
         results = []
+        split = "pure" if pure else "base"
         for i in range(n_repeats):
-            ext = "pure" if pure else "base"
-
-            result_dir = abspath(pjoin("results", model))
+            result_dir = abspath(pjoin("results", model, split))
             os.makedirs(result_dir, exist_ok=True)
-            result_file = pjoin(result_dir, f"run-{i}.{ext}.jsonl")
+            result_file = pjoin(result_dir, f"run-{i}.jsonl")
             match run_one_model(
                 model, pure=pure, output_file=result_file, effort=effort
             ):
@@ -37,7 +30,7 @@ def main(
                     results.append(r)
                 case Failure(e):
                     return Failure(e)
-        return Success(analysis(results))
+        return Success(analysis_multi_runs(results))
 
     def _eval(pure: bool):
         split = "pure" if pure else "base"
