@@ -2,7 +2,7 @@ from os.path import join as pjoin, abspath
 import os
 
 import fire
-import orjson
+from orjsonl import orjsonl
 from returns.result import Success, Failure
 
 from tfbench import run_one_model, analysis_multi_runs
@@ -39,20 +39,17 @@ def main(
             case Success((mean, std)):
                 print(f"Accuracy: {mean:.4f} ± {std:.4f}")
                 print("====================================")
-                with open(log_file, "ab") as f:
-                    f.write(
-                        orjson.dumps(
-                            {
-                                "model": model,
-                                "split": split,
-                                "effort": effort,
-                                "n_repeats": n_repeats,
-                                "mean": mean,
-                                "std": std,
-                            },
-                            option=orjson.OPT_APPEND_NEWLINE,
-                        )
-                    )
+                orjsonl.append(
+                    log_file,
+                    {
+                        "model": model,
+                        "split": split,
+                        "effort": effort,
+                        "n_repeats": n_repeats,
+                        "mean": mean,
+                        "std": std,
+                    },
+                )
             case Failure(e):
                 print(f"Error in base run: {e}")
                 return
