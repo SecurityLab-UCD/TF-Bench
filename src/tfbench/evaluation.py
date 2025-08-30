@@ -3,6 +3,7 @@ import re
 from typing import TypedDict
 
 import numpy as np
+from returns.result import Success, Failure, ResultE
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
@@ -63,8 +64,11 @@ def alpha_equiv(s1: str, s2: str) -> bool:
     return n1 == n2
 
 
-def evaluate_one_task(task: BenchmarkTask, result: LMAnswer) -> bool:
+def evaluate_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
     """evaluate a single task against its result by alpha equivalence"""
+    if result is None:
+        return False
+
     ground_truth = postprocess(task.signature, TASK_STRATEGIES).strip()
     predicted = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
     return alpha_equiv(ground_truth, predicted)
@@ -76,7 +80,9 @@ class EvalResult(TypedDict):
     accuracy: float
 
 
-def evaluate(benchmark_f: list[BenchmarkTask], results: list[LMAnswer]) -> EvalResult:
+def evaluate(
+    benchmark_f: list[BenchmarkTask], results: list[LMAnswer | None]
+) -> EvalResult:
     """evaluate all generation results"""
 
     assert len(benchmark_f) == len(results)

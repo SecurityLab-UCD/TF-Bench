@@ -5,7 +5,7 @@ import fire
 from orjsonl import orjsonl
 from returns.result import Success, Failure
 
-from tfbench import run_one_model, analysis_multi_runs
+from tfbench import run_one_model, analysis_multi_runs, EvalResult
 
 
 def main(
@@ -17,44 +17,40 @@ def main(
     """Main script to run experiments reported in the paper"""
 
     def _run(pure: bool):
-        results = []
+        results: list[EvalResult] = []
         split = "pure" if pure else "base"
         for i in range(n_repeats):
             result_dir = abspath(pjoin("results", model, split))
             os.makedirs(result_dir, exist_ok=True)
             result_file = pjoin(result_dir, f"run-{i}.jsonl")
-            match run_one_model(
-                model, pure=pure, output_file=result_file, effort=effort
-            ):
-                case Success(r):
-                    results.append(r)
-                case Failure(e):
-                    return Failure(e)
-        return Success(analysis_multi_runs(results))
+            r = run_one_model(
+                model,
+                pure=pure,
+                output_file=result_file,
+                effort=effort,
+            )
+            results.append(r)
+        return analysis_multi_runs(results)
 
     def _eval(pure: bool):
         split = "pure" if pure else "base"
         print(f"Running {model} on TF-Bench ({split}):")
-        match _run(pure=pure):
-            case Success((mean, std)):
-                print(f"Accuracy: {mean:.4f} ± {std:.4f}")
-                print("====================================")
-                orjsonl.append(
-                    log_file,
-                    {
-                        "model": model,
-                        "split": split,
-                        "effort": effort,
-                        "n_repeats": n_repeats,
-                        "mean": mean,
-                        "std": std,
-                    },
-                )
-            case Failure(e):
-                print(f"Error in base run: {e}")
-                return
+        mean, std = _run(pure=pure)
+        print(f"Accuracy: {mean:.4f} ± {std:.4f}")
+        print("====================================")
+        orjsonl.append(
+            log_file,
+            {
+                "model": model,
+                "split": split,
+                "effort": effort,
+                "n_repeats": n_repeats,
+                "mean": mean,
+                "std": std,
+            },
+        )
 
-    _eval(pure=False)
+    # _eval(pure=False)
     _eval(pure=True)
 
 

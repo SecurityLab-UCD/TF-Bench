@@ -6,7 +6,7 @@ import logging
 
 from tqdm import tqdm
 from returns.result import Success, Failure, ResultE
-import orjson
+from orjsonl import orjsonl
 
 from .common import get_prompt
 from .evaluation import evaluate, EvalResult
@@ -19,7 +19,7 @@ def run_one_model(
     pure: bool = False,
     output_file: str | None = None,
     effort: str | None = None,
-) -> ResultE[EvalResult]:
+) -> EvalResult:
     """Running the generation & evaluation pipeline for one pre-supported model
 
     Args:
@@ -34,22 +34,18 @@ def run_one_model(
         EvalResult: evaluation result including accuracy
     """
     client = router(model, pure, effort)
-    if not client:
-        return Failure(Exception(f"Failed to create client for {model}."))
+    assert client is not None, f"Failed to create client for {model}."
 
     tasks = load_tfb_from_hf("pure" if pure else "base")
-    gen_results: list[LMAnswer] = []
+    gen_results: list[LMAnswer | None] = []
     for task in tqdm(tasks, desc=model):
         prompt = get_prompt(task)
-        match client.generate(prompt):
-            case Success(r):
-                gen_results.append(r)
-                if output_file:
-                    with open(output_file, "ab") as file:
-                        file.write(orjson.dumps(r, option=orjson.OPT_APPEND_NEWLINE))
-            case Failure(e):
-                logging.error(f"Error generating response: {e}")
-                return Failure(e)
+
+        response = client.generate(prompt)
+        r: LMAnswer | None = response.value_or(None)
+        gen_results.append(r)
+        if output_file:
+            orjsonl.append(output_file, r if r else {"error": str(response.failure())})
 
     eval_acc = evaluate(tasks, gen_results)
-    return Success(eval_acc)
+    return eval_acc
