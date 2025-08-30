@@ -3,7 +3,6 @@ import re
 from typing import TypedDict
 
 import numpy as np
-from returns.result import Success, Failure, ResultE
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES

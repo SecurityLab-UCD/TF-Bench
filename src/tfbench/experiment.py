@@ -2,10 +2,8 @@
 Experiment script
 """
 
-import logging
 
 from tqdm import tqdm
-from returns.result import Success, Failure, ResultE
 from orjsonl import orjsonl
 
 from .common import get_prompt

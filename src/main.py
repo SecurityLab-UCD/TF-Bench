@@ -3,7 +3,6 @@ import os
 
 import fire
 from orjsonl import orjsonl
-from returns.result import Success, Failure
 
 from tfbench import run_one_model, analysis_multi_runs, EvalResult
 
@@ -50,7 +49,7 @@ def main(
             },
         )
 
-    # _eval(pure=False)
+    _eval(pure=False)
     _eval(pure=True)
 
 
