@@ -2,6 +2,7 @@ import os
 
 from openai import OpenAI, NOT_GIVEN
 from openai.types.shared.reasoning_effort import ReasoningEffort
+from openai.types.responses.response import Response
 
 from ._types import LM, LMAnswer, NoneResponseError
 
@@ -104,4 +105,23 @@ class OpenAIResponses(LM):
                 else NOT_GIVEN
             ),
         )
-        return LMAnswer(answer=response.output_text)
+        return LMAnswer(
+            answer=response.output_text,
+            reasoning_steps=_reasoning_summary(response),
+        )
+
+
+def _reasoning_summary(response: Response) -> str:
+    """helper function to extract response from OpenAI Response API,
+    implementation follows `openai/types/responses/response.py#L275`
+    for format, please see
+    https://platform.openai.com/docs/guides/reasoning?api-mode=responses#reasoning-summaries
+    """
+    texts: list[str] = []
+    for output in response.output:
+        if output.type == "reasoning" and output.summary is not None:
+            for summary in output.summary:
+                if summary.type == "summary_text":
+                    texts.append(summary.text)
+
+    return "".join(texts)
