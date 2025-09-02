@@ -98,9 +98,7 @@ class OpenAIResponses(LM):
             instructions=self.instruction,
             input=prompt,
             reasoning=(
-                {
-                    "effort": self.effort,
-                }
+                {"effort": self.effort, "summary": "detailed"}
                 if self.effort
                 else NOT_GIVEN
             ),
