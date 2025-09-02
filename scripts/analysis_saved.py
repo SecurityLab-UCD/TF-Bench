@@ -7,6 +7,7 @@ from tfbench import (
     load_tfb_from_hf,
     load_gen_results_jsonl,
     evaluate,
+    LMAnswer,
 )
 
 
@@ -29,7 +30,7 @@ def main(result_dir: str, log_file: str | None = None):
     jsonl_files = [
         pjoin(result_dir, f) for f in os.listdir(result_dir) if f.endswith(".jsonl")
     ]
-    runs = [load_gen_results_jsonl(f) for f in jsonl_files]
+    runs  = [load_gen_results_jsonl(f) for f in jsonl_files]
     accs = [evaluate(tasks, run) for run in runs]
     mean, std = analysis_multi_runs(accs)
 

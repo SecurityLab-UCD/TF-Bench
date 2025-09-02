@@ -33,7 +33,7 @@ def load_tfb_from_hf(split: str = "base") -> list[BenchmarkTask]:
     return [_cast(d) for d in dataset]
 
 
-def load_gen_results_jsonl(result_file: str) -> list[LMAnswer]:
+def load_gen_results_jsonl(result_file: str) -> list[LMAnswer | None]:
     """load generation results from a jsonl file"""
     objs: list[dict[str, str | None]] = orjsonl.load(result_file)  # type: ignore
     return [from_dict(LMAnswer, obj) for obj in objs]
