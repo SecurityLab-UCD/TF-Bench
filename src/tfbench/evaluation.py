@@ -79,18 +79,16 @@ class EvalResult(TypedDict):
     accuracy: float
 
 
-def evaluate(
-    benchmark_f: list[BenchmarkTask], results: list[LMAnswer | None]
-) -> EvalResult:
+def evaluate(tasks: list[BenchmarkTask], results: list[LMAnswer | None]) -> EvalResult:
     """evaluate all generation results"""
 
-    assert len(benchmark_f) == len(results)
-    eval_results = starmap(evaluate_one_task, zip(benchmark_f, results))
+    assert len(tasks) == len(results)
+    eval_results = starmap(evaluate_one_task, zip(tasks, results))
     n_correct = sum(eval_results)
-    acc = n_correct / len(benchmark_f)
+    acc = n_correct / len(tasks)
 
     return {
-        "total": len(benchmark_f),
+        "total": len(tasks),
         "n_correct": n_correct,
         "accuracy": acc,
     }
