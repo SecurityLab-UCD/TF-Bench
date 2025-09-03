@@ -1,19 +1,17 @@
-from os.path import abspath, dirname, basename, join as pjoin
+from os.path import abspath, basename, join as pjoin
 import os
 
 import orjson
 from pydantic import BaseModel
 from openai import OpenAI
 import fire
-from tfbench import (
-    analysis_multi_runs,
-    load_tfb_from_hf,
-    load_gen_results_jsonl,
-    evaluate,
-    LMAnswer,
-)
 from tqdm import tqdm
 
+from tfbench import (
+    load_tfb_from_hf,
+    load_gen_results_jsonl,
+    LMAnswer,
+)
 from tfbench.evaluation import get_incorrect
 from tfbench.common import get_prompt as get_task_prompt, BenchmarkTask
 
