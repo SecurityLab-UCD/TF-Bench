@@ -23,6 +23,7 @@ dependencies = [
     "orjson>=3.11.3",
     "orjsonl>=1.0.0",
     "pyarrow>=21.0.0",
+    "pydantic>=2.11.7",
     "pytest>=8.0.0",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
