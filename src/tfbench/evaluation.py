@@ -98,3 +98,14 @@ def analysis_multi_runs(results: list[EvalResult]) -> tuple[float, float]:
     """calculate mean and std of accuracy of multiple runs"""
     accs = list(map(lambda r: r["accuracy"], results))
     return np.mean(accs).item(), np.std(accs).item()
+
+
+def get_incorrect(
+    tasks: list[BenchmarkTask], results: list[LMAnswer | None]
+) -> list[tuple[BenchmarkTask, LMAnswer | None]]:
+    """Get a list of tasks that were incorrectly answered."""
+    incorrect = []
+    for task, result in zip(tasks, results):
+        if not evaluate_one_task(task, result):
+            incorrect.append((task, result))
+    return incorrect
