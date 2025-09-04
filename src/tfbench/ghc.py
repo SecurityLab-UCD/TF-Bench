@@ -33,7 +33,7 @@ def ghc_type_proof(code: str) -> Result[None, str]:
         if process.returncode == 0:
             return Success(None)
 
-        return Failure(cp.stderr)
+        return Failure(process.stderr)
 
 
 PROVER = """
