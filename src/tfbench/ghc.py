@@ -4,7 +4,7 @@ import os
 import tempfile
 import subprocess
 from string import Template  # NOTE: use t-string after py3.14
-from returns.result import Result, Success, Failure
+from returns.result import Result, Success, Failure, safe
 
 from .hs_parser import get_type_vars_from_src
 
@@ -77,6 +77,7 @@ def _def_new_type_class(class_name: str, type_vars: list[str]) -> str:
     return f"class {class_name} {' '.join(type_vars)}"
 
 
+@safe
 def get_prover(
     ground_truth: str, answer: str, new_types: list[str] | None = None
 ) -> str:

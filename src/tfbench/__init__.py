@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 
 from .experiment import run_one_model
-from .evaluation import EvalResult, analysis_multi_runs, evaluate
+from .evaluation import EvalResult, analysis_multi_runs, evaluate, prover_evaluate
 from .load import load_tfb_from_hf, load_gen_results_jsonl
 from .lm import LMAnswer
 
@@ -12,6 +12,7 @@ __all__ = [
     "EvalResult",
     "analysis_multi_runs",
     "evaluate",
+    "prover_evaluate",
     "load_tfb_from_hf",
     "load_gen_results_jsonl",
     "LMAnswer",

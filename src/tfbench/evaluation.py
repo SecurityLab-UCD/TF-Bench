@@ -1,13 +1,17 @@
 from itertools import starmap
 import re
 from typing import TypedDict
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
 from deprecated import deprecated
+from returns.result import Success
+from tqdm import tqdm
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 from .lm import LMAnswer
+from .ghc import get_prover, ghc_prove_equiv
 
 
 def tokenize_type_signature(sig: str) -> list[str]:
@@ -50,6 +54,7 @@ def normalize_type_vars(tokens: list[str]) -> list[str]:
     return result
 
 
+@deprecated(reason="Use `ghc_prove_equiv` instead", version="0.1.0")
 def alpha_equiv(s1: str, s2: str) -> bool:
     """
     Check if two type signatures are 'alpha-equivalent' under
@@ -64,7 +69,7 @@ def alpha_equiv(s1: str, s2: str) -> bool:
     return n1 == n2
 
 
-@deprecated(reason="Use GHC for evaluation instead", version="0.1.0")
+@deprecated(reason="Use `prove_one_task` instead", version="0.1.0")
 def evaluate_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
     """evaluate a single task against its result by alpha equivalence"""
     if result is None:
@@ -81,11 +86,48 @@ class EvalResult(TypedDict):
     accuracy: float
 
 
+@deprecated(reason="Use `prover_evaluate` instead", version="0.1.0")
 def evaluate(tasks: list[BenchmarkTask], results: list[LMAnswer | None]) -> EvalResult:
     """evaluate all generation results"""
 
     assert len(tasks) == len(results)
     eval_results = starmap(evaluate_one_task, zip(tasks, results))
+    n_correct = sum(eval_results)
+    acc = n_correct / len(tasks)
+
+    return {
+        "total": len(tasks),
+        "n_correct": n_correct,
+        "accuracy": acc,
+    }
+
+
+def prove_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
+    """prove two type signatures are equivalent using GHC"""
+    if result is None:
+        return False
+
+    predicted_body = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
+    predicted = f"f :: {predicted_body}"
+
+    equiv = get_prover(task.signature, predicted).alt(str).bind(ghc_prove_equiv)
+    return isinstance(equiv, Success)
+
+
+def prover_evaluate(
+    tasks: list[BenchmarkTask],
+    results: list[LMAnswer | None],
+    nproc: int = cpu_count(),
+) -> EvalResult:
+    """evaluate all generation results using GHC to prove equivalence
+
+    NOTE: currently only support the `base` split
+    """
+    assert len(tasks) == len(results)
+
+    with Pool(processes=nproc) as pool:
+        eval_results = pool.starmap(prove_one_task, zip(tasks, results))
+
     n_correct = sum(eval_results)
     acc = n_correct / len(tasks)
 
