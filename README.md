@@ -14,6 +14,18 @@ cd TF-Bench
 uv sync # create a virtual environment, and install dependencies
 ```
 
+### Haskell
+
+To run evaluation, you need GHC (the Glasgow Haskell Compiler) installed.
+We recommend using [ghcup](https://www.haskell.org/ghcup/) to install.
+You can use any version suggested by ghcup.
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+```
+
+Due to the GHC dependency, the evaluation module currently only supports Linux and macOS.
+
 ## Building TF-Bench From Scratch (Optional)
 
 ### TF-Bench

@@ -3,6 +3,7 @@ import re
 from typing import TypedDict
 
 import numpy as np
+from deprecated import deprecated
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
@@ -63,6 +64,7 @@ def alpha_equiv(s1: str, s2: str) -> bool:
     return n1 == n2
 
 
+@deprecated(reason="Use GHC for evaluation instead", version="0.1.0")
 def evaluate_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
     """evaluate a single task against its result by alpha equivalence"""
     if result is None:
