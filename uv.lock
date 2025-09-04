@@ -3297,6 +3297,7 @@ dependencies = [
     { name = "tqdm" },
     { name = "tree-sitter" },
     { name = "tree-sitter-haskell" },
+    { name = "types-deprecated" },
     { name = "types-requests" },
     { name = "vllm" },
 ]
@@ -3333,6 +3334,7 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.66.2" },
     { name = "tree-sitter", specifier = "==0.22.3" },
     { name = "tree-sitter-haskell", specifier = "==0.21.0" },
+    { name = "types-deprecated", specifier = ">=1.2.15.20250304" },
     { name = "types-requests", specifier = ">=2.31.0" },
     { name = "vllm", specifier = ">=0.10.1.1" },
 ]
@@ -3559,6 +3561,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/43/78/d90f616bf5f88f8710ad067c1f8705bf7618059836ca084e5bb2a0855d75/typer-0.16.1.tar.gz", hash = "sha256:d358c65a464a7a90f338e3bb7ff0c74ac081449e53884b12ba658cbd72990614", size = 102836 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2d/76/06dbe78f39b2203d2a47d5facc5df5102d0561e2807396471b5f7c5a30a1/typer-0.16.1-py3-none-any.whl", hash = "sha256:90ee01cb02d9b8395ae21ee3368421faf21fa138cb2a541ed369c08cec5237c9", size = 46397 },
+]
+
+[[package]]
+name = "types-deprecated"
+version = "1.2.15.20250304"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0e/67/eeefaaabb03b288aad85483d410452c8bbcbf8b2bd876b0e467ebd97415b/types_deprecated-1.2.15.20250304.tar.gz", hash = "sha256:c329030553029de5cc6cb30f269c11f4e00e598c4241290179f63cda7d33f719", size = 8015 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4d/e3/c18aa72ab84e0bc127a3a94e93be1a6ac2cb281371d3a45376ab7cfdd31c/types_deprecated-1.2.15.20250304-py3-none-any.whl", hash = "sha256:86a65aa550ea8acf49f27e226b8953288cd851de887970fbbdf2239c116c3107", size = 8553 },
 ]
 
 [[package]]

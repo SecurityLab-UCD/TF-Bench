@@ -6,8 +6,7 @@ from funcy_chain import Chain
 from dacite import from_dict
 
 from tfbench.common import extract_function_name
-from tfbench.hs_parser import HASKELL_LANGUAGE
-from tfbench.hs_parser.ast_util import AST
+from tfbench.hs_parser import AST
 from tfbench.common import BenchmarkTask
 
 
@@ -25,7 +24,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     fn_name = extract_function_name(task)
     assert fn_name is not None
 
-    ast = AST(task.code, HASKELL_LANGUAGE)
+    ast = AST(task.code)
     root = ast.root
 
     calls: list[str] = (
