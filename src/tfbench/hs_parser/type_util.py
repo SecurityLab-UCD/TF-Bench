@@ -53,6 +53,10 @@ def get_polymorphic_type(type_signature: Node) -> PolymorphicType:
 def get_type_vars_from_src(source_code: str) -> list[str]:
     """extract type variables from a type signature source code.
 
+    NOTE: since GHC proves the `forall` quantification of type variables,
+    the order of type variables does not really matter
+    as long as they are **consistent**.
+
     Args:
         source_code (str): the source code of the type signature
 
