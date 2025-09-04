@@ -102,3 +102,9 @@ plugins = ["returns.contrib.mypy.returns_plugin"]
 
 [tool.ruff]
 exclude = ["tests/", "plots/"]
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=6.2.1",
+    "pytest-xdist>=3.8.0",
+]
