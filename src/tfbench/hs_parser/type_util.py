@@ -48,3 +48,23 @@ def get_polymorphic_type(type_signature: Node) -> PolymorphicType:
                 return PolymorphicType.PARAMETRIC
 
     return PolymorphicType.MONO
+
+
+def get_type_vars_from_src(source_code: str) -> list[str]:
+    """extract type variables from a type signature source code.
+
+    Args:
+        source_code (str): the source code of the type signature
+
+    Returns:
+        list[str]: type variables
+    """
+    ast = AST(source_code=source_code)
+    sig = ast.get_all_nodes_of_type(ast.root, "signature")[0]
+    type_node = to_type_node(sig)
+
+    ty_vars = [
+        ast.get_src_from_node(n)
+        for n in ast.get_all_nodes_of_type(type_node, "variable")
+    ]
+    return list(dict.fromkeys(ty_vars))  # remove duplicates while preserving order

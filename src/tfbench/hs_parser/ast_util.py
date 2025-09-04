@@ -2,9 +2,12 @@ from typing import Optional
 from dataclasses import dataclass
 
 from tree_sitter import Language, Parser, Tree, Node
+import tree_sitter_haskell as ts_haskell
 from returns.maybe import Maybe, Nothing, Some
 from funcy_chain import Chain
 from funcy import lmap
+
+HASKELL_LANGUAGE = Language(ts_haskell.language())
 
 
 @dataclass
@@ -35,7 +38,7 @@ class HaskellFunction:
 class AST:
     """Helper class to build, read, and manipulate ASTs using tree-sitter."""
 
-    def __init__(self, source_code: str, lang: Language) -> None:
+    def __init__(self, source_code: str) -> None:
         """
         Initializes an AST object with the given source code and language.
 
@@ -45,7 +48,7 @@ class AST:
         """
         self.src = source_code
         self.parser = Parser()
-        self.parser.language = lang  # Directly assign the language
+        self.parser.language = HASKELL_LANGUAGE
         self.tree: Tree = self.parser.parse(bytes(self.src, "utf8"))
 
     @property
