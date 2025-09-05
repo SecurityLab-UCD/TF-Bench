@@ -1,4 +1,4 @@
-from tfbench.hs_parser import get_type_vars_from_src
+from tfbench.hs_parser import get_type_vars
 
 
 def test_monomorphic():
@@ -21,12 +21,12 @@ def test_monomorphic():
         "f3 :: (Int, Char) -> (Char, Int)",
     ]
 
-    ty_vars = map(get_type_vars_from_src, candidates)
+    ty_vars = map(get_type_vars, candidates)
     assert all(len(vs) == 0 for vs in ty_vars)
 
 
 def _assert_equal(sig: str, expected: list[str]):
-    ty_vars = get_type_vars_from_src(sig)
+    ty_vars = get_type_vars(sig)
     assert ty_vars == expected, f"for {sig}, expected {expected}, got {ty_vars}"
 
 

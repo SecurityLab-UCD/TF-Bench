@@ -6,12 +6,12 @@ from multiprocessing import Pool, cpu_count
 import numpy as np
 from deprecated import deprecated
 from returns.result import Success
-from tqdm import tqdm
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 from .lm import LMAnswer
 from .ghc import get_prover, ghc_prove_equiv
+from .type_def import get_type_defs
 
 
 def tokenize_type_signature(sig: str) -> list[str]:
@@ -102,17 +102,19 @@ def evaluate(tasks: list[BenchmarkTask], results: list[LMAnswer | None]) -> Eval
     }
 
 
-def prove_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
+def prove_one_task(
+    task: BenchmarkTask, result: LMAnswer | None, pure: bool = False
+) -> bool:
     """prove two type signatures are equivalent using GHC"""
     if result is None:
         return False
 
     predicted_body = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
     predicted = f"f :: {predicted_body}"
-
+    defs = get_type_defs(task) if pure else []
     # only failing case from get_prover is syntax error of generated type signature
     equiv = (
-        get_prover(task.signature, predicted)
+        get_prover(task.signature, predicted, defs)
         .alt(lambda _: "Syntax Error: Tree-Sitter Parsing Failed")
         .bind(ghc_prove_equiv)
     )
@@ -122,6 +124,7 @@ def prove_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
 def prover_evaluate(
     tasks: list[BenchmarkTask],
     results: list[LMAnswer | None],
+    pure: bool = False,
     nproc: int = cpu_count(),
 ) -> EvalResult:
     """evaluate all generation results using GHC to prove equivalence
@@ -131,7 +134,9 @@ def prover_evaluate(
     assert len(tasks) == len(results)
 
     with Pool(processes=nproc) as pool:
-        eval_results = pool.starmap(prove_one_task, zip(tasks, results))
+        eval_results = pool.starmap(
+            prove_one_task, zip(tasks, results, [pure] * len(tasks))
+        )
 
     n_correct = sum(eval_results)
     acc = n_correct / len(tasks)

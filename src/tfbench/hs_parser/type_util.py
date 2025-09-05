@@ -51,7 +51,7 @@ def get_polymorphic_type(type_signature: Node) -> PolymorphicType:
     return PolymorphicType.MONO
 
 
-def get_type_vars_from_src(source_code: str) -> list[str]:
+def get_type_vars(source_code: str) -> list[str]:
     """extract type variables from a type signature source code.
 
     NOTE: since GHC proves the `forall` quantification of type variables,
@@ -75,7 +75,7 @@ def get_type_vars_from_src(source_code: str) -> list[str]:
     return list(dict.fromkeys(ty_vars))  # remove duplicates while preserving order
 
 
-def get_type_constraints_from_src(source_code: str) -> list[str]:
+def get_type_constraints(source_code: str) -> list[str]:
     """extract type class constraints from a type signature source code"""
     assert "=>" in source_code, "no type class constraints found"
 

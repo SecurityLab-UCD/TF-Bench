@@ -30,7 +30,7 @@ def main(result_dir: str, log_file: str | None = None):
         pjoin(result_dir, f) for f in os.listdir(result_dir) if f.endswith(".jsonl")
     ]
     runs = [load_gen_results_jsonl(f) for f in jsonl_files]
-    accs = [prover_evaluate(tasks, run) for run in runs]
+    accs = [prover_evaluate(tasks, run, split == "pure") for run in runs]
     mean, std = analysis_multi_runs(accs)
 
     print(f"Model: {model}")
