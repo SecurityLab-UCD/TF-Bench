@@ -110,7 +110,12 @@ def prove_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
     predicted_body = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
     predicted = f"f :: {predicted_body}"
 
-    equiv = get_prover(task.signature, predicted).alt(str).bind(ghc_prove_equiv)
+    # only failing case from get_prover is syntax error of generated type signature
+    equiv = (
+        get_prover(task.signature, predicted)
+        .alt(lambda _: "Syntax Error: Tree-Sitter Parsing Failed")
+        .bind(ghc_prove_equiv)
+    )
     return isinstance(equiv, Success)
 
 
