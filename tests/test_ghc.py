@@ -1,5 +1,5 @@
 from returns.result import Result, Success, Failure
-from tfbench.ghc import ghc_prove_equiv, get_prover
+from tfbench.ghc import ghc_prove_equiv, get_prover, reorder_type_classes
 
 
 def _equiv(
@@ -270,7 +270,6 @@ def test_tfb_real():
     _equiv("($) :: (a -> b) -> a -> b", "($) :: (a -> b) -> (a -> b)")
 
     # type class constraints are commutative
-    # todo: reorder constraints in get_prover
     _equiv(
         "elem :: (Foldable t, Eq a) => a -> t a -> Bool",
         "g :: (Eq a, Foldable t) => a -> t a -> Bool",
@@ -281,3 +280,20 @@ def test_tfb_real():
         "showList :: Show a => [a] -> ShowS",
         "g :: Show a => [a] -> String -> String",
     )
+
+
+def test_reorder():
+    """test reorder_type_classes function"""
+    s1 = "f :: (Eq a, Show a) => a -> String"
+    s2 = "f :: (Show a, Eq a) => a -> String"
+
+    rs1 = reorder_type_classes(s1)
+    rs2 = reorder_type_classes(s2)
+
+    _equiv(rs1, rs2)
+    _equiv(rs2, rs2)
+    _equiv(rs1, rs1)
+
+    _equiv(s1, rs2)
+    _equiv(s2, rs1)
+    _equiv(s1, s2)
