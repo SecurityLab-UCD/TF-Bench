@@ -1,5 +1,6 @@
 from enum import Enum
 from tree_sitter import Node
+from funcy_chain import Chain
 from .ast_util import AST
 
 
@@ -72,3 +73,23 @@ def get_type_vars_from_src(source_code: str) -> list[str]:
         for n in ast.get_all_nodes_of_type(type_node, "variable")
     ]
     return list(dict.fromkeys(ty_vars))  # remove duplicates while preserving order
+
+
+def get_type_constraints_from_src(source_code: str) -> list[str]:
+    """extract type class constraints from a type signature source code"""
+    assert "=>" in source_code, "no type class constraints found"
+
+    ast = AST(source_code)
+    signature = ast.get_all_nodes_of_type(ast.root, "signature")[0]
+
+    # context node is the body of type signature
+    context = ast.get_all_nodes_of_type(signature, "context")[0]
+
+    type_constrains: list[str] = (
+        Chain(ast.get_all_nodes_of_type(context.children[0], "apply"))
+        .map(ast.get_src_from_node)
+        .map(str.strip)
+        .filter(lambda c: c[0].isupper())
+        .value
+    )
+    return type_constrains

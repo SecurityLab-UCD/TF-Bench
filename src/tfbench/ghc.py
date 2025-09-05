@@ -6,7 +6,7 @@ import subprocess
 from string import Template  # NOTE: use t-string after py3.14
 from returns.result import Result, Success, Failure, safe
 
-from .hs_parser import get_type_vars_from_src
+from .hs_parser import get_type_vars_from_src, get_type_constraints_from_src
 
 
 def ghc_prove_equiv(code: str) -> Result[None, str]:
@@ -76,13 +76,8 @@ def _def_new_type_class(class_name: str, type_vars: list[str]) -> str:
     """construct a new, empty yet unique type class definition for a given Ad-hoc type class name"""
     return f"class {class_name} {' '.join(type_vars)}"
 
-
-def reorder_type_classes(type_signature: str) -> str:
-    """Reorder type classes constrains in a type signature to a canonical order.
-
-    NOTE: simple textual approach; may fail on complex signatures.
-    TODO: use AST-based approach.
-    """
+def reorder_constraints(type_signature: str) -> str:
+    """Reorder type classes constrains in a type signature to a canonical order"""
     # No type classes to reorder
     if "=>" not in type_signature:
         return type_signature
@@ -90,18 +85,10 @@ def reorder_type_classes(type_signature: str) -> str:
     assert "::" in type_signature, "invalid type signature"
     prefix, body = type_signature.split("::", 1)
 
-    class_part, rest = body.split("=>", 1)
-
-    # the class part may be one single class,
-    # or (single) or multiple classes separated by commas in parentheses
-    class_part = class_part.strip()
-    if class_part.startswith("(") and class_part.endswith(")"):
-        class_part = class_part[1:-1].strip()
-
-    class_names = [cls.strip() for cls in class_part.split(",")]
-    class_names.sort()  # Sort alphabetically
-
-    return f"{prefix}:: ({', '.join(class_names)}) =>{rest}"
+    _, rest = body.split("=>", 1)
+    constrains = get_type_constraints_from_src(type_signature)
+    constrains.sort()  # Sort alphabetically
+    return f"{prefix}:: ({', '.join(constrains)}) => {rest}"
 
 
 @safe
@@ -112,8 +99,8 @@ def get_prover(
     If this prover compiles, then the answer is equivalent to the ground truth.
     """
     new_types = new_types or []
-    ground_truth = reorder_type_classes(ground_truth)
-    answer = reorder_type_classes(answer)
+    ground_truth = reorder_constraints(ground_truth)
+    answer = reorder_constraints(answer)
     return PROVER.substitute(
         new_types="\n".join(map(_def_new_type, new_types)),
         new_type_classes="",  # todo: support new type classes

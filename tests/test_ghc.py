@@ -1,5 +1,5 @@
 from returns.result import Result, Success, Failure
-from tfbench.ghc import ghc_prove_equiv, get_prover, reorder_type_classes
+from tfbench.ghc import ghc_prove_equiv, get_prover, reorder_constraints
 
 
 def _equiv(
@@ -287,8 +287,8 @@ def test_reorder():
     s1 = "f :: (Eq a, Show a) => a -> String"
     s2 = "f :: (Show a, Eq a) => a -> String"
 
-    rs1 = reorder_type_classes(s1)
-    rs2 = reorder_type_classes(s2)
+    rs1 = reorder_constraints(s1)
+    rs2 = reorder_constraints(s2)
 
     _equiv(rs1, rs2)
     _equiv(rs2, rs2)
@@ -297,3 +297,13 @@ def test_reorder():
     _equiv(s1, rs2)
     _equiv(s2, rs1)
     _equiv(s1, s2)
+
+    # single constraint
+    s3 = "f :: Eq a => a -> String"
+    rs3 = reorder_constraints(s3)
+    _equiv(s3, rs3)
+
+    # constrain in body
+    s4 = "f :: a -> Maybe a"
+    rs4 = reorder_constraints(s4)
+    _equiv(s4, rs4)

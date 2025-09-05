@@ -4,6 +4,7 @@ from .type_util import (
     get_polymorphic_type,
     to_type_node,
     get_type_vars_from_src,
+    get_type_constraints_from_src,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "get_polymorphic_type",
     "to_type_node",
     "get_type_vars_from_src",
+    "get_type_constraints_from_src",
 ]
