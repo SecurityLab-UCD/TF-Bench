@@ -8,12 +8,12 @@ def _equiv(
     new_types: list[str] | None = None,
     should_pass: bool = True,
 ):
-    prover = get_prover(truth, answer, new_types)
-    match ghc_prove_equiv(prover):
+    equiv = get_prover(truth, answer, new_types).alt(str).bind(ghc_prove_equiv)
+    match equiv:
         case Success(_):
             assert should_pass
-        case Failure(msg):
-            assert not should_pass, msg
+        case Failure(err):
+            assert not should_pass, err
 
 
 def _not_equiv(
@@ -250,4 +250,34 @@ def test_para_adhoc_mix():
     _not_equiv(
         "n :: (Eq (f a), Show (f b)) => (f a -> f b) -> [Int] -> [b]",
         "p :: (Eq (g x), Show (g y)) => (g x -> g y) -> [x] -> [y]",
+    )
+
+
+def test_tfb_real():
+    """test cases from TF-Bench real tasks,
+    where the deprecated evaluate failed
+    """
+
+    # type -> is right-associative
+    _equiv(
+        "uncurry :: (a -> b -> c) -> ((a, b) -> c)",
+        "g::(a -> b -> c) -> (a, b) -> c",
+    )
+    _equiv(
+        "(.) :: (b -> c) -> (a -> b) -> a -> c",
+        "(.) :: (b -> c) -> (a -> b) -> (a -> c)",
+    )
+    _equiv("($) :: (a -> b) -> a -> b", "($) :: (a -> b) -> (a -> b)")
+
+    # type class constraints are commutative
+    # todo: reorder constraints in get_prover
+    _equiv(
+        "elem :: (Foldable t, Eq a) => a -> t a -> Bool",
+        "g :: (Eq a, Foldable t) => a -> t a -> Bool",
+    )
+
+    # type alias not expanded
+    _equiv(
+        "showList :: Show a => [a] -> ShowS",
+        "g :: Show a => [a] -> String -> String",
     )
