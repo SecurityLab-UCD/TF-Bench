@@ -47,31 +47,6 @@ def test_monomorphic():
         "g ::(Bool -> Int) -> [Int] -> [Bool]",
     )
 
-    # check with type after rewriting,
-    # i.e. T1, ... T_n
-    _equiv("f:: T1-> T1", "g ::T1 -> T1", new_types=["T1"])
-    _not_equiv(
-        "f:: T1-> T1",
-        "g ::T2 -> T2",
-        new_types=["T1", "T2"],
-    )
-
-    _equiv(
-        "f:: (T1, T2) -> T1",
-        "g ::(T1, T2) -> T1",
-        new_types=["T1", "T2"],
-    )
-    _equiv(
-        "f:: (Int, T2) -> Int",
-        "g ::(Int, T2) -> Int",
-        new_types=["T2"],
-    )
-    _not_equiv(
-        "f:: (Int, T2) -> Int",
-        "g ::(Int, T2) -> T2",
-        new_types=["T2"],
-    )
-
 
 def test_parametric():
     """test GHC type equivalence prover for parametric types"""

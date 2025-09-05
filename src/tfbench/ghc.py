@@ -7,7 +7,6 @@ from string import Template  # NOTE: use t-string after py3.14
 from returns.result import Result, Success, Failure, safe
 
 from .hs_parser import get_type_vars, get_type_constraints
-from .type_def import def_new_type, def_new_type_class
 
 
 def ghc_prove_equiv(code: str) -> Result[None, str]:
