@@ -206,10 +206,10 @@ class AST:
         nodes: list[Node] = []
         if max_level == 0:
             return nodes
+        if node_type is None or root.type == node_type:
+            nodes.append(root)
 
         for child in root.children:
-            if node_type is None or child.type == node_type:
-                nodes.append(child)
             nodes += AST.get_all_nodes_of_type(
                 child, node_type, max_level=max_level - 1
             )
