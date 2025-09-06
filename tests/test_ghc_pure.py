@@ -56,3 +56,8 @@ def test_mono():
         "g ::(Int, T2) -> T2",
         new_types=["T2"],
     )
+
+
+def test_typeclass_in_body():
+    f = "f :: T1 -> T2 T3"
+    _equiv(f, f)

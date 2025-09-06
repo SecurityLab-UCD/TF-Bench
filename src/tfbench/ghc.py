@@ -44,6 +44,13 @@ module Check where
 
 import Data.Type.Equality
 
+-- Some predefined types synonyms to avoid name clashes
+type Int_ = Int
+type Bool_ = Bool
+type Char_ = Char
+type Float_ = Float
+type Double_ = Double
+
 $new_types
 
 $new_type_classes
