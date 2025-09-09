@@ -50,6 +50,7 @@ type Bool_ = Bool
 type Char_ = Char
 type Float_ = Float
 type Double_ = Double
+data Natural = Natural
 
 $new_types
 

@@ -6,6 +6,7 @@ from .type_util import (
     get_type_vars,
     get_type_constraints,
 )
+from .extractor import TypeExtractor
 
 __all__ = [
     "AST",
@@ -16,4 +17,5 @@ __all__ = [
     "to_type_node",
     "get_type_vars",
     "get_type_constraints",
+    "TypeExtractor",
 ]

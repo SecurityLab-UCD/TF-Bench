@@ -2,6 +2,7 @@ from funcy import lfilter
 
 from .common import BenchmarkTask
 from .hs_parser import AST, get_type_constraints
+from .hs_parser.extractor import TypeExtractor
 
 
 def _is_type(code: str, type_name: str) -> bool:
@@ -49,8 +50,6 @@ def is_type_defined(type_name: str, type_defs: list[str]) -> bool:
 def get_type_defs(task: BenchmarkTask) -> list[str]:
     """Get Haskell type definitions from a BenchmarkTask"""
     existing_defs = lfilter(is_type_def, task.dependencies)
-    ast = AST(task.signature)
-    sig = ast.get_all_nodes_of_type(ast.root, "signature")[0]
 
     if "=>" in task.signature:
         constrains = get_type_constraints(task.signature)
@@ -60,14 +59,16 @@ def get_type_defs(task: BenchmarkTask) -> list[str]:
                 continue
             existing_defs.append(def_new_type_class(ty_class, ty_vars))
 
-    for node in ast.get_all_nodes_of_type(sig, "name"):
-        ty = ast.get_src_from_node(node)
-        if is_type_defined(ty, existing_defs):
+    extractor = TypeExtractor(task.signature)
+    for ctor_name, arity in extractor.type_constructors.items():
+        if is_type_defined(ctor_name, existing_defs):
             continue
+        type_vars = [f"t{i}" for i in range(arity)]
+        existing_defs.append(def_new_type_constructor(ctor_name, type_vars))
 
-        np = node.parent
-        assert np is not None
-        if np.type == "function":  # data type
-            existing_defs.append(def_new_type(ty))
+    for type_name in extractor.names:
+        if is_type_defined(type_name, existing_defs):
+            continue
+        existing_defs.append(def_new_type(type_name))
 
     return list(existing_defs)

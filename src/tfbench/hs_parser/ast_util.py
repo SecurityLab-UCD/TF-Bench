@@ -99,19 +99,6 @@ class AST:
                 return Nothing
         return Some(fn_name.strip())
 
-    def get_fn_docstring(self, node: Node) -> Maybe[str]:
-        """
-        Retrieves the docstring associated with a function node.
-
-        Args:
-            node (Node): The AST node representing a function.
-
-        Returns:
-            Maybe[str]: A Maybe containing the docstring if found, or Nothing otherwise.
-        """
-        # todo: implement docstring finder
-        raise NotImplementedError
-
     def func2src(self, func: HaskellFunction) -> tuple[str, str]:
         """
         Converts a `HaskellFunction` object into its corresponding type signature and code source.
