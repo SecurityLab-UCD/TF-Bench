@@ -130,6 +130,16 @@ def prover_evaluate(
     """evaluate all generation results using GHC to prove equivalence
 
     NOTE: currently only support the `base` split
+
+    Args:
+        tasks (list[BenchmarkTask]): list of benchmark tasks
+        results (list[LMAnswer | None]): list of generation results
+        pure (bool, optional): whether to evaluate on the `pure` split or not.
+            Since we use TypeOperators to *prove type equivalence,
+            we need to define all custom types in the `pure` split.
+            Defaults to False.
+        nproc (int, optional): number of processes to use.
+            Defaults to cpu_count() to use all available CPUs.
     """
     assert len(tasks) == len(results)
 
