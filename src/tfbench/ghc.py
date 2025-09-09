@@ -54,8 +54,6 @@ data Natural = Natural
 
 $new_types
 
-$new_type_classes
-
 type TRUTH $truth_vars = $truth_signature
 type ANSWER $answer_vars = $answer_signature
 
@@ -102,7 +100,6 @@ def get_prover(
     answer = reorder_constraints(answer)
     return PROVER.substitute(
         new_types="\n".join(types_defs),
-        new_type_classes="",  # todo: support new type classes
         truth_vars=_get_var_str(ground_truth),
         truth_signature=_get_body_str(ground_truth),
         answer_vars=_get_var_str(answer),
