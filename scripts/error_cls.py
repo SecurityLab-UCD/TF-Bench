@@ -29,6 +29,11 @@ My incorrect answer is:
 My reasoning behind my answer is:
 {reasoning}
 
+When I try to verify my answer using GHC, 
+I find that it is not equivalent to the correct answer.
+Here is the error message from GHC:
+{ghc_error}
+
 What mistake did I make?
 """
 
@@ -55,12 +60,13 @@ class ClsResponse(BaseModel):
         return hash(self.category)
 
 
-def get_prompt(task: BenchmarkTask, answer: LMAnswer) -> str:
+def get_prompt(task: BenchmarkTask, answer: LMAnswer, error_msg: str) -> str:
     prompt = PROMPT_TEMPLATE.format(
         task=get_task_prompt(task),
         correct_answer=task.signature,
         wrong_answer=answer.answer,
         reasoning=answer.reasoning_steps,
+        ghc_error=error_msg,
     )
     return prompt
 
@@ -79,12 +85,12 @@ def classify_run(
     incorrect = get_incorrect(tasks, run_result)
 
     categories_: set[ClsResponse] = categories.copy()
-    for task, answer in tqdm(incorrect):
+    for task, answer, msg in tqdm(incorrect):
         assert answer is not None
         response = client.responses.parse(
             model="gpt-5",
             instructions=INSTRUCTION.format(categories=categories_str(categories_)),
-            input=get_prompt(task, answer),
+            input=get_prompt(task, answer, error_msg=msg),
             reasoning={"effort": "medium"},
             text_format=ClsResponse,
         )
@@ -93,7 +99,7 @@ def classify_run(
     return categories_
 
 
-def main(result_file_dir: str):
+def main(result_file_dir: str, output_file: str = "error_categories.json"):
 
     client = OpenAI()
     categories: set[ClsResponse] = set()
@@ -116,7 +122,7 @@ def main(result_file_dir: str):
         )
         categories.update(run_categories)
 
-    with open("error_categories.json", "wb") as f:
+    with open(output_file, "wb") as f:
         f.write(
             orjson.dumps(
                 [c.model_dump(mode="json") for c in categories],
