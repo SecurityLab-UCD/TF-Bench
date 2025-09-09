@@ -2,12 +2,11 @@
 Experiment script
 """
 
-
 from tqdm import tqdm
 from orjsonl import orjsonl
 
 from .common import get_prompt
-from .evaluation import evaluate, EvalResult
+from .evaluation import prover_evaluate, EvalResult
 from .lm import router, LMAnswer
 from .load import load_tfb_from_hf
 
@@ -45,5 +44,5 @@ def run_one_model(
         if output_file:
             orjsonl.append(output_file, r if r else {"error": str(response.failure())})
 
-    eval_acc = evaluate(tasks, gen_results)
+    eval_acc = prover_evaluate(tasks, gen_results)
     return eval_acc
