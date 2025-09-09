@@ -1,12 +1,17 @@
 from itertools import starmap
 import re
 from typing import TypedDict
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
+from deprecated import deprecated
+from returns.result import Success
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
 from .lm import LMAnswer
+from .ghc import get_prover, ghc_prove_equiv
+from .type_def import get_type_defs
 
 
 def tokenize_type_signature(sig: str) -> list[str]:
@@ -49,6 +54,7 @@ def normalize_type_vars(tokens: list[str]) -> list[str]:
     return result
 
 
+@deprecated(reason="Use `ghc_prove_equiv` instead", version="0.1.0")
 def alpha_equiv(s1: str, s2: str) -> bool:
     """
     Check if two type signatures are 'alpha-equivalent' under
@@ -63,8 +69,12 @@ def alpha_equiv(s1: str, s2: str) -> bool:
     return n1 == n2
 
 
-def evaluate_one_task(task: BenchmarkTask, result: LMAnswer) -> bool:
+@deprecated(reason="Use `prove_one_task` instead", version="0.1.0")
+def evaluate_one_task(task: BenchmarkTask, result: LMAnswer | None) -> bool:
     """evaluate a single task against its result by alpha equivalence"""
+    if result is None:
+        return False
+
     ground_truth = postprocess(task.signature, TASK_STRATEGIES).strip()
     predicted = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
     return alpha_equiv(ground_truth, predicted)
@@ -76,16 +86,73 @@ class EvalResult(TypedDict):
     accuracy: float
 
 
-def evaluate(benchmark_f: list[BenchmarkTask], results: list[LMAnswer]) -> EvalResult:
+@deprecated(reason="Use `prover_evaluate` instead", version="0.1.0")
+def evaluate(tasks: list[BenchmarkTask], results: list[LMAnswer | None]) -> EvalResult:
     """evaluate all generation results"""
 
-    assert len(benchmark_f) == len(results)
-    eval_results = starmap(evaluate_one_task, zip(benchmark_f, results))
+    assert len(tasks) == len(results)
+    eval_results = starmap(evaluate_one_task, zip(tasks, results))
     n_correct = sum(eval_results)
-    acc = n_correct / len(benchmark_f)
+    acc = n_correct / len(tasks)
 
     return {
-        "total": len(benchmark_f),
+        "total": len(tasks),
+        "n_correct": n_correct,
+        "accuracy": acc,
+    }
+
+
+def prove_one_task(
+    task: BenchmarkTask, result: LMAnswer | None, pure: bool = False
+) -> bool:
+    """prove two type signatures are equivalent using GHC"""
+    if result is None:
+        return False
+
+    predicted_body = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
+    predicted = f"f :: {predicted_body}"
+    defs = get_type_defs(task) if pure else []
+    # only failing case from get_prover is syntax error of generated type signature
+    equiv = (
+        get_prover(task.signature, predicted, defs)
+        .alt(lambda _: "Syntax Error: Tree-Sitter Parsing Failed")
+        .bind(ghc_prove_equiv)
+    )
+    return isinstance(equiv, Success)
+
+
+def prover_evaluate(
+    tasks: list[BenchmarkTask],
+    results: list[LMAnswer | None],
+    pure: bool = False,
+    nproc: int = cpu_count(),
+) -> EvalResult:
+    """evaluate all generation results using GHC to prove equivalence
+
+    NOTE: currently only support the `base` split
+
+    Args:
+        tasks (list[BenchmarkTask]): list of benchmark tasks
+        results (list[LMAnswer | None]): list of generation results
+        pure (bool, optional): whether to evaluate on the `pure` split or not.
+            Since we use TypeOperators to *prove type equivalence,
+            we need to define all custom types in the `pure` split.
+            Defaults to False.
+        nproc (int, optional): number of processes to use.
+            Defaults to cpu_count() to use all available CPUs.
+    """
+    assert len(tasks) == len(results)
+
+    with Pool(processes=nproc) as pool:
+        eval_results = pool.starmap(
+            prove_one_task, zip(tasks, results, [pure] * len(tasks))
+        )
+
+    n_correct = sum(eval_results)
+    acc = n_correct / len(tasks)
+
+    return {
+        "total": len(tasks),
         "n_correct": n_correct,
         "accuracy": acc,
     }
@@ -95,3 +162,14 @@ def analysis_multi_runs(results: list[EvalResult]) -> tuple[float, float]:
     """calculate mean and std of accuracy of multiple runs"""
     accs = list(map(lambda r: r["accuracy"], results))
     return np.mean(accs).item(), np.std(accs).item()
+
+
+def get_incorrect(
+    tasks: list[BenchmarkTask], results: list[LMAnswer | None]
+) -> list[tuple[BenchmarkTask, LMAnswer | None]]:
+    """Get a list of tasks that were incorrectly answered."""
+    incorrect = []
+    for task, result in zip(tasks, results):
+        if not evaluate_one_task(task, result):
+            incorrect.append((task, result))
+    return incorrect

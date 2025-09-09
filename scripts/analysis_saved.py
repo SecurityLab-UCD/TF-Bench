@@ -6,23 +6,22 @@ from tfbench import (
     analysis_multi_runs,
     load_tfb_from_hf,
     load_gen_results_jsonl,
-    evaluate,
+    prover_evaluate,
 )
 
 
-def main(result_dir: str, log_file: str | None = None):
+def eval_one_split(result_dir: str, split: str, log_file: str | None = None):
     """
-
     Arguments:
         result_dir (str): assumed in format `/some/path/.../<model>/<split>/`.
-            For example: results/gpt-5-nano-2025-08-07/base, where <model> is `gpt-5-nano-2025-08-07` and <split> is `base`.
+            For example: results/gpt-5-nano-2025-08-07/base,
+            where <model> is `gpt-5-nano-2025-08-07` and <split> is `base`.
             WARNING: we parse the  <model> and <split> in this way.
         log_file (str | None): path to the log file. If None, this script only prints to stdout.
     """
 
-    result_dir = abspath(result_dir)
+    result_dir = abspath(pjoin(result_dir, split))
     model = basename(dirname(result_dir))
-    split = basename(result_dir)
 
     tasks = load_tfb_from_hf(split)
     # load all jsonl files from `result_dir`
@@ -30,7 +29,7 @@ def main(result_dir: str, log_file: str | None = None):
         pjoin(result_dir, f) for f in os.listdir(result_dir) if f.endswith(".jsonl")
     ]
     runs = [load_gen_results_jsonl(f) for f in jsonl_files]
-    accs = [evaluate(tasks, run) for run in runs]
+    accs = [prover_evaluate(tasks, run, split == "pure") for run in runs]
     mean, std = analysis_multi_runs(accs)
 
     print(f"Model: {model}")
@@ -47,6 +46,12 @@ def main(result_dir: str, log_file: str | None = None):
             "std": std,
         }
         orjsonl.append(log_file, log_obj)
+
+
+def main(result_dir: str, log_file: str | None = None):
+    """run evaluation on all jsonl files in the result directory"""
+    eval_one_split(result_dir, "base", log_file)
+    eval_one_split(result_dir, "pure", log_file)
 
 
 if __name__ == "__main__":

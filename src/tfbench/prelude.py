@@ -6,8 +6,7 @@ from funcy import lmap
 from funcy_chain import Chain
 from dacite import from_dict
 
-from tfbench.hs_parser import HASKELL_LANGUAGE
-from tfbench.hs_parser.ast_util import AST
+from tfbench.hs_parser import AST
 from tfbench.add_dependency import add_dependencies
 from tfbench.common import clean_tab_spaces, BenchmarkTask, task2md
 
@@ -25,7 +24,7 @@ def main(
     with open(prelude, "r") as fp:
         prelude_code = fp.read()
 
-    ast = AST(prelude_code, HASKELL_LANGUAGE)
+    ast = AST(prelude_code)
     root = ast.root
     prelude_vars = lmap(
         ast.get_src_from_node, ast.get_all_nodes_of_type(root, "variable")

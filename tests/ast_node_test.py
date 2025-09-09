@@ -1,17 +1,7 @@
 # importing the requests library
-from tfbench.hs_parser.ast_util import AST
-import json
-from dacite import from_dict
-import fire
 from funcy_chain import Chain
-import requests
-from urllib.parse import quote
-from tfbench.common import BenchmarkTask
-from tfbench.common import extract_function_name
-from tfbench.hs_parser import HASKELL_LANGUAGE
-from functools import lru_cache
 from pprint import pprint
-from tree_sitter import Node
+from tfbench.hs_parser import AST
 
 """
 This is a test file for seeing all the Nodes in the AST of certain pieces of code
@@ -21,7 +11,7 @@ This is a test file for seeing all the Nodes in the AST of certain pieces of cod
 def main():
     assert True
     code = "lines \"\" = []\nlines s = cons (case break (== '\\n') s of\n (l, s') -> (l, case s' of\n [] -> []\n _:s'' -> lines s''))\n where\n cons ~(h, t) = h : t"
-    ast = AST(code, HASKELL_LANGUAGE)
+    ast = AST(code)
     root = ast.root
 
     # Get both types and type classes

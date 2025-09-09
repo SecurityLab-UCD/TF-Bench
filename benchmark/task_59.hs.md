@@ -7,7 +7,7 @@ Parametric
 
 # signature
 ```haskell
-foldl :: (b -> a -> b) -> b -> t a -> b
+foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
 ```   
 
 # code

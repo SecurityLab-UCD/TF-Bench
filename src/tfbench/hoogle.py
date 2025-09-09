@@ -12,8 +12,7 @@ from funcy import lmap
 from funcy_chain import Chain
 
 from tfbench.common import BenchmarkTask, extract_function_name
-from tfbench.hs_parser import HASKELL_LANGUAGE
-from tfbench.hs_parser.ast_util import AST
+from tfbench.hs_parser import AST
 from tfbench.manual import MANUAL_TASKS
 
 
@@ -29,7 +28,7 @@ def generate_variable_banlist(code: str):
     """
     Generates list of variables that are already defined in the code
     """
-    ast = AST(code, HASKELL_LANGUAGE)
+    ast = AST(code)
     root = ast.root
 
     # Remove variables that are already defined in the code
@@ -61,7 +60,7 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
     where_index = task.code.index("where")
     where_code = task.code[(where_index + 5) :].strip()
 
-    ast = AST(where_code, HASKELL_LANGUAGE)
+    ast = AST(where_code)
     root = ast.root
 
     ban_list: list[str] = generate_variable_banlist(where_code)
@@ -87,7 +86,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     assert fn_name is not None
     print(f"Function: {fn_name}")
 
-    ast = AST(task.code, HASKELL_LANGUAGE)
+    ast = AST(task.code)
     root = ast.root
 
     variables: list[str] = (

@@ -12,9 +12,8 @@ from funcy_chain import Chain
 from tqdm import tqdm
 from funcy import lmap
 
-from tfbench.hs_parser import HASKELL_LANGUAGE
-from tfbench.hs_parser.ast_util import AST, HaskellFunction
-from tfbench.hs_parser.polymorphism import get_polymorphic_type
+from tfbench.hs_parser import AST, HaskellFunction
+from tfbench.hs_parser.type_util import get_polymorphic_type
 from tfbench.common import remove_comments
 
 
@@ -48,7 +47,7 @@ def collect_from_file(file_path: str) -> list[dict[str, str]]:
     with open(file_path, "r", errors="replace") as fp:
         code = fp.read()
 
-    ast = AST(code, HASKELL_LANGUAGE)
+    ast = AST(code)
 
     def _to_json(func: HaskellFunction) -> dict[str, str]:
         func_id = f"{file_path}--{ast.get_fn_name(func.type_signature).value_or(None)}"

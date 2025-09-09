@@ -1,5 +1,6 @@
 from enum import Enum
 from tree_sitter import Node
+from funcy_chain import Chain
 from .ast_util import AST
 
 
@@ -48,3 +49,47 @@ def get_polymorphic_type(type_signature: Node) -> PolymorphicType:
                 return PolymorphicType.PARAMETRIC
 
     return PolymorphicType.MONO
+
+
+def get_type_vars(source_code: str) -> list[str]:
+    """extract type variables from a type signature source code.
+
+    NOTE: since GHC proves the `forall` quantification of type variables,
+    the order of type variables does not really matter
+    as long as they are **consistent**.
+
+    Args:
+        source_code (str): the source code of the type signature
+
+    Returns:
+        list[str]: type variables
+    """
+    ast = AST(source_code=source_code)
+    sig = ast.get_all_nodes_of_type(ast.root, "signature")[0]
+    type_node = to_type_node(sig)
+
+    ty_vars = [
+        ast.get_src_from_node(n)
+        for n in ast.get_all_nodes_of_type(type_node, "variable")
+    ]
+    return list(dict.fromkeys(ty_vars))  # remove duplicates while preserving order
+
+
+def get_type_constraints(source_code: str) -> list[str]:
+    """extract type class constraints from a type signature source code"""
+    assert "=>" in source_code, "no type class constraints found"
+
+    ast = AST(source_code)
+    signature = ast.get_all_nodes_of_type(ast.root, "signature")[0]
+
+    # context node is the body of type signature
+    context = ast.get_all_nodes_of_type(signature, "context")[0]
+
+    type_constrains: list[str] = (
+        Chain(ast.get_all_nodes_of_type(context.children[0], "apply"))
+        .map(ast.get_src_from_node)
+        .map(str.strip)
+        .filter(lambda c: c[0].isupper())
+        .value
+    )
+    return type_constrains
