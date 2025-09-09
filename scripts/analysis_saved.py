@@ -10,7 +10,7 @@ from tfbench import (
 )
 
 
-def main(result_dir: str, log_file: str | None = None):
+def eval_one_split(result_dir: str, split: str, log_file: str | None = None):
     """
     Arguments:
         result_dir (str): assumed in format `/some/path/.../<model>/<split>/`.
@@ -20,9 +20,8 @@ def main(result_dir: str, log_file: str | None = None):
         log_file (str | None): path to the log file. If None, this script only prints to stdout.
     """
 
-    result_dir = abspath(result_dir)
+    result_dir = abspath(pjoin(result_dir, split))
     model = basename(dirname(result_dir))
-    split = basename(result_dir)
 
     tasks = load_tfb_from_hf(split)
     # load all jsonl files from `result_dir`
@@ -47,6 +46,12 @@ def main(result_dir: str, log_file: str | None = None):
             "std": std,
         }
         orjsonl.append(log_file, log_obj)
+
+
+def main(result_dir: str, log_file: str | None = None):
+    """run evaluation on all jsonl files in the result directory"""
+    eval_one_split(result_dir, "base", log_file)
+    eval_one_split(result_dir, "pure", log_file)
 
 
 if __name__ == "__main__":
