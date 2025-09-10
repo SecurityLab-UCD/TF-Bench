@@ -5,7 +5,7 @@ from multiprocessing import Pool, cpu_count
 
 import numpy as np
 from deprecated import deprecated
-from returns.result import Success
+from returns.result import Success, Failure, Result
 
 from .common import BenchmarkTask
 from .postprocessing import postprocess, TASK_STRATEGIES, RESPONSE_STRATEGIES
@@ -104,10 +104,10 @@ def evaluate(tasks: list[BenchmarkTask], results: list[LMAnswer | None]) -> Eval
 
 def prove_one_task(
     task: BenchmarkTask, result: LMAnswer | None, pure: bool = False
-) -> bool:
+) -> Result[None, str]:
     """prove two type signatures are equivalent using GHC"""
     if result is None:
-        return False
+        return Failure("Generation Failed")
 
     predicted_body = postprocess(result.answer, RESPONSE_STRATEGIES).strip()
     predicted = f"f :: {predicted_body}"
@@ -118,7 +118,7 @@ def prove_one_task(
         .alt(lambda _: "Syntax Error: Tree-Sitter Parsing Failed")
         .bind(ghc_prove_equiv)
     )
-    return isinstance(equiv, Success)
+    return equiv
 
 
 def prover_evaluate(
@@ -148,7 +148,7 @@ def prover_evaluate(
             prove_one_task, zip(tasks, results, [pure] * len(tasks))
         )
 
-    n_correct = sum(eval_results)
+    n_correct = sum(1 for r in eval_results if isinstance(r, Success))
     acc = n_correct / len(tasks)
 
     return {
@@ -165,11 +165,25 @@ def analysis_multi_runs(results: list[EvalResult]) -> tuple[float, float]:
 
 
 def get_incorrect(
-    tasks: list[BenchmarkTask], results: list[LMAnswer | None]
-) -> list[tuple[BenchmarkTask, LMAnswer | None]]:
+    tasks: list[BenchmarkTask],
+    results: list[LMAnswer | None],
+    pure: bool = False,
+    nproc: int = cpu_count(),
+) -> list[tuple[BenchmarkTask, LMAnswer | None, str]]:
     """Get a list of tasks that were incorrectly answered."""
+
+    assert len(tasks) == len(results)
+
+    with Pool(processes=nproc) as pool:
+        eval_results = pool.starmap(
+            prove_one_task, zip(tasks, results, [pure] * len(tasks))
+        )
+
     incorrect = []
-    for task, result in zip(tasks, results):
-        if not evaluate_one_task(task, result):
-            incorrect.append((task, result))
+    for task, result, eval_result in zip(tasks, results, eval_results):
+        match eval_result:
+            case Success(_):
+                continue
+            case Failure(message):
+                incorrect.append((task, result, message))
     return incorrect

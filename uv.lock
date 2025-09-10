@@ -2178,12 +2178,35 @@ wheels = [
 ]
 
 [[package]]
+name = "pip"
+version = "25.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/16/650289cd3f43d5a2fadfd98c68bd1e1e7f2550a1a5326768cddfbcedb2c5/pip-25.2.tar.gz", hash = "sha256:578283f006390f85bb6282dffb876454593d637f5d1be494b5202ce4877e71f2", size = 1840021 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/3f/945ef7ab14dc4f9d7f40288d2df998d1837ee0888ec3659c813487572faa/pip-25.2-py3-none-any.whl", hash = "sha256:6d67a2b4e7f14d8b31b8b52648866fa717f45a1eb70e83002f4331d07e953717", size = 1752557 },
+]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538 },
+]
+
+[[package]]
+name = "pokepalette"
+version = "0.0.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "packaging" },
+    { name = "pip" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b8/53/142f55ee0a2a2143f006b0616d082c17252e102bca93a14febf4c5912a75/pokepalette-0.0.6.tar.gz", hash = "sha256:68eed84640a7fe2f9ab3f68ab4370c462ab04030661d74595b938c04e9633a6d", size = 39916 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f3/34/7c1bcae762550dadbcc65b8259caba42890766d9e08448726f6defa001d2/pokepalette-0.0.6-py3-none-any.whl", hash = "sha256:03b7e6ed1179397e49a71e31e307a271da65f9ebcda2272078590c5ae89ae5c2", size = 66341 },
 ]
 
 [[package]]
@@ -3384,6 +3407,7 @@ dependencies = [
     { name = "openai" },
     { name = "orjson" },
     { name = "orjsonl" },
+    { name = "pokepalette" },
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "pytest" },
@@ -3427,6 +3451,7 @@ requires-dist = [
     { name = "openai", specifier = "==1.99.9" },
     { name = "orjson", specifier = ">=3.11.3" },
     { name = "orjsonl", specifier = ">=1.0.0" },
+    { name = "pokepalette", specifier = ">=0.0.6" },
     { name = "pyarrow", specifier = ">=21.0.0" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pytest", specifier = ">=8.0.0" },
