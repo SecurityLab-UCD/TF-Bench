@@ -5,13 +5,16 @@ import fire
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import FuncFormatter
+import pokepalette
+
 from tfbench.error_analysis import ErrorCategories
 
-# plt.style.use("_mpl-gallery")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
 FONT_SIZE = 20
+
+# CMAP = pokepalette.get_colormap("lapras")
+CMAP = pokepalette.get_colormap("gengar")
 
 
 def plot_error_categories_pie_charts(df: pd.DataFrame):
@@ -35,7 +38,7 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
 
     # Define colors for consistency across plots
     error_categories = list(get_args(ErrorCategories))
-    colors = plt.cm.Set3(np.linspace(0, 1, len(error_categories)))
+    colors = CMAP(np.linspace(0, 1, len(error_categories)))
     color_map = dict(zip(error_categories, colors))
 
     # Create pie charts for each split-model combination
@@ -114,7 +117,7 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
     # Add split names as row labels (only on leftmost column)
     for split_idx, split in enumerate(splits):
         axes[split_idx, 0].text(
-            -0.3,
+            -0.03,
             0.5,
             split.upper(),
             transform=axes[split_idx, 0].transAxes,
@@ -128,8 +131,8 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
     plt.tight_layout()
     plt.subplots_adjust(
         top=0.93,
-        wspace=-0.1,  # controls the space between columns
-        hspace=-0.3,  # controls the space between rows
+        wspace=-0.15,  # controls the space between columns
+        hspace=-0.1,  # controls the space between rows
     )
 
     # Add legend with all error categories that appear anywhere in the data
@@ -151,6 +154,7 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
         loc="center",
         bbox_to_anchor=(0.5, 0.02),
         ncol=min(4, len(legend_labels_filtered)),
+        fontsize=16,
     )
 
     return fig
