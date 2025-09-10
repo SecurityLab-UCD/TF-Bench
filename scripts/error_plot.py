@@ -11,6 +11,7 @@ from tfbench.error_analysis import ErrorCategories
 # plt.style.use("_mpl-gallery")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
+FONT_SIZE = 20
 
 
 def plot_error_categories_pie_charts(df: pd.DataFrame):
@@ -106,17 +107,9 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
                         color="black",
                     )
 
-            # Set title
-            total_errors = len(subset)
-            # axes[split_idx, model_idx].set_title(
-            #     f"{model} ({split})\nTotal: {total_errors} errors",
-            #     fontsize=12,
-            #     fontweight="bold",
-            # )
-
     # Add model names as column headers (only on top row)
     for model_idx, model in enumerate(models):
-        axes[0, model_idx].set_title(model, fontsize=14, fontweight="bold", pad=20)
+        axes[0, model_idx].set_title(model, fontsize=FONT_SIZE)
 
     # Add split names as row labels (only on leftmost column)
     for split_idx, split in enumerate(splits):
@@ -125,24 +118,19 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
             0.5,
             split.upper(),
             transform=axes[split_idx, 0].transAxes,
-            fontsize=14,
-            fontweight="bold",
+            fontsize=FONT_SIZE,
             ha="center",
             va="center",
             rotation=90,
         )
 
-    # Add overall title
-    # plt.suptitle(
-    #     "Error Category Distribution by Model and Split",
-    #     fontsize=16,
-    #     fontweight="bold",
-    #     y=0.98,
-    # )
-
     # Adjust layout
     plt.tight_layout()
-    plt.subplots_adjust(top=0.93)
+    plt.subplots_adjust(
+        top=0.93,
+        wspace=-0.1,  # controls the space between columns
+        hspace=-0.3,  # controls the space between rows
+    )
 
     # Add legend with all error categories that appear anywhere in the data
     all_categories_in_data = set(df["error_category"].unique())
@@ -164,8 +152,6 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
         bbox_to_anchor=(0.5, 0.02),
         ncol=min(4, len(legend_labels_filtered)),
     )
-
-    plt.show()
 
     return fig
 
