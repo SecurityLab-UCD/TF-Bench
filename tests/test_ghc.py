@@ -228,6 +228,57 @@ def test_para_adhoc_mix():
     )
 
 
+def test_constructors():
+    _equiv(
+        "f :: Maybe a -> Maybe a",
+        "g :: Maybe b -> Maybe b",
+    )
+
+    _equiv(
+        "f :: Either a b -> Either a b",
+        "g :: Either x y -> Either x y",
+    )
+
+    _equiv(
+        "f :: (a, b) -> (b, a)",
+        "g :: (x, y) -> (y, x)",
+    )
+
+    _equiv(
+        "f :: [a] -> [a]",
+        "g :: [b] -> [b]",
+    )
+
+    _equiv(
+        "f :: (Maybe a, [a]) -> (Maybe a, [a])",
+        "g :: (Maybe b, [b]) -> (Maybe b, [b])",
+    )
+
+    _equiv(
+        "f :: [Int] -> [Int]",
+        "g :: [Int] -> [Int]",
+    )
+
+    _equiv(
+        "f::[Char] -> [Char]",
+        "g :: String -> String",
+    )
+
+    _not_equiv(
+        "f :: Maybe a -> Maybe a",
+        "g :: a ->  Maybe a",
+    )
+
+    _not_equiv(
+        "f:: [Int] -> [Int]",
+        "g :: [Bool] -> [Bool]",
+    )
+    _not_equiv(
+        "f:: [Int] -> [Int]",
+        "g ::[Int] -> [Bool]",
+    )
+
+
 def test_tfb_real():
     """test cases from TF-Bench real tasks,
     where the deprecated evaluate failed

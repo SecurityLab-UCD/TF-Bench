@@ -25,3 +25,25 @@ def test_real_cases():
     et = TypeExtractor(code)
     assert et.type_constructors == {"Either": 2, "T3": 3}
     assert et.names == {"Int", "String", "T1", "T2", "T3", "T4", "Either"}
+
+
+def test_list_tuple():
+    code = "f :: [Int] -> T1 [Int]"
+    et = TypeExtractor(code)
+    assert et.type_constructors == {"T1": 1}
+    assert et.names == {"Int", "T1"}
+
+    code = "f :: (Int, T1) -> T2 (Int, T1)"
+    et = TypeExtractor(code)
+    assert et.type_constructors == {"T2": 1}
+    assert et.names == {"Int", "T1", "T2"}
+
+    code = "f :: Maybe a -> a"
+    et = TypeExtractor(code)
+    assert et.type_constructors == {"Maybe": 1}
+    assert et.names == {"Maybe"}
+
+    code = "f :: [Int] -> Int"
+    et = TypeExtractor(code)
+    assert not et.type_constructors
+    assert et.names == {"Int"}

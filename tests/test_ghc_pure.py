@@ -65,3 +65,47 @@ def test_typeclass_in_body():
             def_new_type_constructor("T2", ["a"]),
         ],
     )
+
+
+def test_constructor():
+    _not_equiv(
+        "f :: Maybe T1 -> T1",
+        "g :: Maybe T2 -> T2",
+        new_types=[
+            def_new_type("T1"),
+            def_new_type("T2"),
+        ],
+    )
+
+    _equiv(
+        "f :: T3 T1 -> T1",
+        "g :: T3 T1 -> T1",
+        new_types=[
+            def_new_type("T1"),
+            def_new_type_constructor("T3", ["a"]),
+        ],
+    )
+
+    _equiv(
+        "f::[a] -> T1 a",
+        "g::[b] -> T1 b",
+        new_types=[
+            def_new_type_constructor("T1", ["a"]),
+        ],
+    )
+    _equiv(
+        "f::[T1] -> [a]",
+        "g::[T1] -> [b]",
+        new_types=[
+            def_new_type("T1"),
+        ],
+    )
+
+    _not_equiv(
+        "f::[T1] -> [a]",
+        "g::[T2] -> [b]",
+        new_types=[
+            def_new_type("T1"),
+            def_new_type("T2"),
+        ],
+    )
