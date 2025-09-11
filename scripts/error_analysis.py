@@ -55,7 +55,10 @@ def main(result_file_dir: str, output_file: str | None = None):
     model = basename(abspath(result_file_dir))
     print(f"Running error analysis for model {model}")
     if output_file is None:
-        output_file = f"{model}.error_analysis.jsonl"
+        dir_name = "err_analysis"
+        os.makedirs(dir_name, exist_ok=True)
+        output_file = f"{dir_name}/{model}.jsonl"
+    output_file = abspath(output_file)
 
     analysis(result_file_dir, "base", output_file)
     analysis(result_file_dir, "pure", output_file)
