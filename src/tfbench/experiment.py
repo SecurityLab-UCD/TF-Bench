@@ -44,5 +44,5 @@ def run_one_model(
         if output_file:
             orjsonl.append(output_file, r if r else {"error": str(response.failure())})
 
-    eval_acc = prover_evaluate(tasks, gen_results)
+    eval_acc = prover_evaluate(tasks, gen_results, pure=pure)
     return eval_acc
