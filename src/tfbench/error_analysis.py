@@ -1,8 +1,7 @@
 from typing import TypedDict, Literal
 
 from pydantic import BaseModel
-from openai import OpenAI
-
+from ollama import chat
 from .common import get_prompt as get_task_prompt, BenchmarkTask
 from .lm import LMAnswer
 
@@ -57,7 +56,6 @@ The wrong type-class constraints were applied to the type variables.
 The prompt asked to only output the type signature,
 but the answer contains additional text or explanation.
 Choose one category from the above.
-Only output the one-word classification and a short explanation of the why this category fits.
 """
 
 ErrorCategories = Literal[
@@ -92,26 +90,34 @@ def get_error_analysis_prompt(
 
 
 def error_analysis(
-    client: OpenAI,
     task: BenchmarkTask,
     answer: LMAnswer | None,
     error_msg: str,
+    model: str = "qwen3:235b",
 ) -> ErrorAnalysisResponse:
-    """classify errors for all incorrect answers in the run_result"""
+    """classify errors for all incorrect answers in the run_result
+    NOTE: this function uses the OpenAI-compatible API of vLLM.
+    Which model to use is determined by how you serve the model.
+    """
     if answer is None:
         return ErrorAnalysisResponse(
             category="ResponseError", explanation="No answer provided."
         )
 
-    response = client.responses.parse(
-        model="gpt-5",
-        instructions=INSTRUCTION,
-        input=get_error_analysis_prompt(task, answer, error_msg=error_msg),
-        reasoning={"effort": "medium"},
-        text_format=ErrorAnalysisResponse,
+    response = chat(
+        model=model,
+        messages=[
+            {"role": "system", "content": INSTRUCTION},
+            {
+                "role": "user",
+                "content": get_error_analysis_prompt(task, answer, error_msg=error_msg),
+            },
+        ],
+        format=ErrorAnalysisResponse.model_json_schema(),
     )
-    assert response.output_parsed is not None
-    return response.output_parsed
+    content = response.message.content  # type: ignore
+    err = ErrorAnalysisResponse.model_validate_json(content)
+    return err
 
 
 class ErrorAnalysisResult(TypedDict):

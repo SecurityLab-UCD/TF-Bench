@@ -34,6 +34,7 @@ class OllamaChat(LM):
                 },
             ],
             think=True,
+            keep_alive=True,
         )
         return LMAnswer(
             answer=response.message.content,  # type: ignore

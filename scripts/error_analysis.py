@@ -17,7 +17,6 @@ from tfbench.error_analysis import error_analysis, ErrorAnalysisResult
 
 def analysis(result_file_dir: str, split: Literal["base", "pure"], output_file: str):
     """script to run error analysis fo incorrect TF-Bench tasks"""
-    client = OpenAI()
     tasks = load_tfb_from_hf(split)
     model = basename(abspath(result_file_dir))
 
@@ -36,7 +35,7 @@ def analysis(result_file_dir: str, split: Literal["base", "pure"], output_file: 
 
     print(f"Running error classification on {len(incorrect)} incorrect results")
     for task, answer, msg in tqdm(incorrect):
-        error = error_analysis(client, task, answer, error_msg=msg)
+        error = error_analysis(task, answer, error_msg=msg)
         log_obj: ErrorAnalysisResult = {
             "model": model,
             "split": split,
