@@ -72,7 +72,6 @@ ErrorCategories = Literal[
 
 class ErrorAnalysisResponse(BaseModel):
     category: ErrorCategories
-    explanation: str
 
 
 def get_error_analysis_prompt(
@@ -100,9 +99,7 @@ def error_analysis(
     Which model to use is determined by how you serve the model.
     """
     if answer is None:
-        return ErrorAnalysisResponse(
-            category="ResponseError", explanation="No answer provided."
-        )
+        return ErrorAnalysisResponse(category="ResponseError")
 
     response = chat(
         model=model,
@@ -127,4 +124,3 @@ class ErrorAnalysisResult(TypedDict):
     ground_truth: str
     predicted: str | None
     error_category: ErrorCategories
-    error_explanation: str
