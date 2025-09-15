@@ -11,7 +11,7 @@ from tfbench.error_analysis import ErrorCategories
 
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
-FONT_SIZE = 20
+FONT_SIZE = 24
 
 # CMAP = pokepalette.get_colormap("lapras")
 CMAP = pokepalette.get_colormap("gengar")
@@ -152,9 +152,9 @@ def plot_error_categories_pie_charts(df: pd.DataFrame):
         legend_elements,
         legend_labels_filtered,
         loc="center",
-        bbox_to_anchor=(0.5, 0.02),
+        bbox_to_anchor=(0.5, 0.0),
         ncol=min(4, len(legend_labels_filtered)),
-        fontsize=16,
+        fontsize=FONT_SIZE,
     )
 
     return fig
