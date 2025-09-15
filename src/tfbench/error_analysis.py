@@ -95,13 +95,14 @@ def error_analysis(
     task: BenchmarkTask,
     answer: LMAnswer | None,
     error_msg: str,
+    model: str = "gpt-5-mini",
 ) -> ErrorAnalysisResponse:
     """classify errors for all incorrect answers in the run_result"""
     if answer is None:
         return ErrorAnalysisResponse(category="ResponseError")
 
     response = client.responses.parse(
-        model="gpt-5-mini",
+        model=model,
         instructions=INSTRUCTION,
         input=get_error_analysis_prompt(task, answer, error_msg=error_msg),
         reasoning={"effort": "medium"},
