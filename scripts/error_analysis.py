@@ -44,7 +44,6 @@ def analysis(result_file_dir: str, split: Literal["base", "pure"], output_file: 
             "ground_truth": task.signature,
             "predicted": answer.answer if answer else None,
             "error_category": error.category,
-            "error_explanation": error.explanation,
         }
         orjsonl.append(output_file, log_obj)
 

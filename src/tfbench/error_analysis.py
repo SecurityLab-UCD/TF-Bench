@@ -57,7 +57,7 @@ The wrong type-class constraints were applied to the type variables.
 The prompt asked to only output the type signature,
 but the answer contains additional text or explanation.
 Choose one category from the above.
-Only output the one-word classification and a short explanation of the why this category fits.
+Only output the one-word classification. 
 """
 
 ErrorCategories = Literal[
@@ -74,7 +74,6 @@ ErrorCategories = Literal[
 
 class ErrorAnalysisResponse(BaseModel):
     category: ErrorCategories
-    explanation: str
 
 
 def get_error_analysis_prompt(
@@ -99,12 +98,10 @@ def error_analysis(
 ) -> ErrorAnalysisResponse:
     """classify errors for all incorrect answers in the run_result"""
     if answer is None:
-        return ErrorAnalysisResponse(
-            category="ResponseError", explanation="No answer provided."
-        )
+        return ErrorAnalysisResponse(category="ResponseError")
 
     response = client.responses.parse(
-        model="gpt-5",
+        model="gpt-5-mini",
         instructions=INSTRUCTION,
         input=get_error_analysis_prompt(task, answer, error_msg=error_msg),
         reasoning={"effort": "medium"},
@@ -121,4 +118,3 @@ class ErrorAnalysisResult(TypedDict):
     ground_truth: str
     predicted: str | None
     error_category: ErrorCategories
-    error_explanation: str
