@@ -33,8 +33,8 @@ class HFChat(LM):
 
     def _gen(self, prompt: str) -> LMAnswer:
         messages = [
-            {"role": "user", "content": prompt},
             {"role": "system", "content": self.instruction},
+            {"role": "user", "content": prompt},
         ]
         text = self.tokenizer.apply_chat_template(
             messages,
