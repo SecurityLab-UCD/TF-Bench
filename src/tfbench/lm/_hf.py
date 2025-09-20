@@ -49,8 +49,5 @@ class HFChat(LM):
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
         output = self.tokenizer.decode(output_ids, skip_special_tokens=True).strip("\n")
 
-        if output is None:
-            raise NoneResponseError(self.model_name)
-
         content, thinking_content = extract_thinking_content(output)
         return LMAnswer(answer=content, reasoning_steps=thinking_content)
