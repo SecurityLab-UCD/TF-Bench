@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from ._types import LM, LMAnswer, NoneResponseError
+from ._types import LM, LMAnswer
 
 
 def extract_thinking_content(output: str) -> tuple[str, str | None]:
