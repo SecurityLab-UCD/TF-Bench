@@ -1,5 +1,3 @@
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
-ENV = dotenv_values(".env")
-
-assert ENV, "No .env file found! Please create one with the required variables."
+load_dotenv(override=True)  # override existing env vars with those in .env

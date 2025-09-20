@@ -1,9 +1,9 @@
+import os
 from vllm import LLM
 from vllm.entrypoints.chat_utils import ChatCompletionMessageParam
 
 from openai import OpenAI
 
-from ..env import ENV
 from ._types import LM, LMAnswer, NoneResponseError
 
 
@@ -32,9 +32,9 @@ class VLLMOpenAIChatCompletion(LM):
     def __init__(self, model_name: str, pure: bool = False):
         super().__init__(model_name=model_name, pure=pure)
 
-        api_key = ENV.get("VLLM_API_KEY", "")
-        host = ENV.get("VLLM_HOST", "localhost")
-        port = ENV.get("VLLM_PORT", "8000")
+        api_key = os.getenv("VLLM_API_KEY", "")
+        host = os.getenv("VLLM_HOST", "localhost")
+        port = os.getenv("VLLM_PORT", "8000")
 
         url = f"http://{host}:{port}/v1"
         self.client = OpenAI(

@@ -16,6 +16,7 @@ from ._openai import (
 from ._google import GeminiChat, GeminiReasoning, GEMINI_MODELS, GEMINI_TTC_MODELS
 from ._anthropic import ClaudeChat, ClaudeReasoning, CLAUDE_MODELS, CLAUDE_TTC_MODELS
 from ._ollama import OllamaChat, OLLAMA_TTC_MODELS
+from ._hf import HFChat
 
 from ._google import GeminiReasoningEffort
 from ._types import ReasoningEffort
@@ -89,7 +90,7 @@ def router(
     if model_name in OLLAMA_TTC_MODELS:
         return OllamaChat(model_name=model_name, pure=pure)
 
-    return None
+    return HFChat(model_name=model_name, pure=pure)
 
 
 def extract_response(response: ResultE[LMAnswer]) -> str:
