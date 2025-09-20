@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from ._types import LM, LMAnswer
+from ._types import LM, LMAnswer, NoneResponseError
 
 
 def extract_thinking_content(output: str) -> tuple[str, str | None]:
@@ -33,8 +33,8 @@ class HFChat(LM):
 
     def _gen(self, prompt: str) -> LMAnswer:
         messages = [
-            {"role": "system", "content": self.instruction},
             {"role": "user", "content": prompt},
+            {"role": "system", "content": self.instruction},
         ]
         text = self.tokenizer.apply_chat_template(
             messages,
@@ -48,6 +48,9 @@ class HFChat(LM):
         generated_ids = self.model.generate(**model_inputs, max_new_tokens=32768)
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
         output = self.tokenizer.decode(output_ids, skip_special_tokens=True).strip("\n")
+
+        if output is None:
+            raise NoneResponseError(self.model_name)
 
         content, thinking_content = extract_thinking_content(output)
         return LMAnswer(answer=content, reasoning_steps=thinking_content)
