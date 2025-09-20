@@ -48,7 +48,7 @@ def router(
     model_name: str,
     pure: bool,
     effort: str | None = None,
-) -> LM | None:
+) -> LM:
     """Route the model name to the appropriate LM class."""
     if model_name in OAI_MODELS:
         return OpenAIChatCompletion(model_name=model_name, pure=pure)

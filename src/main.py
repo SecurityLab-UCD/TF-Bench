@@ -18,8 +18,8 @@ def main(
     def _run(pure: bool):
         results: list[EvalResult] = []
         split = "pure" if pure else "base"
+        result_dir = abspath(pjoin("results", model, split))
         for i in range(n_repeats):
-            result_dir = abspath(pjoin("results", model, split))
             os.makedirs(result_dir, exist_ok=True)
             result_file = pjoin(result_dir, f"run-{i}.jsonl")
             r = run_one_model(
