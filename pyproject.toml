@@ -39,7 +39,6 @@ dependencies = [
     "tree-sitter-haskell==0.21.0",
     "types-deprecated>=1.2.15.20250304",
     "types-requests>=2.31.0",
-    "vllm>=0.10.1.1",
 ]
 
 [build-system]
