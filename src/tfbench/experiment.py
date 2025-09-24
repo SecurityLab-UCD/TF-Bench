@@ -31,7 +31,6 @@ def run_one_model(
         EvalResult: evaluation result including accuracy
     """
     client = router(model, pure, effort)
-    assert client is not None, f"Failed to create client for {model}."
 
     tasks = load_tfb_from_hf("pure" if pure else "base")
     gen_results: list[LMAnswer | None] = []
