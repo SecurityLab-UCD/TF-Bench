@@ -1,6 +1,22 @@
 # TF-Bench
 
+[![python](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 Evaluating Program Semantics Reasoning with Type Inference in System _F_
+
+![evaluation workflow](./imgs/tfb.png)
+
+If you find this work useful, please cite us as:
+```bibtex
+@inproceedings{he2025tfbench,
+    author = {He, Yifeng and Yang, Luning and Gonzalo, Christopher and Chen, Hao},
+    title = {Evaluating Program Semantics Reasoning with Type Inference in System F},
+    booktitle = {Neural Information Processing Systems (NeurIPS)},
+    date = {2025-11-30/2025-12-07},
+    address = {San Diego, CA, USA},
+}
+```
 
 ## Development
 
