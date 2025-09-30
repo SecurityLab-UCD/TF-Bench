@@ -2,7 +2,7 @@
 
 Evaluating Program Semantics Reasoning with Type Inference in System _F_
 
-## Setup
+## Development
 
 ### Python
 
@@ -29,9 +29,9 @@ and [impredicative polymorphism](https://ghc.gitlab.haskell.org/ghc/doc/users_gu
 so we require GHC version >= 9.2.1.
 Our evaluation used GHC-9.6.7.
 
-## Building TF-Bench From Scratch (Optional)
+## Building TF-Bench from scratch (optional)
 
-### TF-Bench
+### TF-Bench (base)
 
 This script will build the benchmark (Prelude with NL) from the raw data.
 
@@ -39,7 +39,7 @@ This script will build the benchmark (Prelude with NL) from the raw data.
 uv run scripts/preprocess_benchmark.py -o tfb.json
 ```
 
-### TF-Bench_pure
+### TF-Bench (pure)
 
 ```sh
 git clone https://github.com/SecurityLab-UCD/alpharewrite.git
@@ -53,38 +53,52 @@ cd ..
 
 For details, please check out the README of [alpharewrite](https://github.com/SecurityLab-UCD/alpharewrite).
 
-## Download Pre-built Benchmark
+## Download pre-built benchmark
 
-You can also download our pre-built benchmark from [Zenodo](https://doi.org/10.5281/zenodo.14751813).
+You can also use TF-Bench on HuggingFace datasets.
 
-<a href="https://doi.org/10.5281/zenodo.14751813"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.14751813.svg" alt="DOI"></a>
+```python
+from datasets import load_dataset
 
-## Benchmarking!
+split = "pure" # or "base"
+dataset = load_dataset("SecLabUCD/TF-Bench", split=split)
+```
+
+Or through our provided package.
+
+```python
+from tfbench import load_tfb_from_hf
+
+dataset = load_tfb_from_hf(split)
+```
+
+## Using as an application
+
+```sh
+git clone https://github.com/SecurityLab-UCD/TF-Bench.git
+cd TF-Bench
+uv sync
+```
 
 Please have your API key ready in `.env`.
-Please note that the `.env` in the repository is tracked by git,
-we recommend telling your git to ignore its changes by
 
-```sh
-git update-index --assume-unchanged .env
+### Proprietary models
+
+We use each provider's official SDK to access their models.
+You can check our pre-supported models in `tfbench.lm` module.
+
+```python
+from tfbench.lm import supported_models
+print(supported_models)
 ```
 
-### GPT Models
-
-To run single model:
+To run single model, which runs both `base` and `pure` splits:
 
 ```sh
-export OPENAI_API_KEY=<OPENAI_API_KEY> # make sure your API key is in the environment
-uv run main.py -i TF-Bench.json -m gpt-3.5-turbo
+uv run main.py -m gpt-5-2025-08-07
 ```
 
-To run all GPT models:
-
-```sh
-uv run run_all.py --option gpt
-```
-
-### Open Source Models with Ollama
+### Open-weights models with Ollama
 
 We use [Ollama](https://ollama.com/) to manage and run the OSS models reported in the Appendix.
 We switched to vLLM for better performance and SDK design.
@@ -108,34 +122,77 @@ ollama version is 0.11.7
 Run the benchmark.
 
 ```sh
-uv run scripts/experiment_ollama.py -m llama3:8b
+uv run src/main.py -m llama3:8b
 ```
 
-### (WIP) Running Your Model with vLLM
+### Running any model on HuggingFace Hub
 
-#### OpenAI-Compatible Server
-
-First, launch the vLLM OpenAI-Compatible Server (with default values, please check vLLM's doc for setting your own):
+We also support running any model that is on HuggingFace Hub out-of-the-box.
+We provide an example using Qwen3.
 
 ```sh
-uv run vllm serve openai/gpt-oss-120b --tensor-parallel-size 2 --async-scheduling
+uv run src/main.py Qwen/Qwen3-4B-Instruct-2507 # or other models
 ```
 
-Then, run the benchmark:
+Note that our `main.py` uses a pre-defined model router,
+which routes all un-recognized model names to HuggingFace.
+We use the `</think>` token to parse thinking process,
+if the model do it differently, please see the next section.
+
+### Running your own model
+
+To support your customized model,
+you can input the path to your HuggingFace compatible checkpoint to our `main.py`.
 
 ```sh
-uv run main.py -i Benchmark-F.json -m vllm_openai_chat_completion
+uv run src/main.py <path to your checkpoint>
 ```
 
-NOTE: if you set your API key, host, and port when launching the vLLM server,
-please add them to the `.env` file as well.
-Please modify `.env` for your vLLM api-key, host, and port.
-If they are left empty, the default values ("", "localhost", "8000") will be used.
-We do not recommend using the default values on machine connect to the public web,
-as they are not secure.
+## Using as a package
 
+Our package is also available on PyPi.
+
+```sh
+uv add tfbench
 ```
-VLLM_API_KEY=
-VLLM_HOST=
-VLLM_PORT=
+
+Or directly using pip, you know the way
+
+```sh
+pip install tfbench
+```
+
+### Proprietary model checkpoints that are not currently supported
+
+Our supported model list is used to route the model name to the correct SDK.
+Even a newly released model is not in our supported models list,
+you can still use it by specifying the SDK client directly.
+We take OpenAI GPT-4.1 as and example here.
+
+```python
+from tfbench.lm import OpenAIResponse
+from tfbench import run_one_model
+
+model = "gpt-4.1"
+split = "pure"
+client = OpenAIResponses(model_name=model, pure=split == "pure", effort=None)
+eval_result = run_one_model(client, pure=split == "pure", effort=None)
+```
+
+### Support other customized models
+
+You may implement an `LM` instance.
+
+```python
+from tfbench.lm._types import LM, LMAnswer
+
+class YourLM(LM):
+    def __init__(self, model_name: str, pure: bool = False):
+        """initialize your model"""
+        super().__init__(model_name=model_name, pure=pure)
+        ...
+
+    def _gen(self, prompt: str) -> LMAnswer:
+        """your generation logic here"""
+        return LMAnswer(answer=content, reasoning_steps=thinking_content)
 ```
