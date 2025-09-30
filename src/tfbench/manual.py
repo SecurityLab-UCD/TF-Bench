@@ -1,7 +1,8 @@
 """
-Tasks whose dependencies cannot be directly added using `hoogle.py` 
+Tasks whose dependencies cannot be directly added using `hoogle.py`
 """
 
+# pylint: disable=line-too-long
 MANUAL_TASKS = [
     {
         "task_id": "data/repos/ghc-internal-9.1001.0/src/GHC/Internal/Data/OldList.hs--lines",

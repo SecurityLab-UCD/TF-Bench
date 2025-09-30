@@ -2,17 +2,21 @@
 
 import json
 import os
-import markdown_to_json
+
 import fire
-from src.common import md2task, BenchmarkTask
 from funcy import lmap
+
+from tfbench.common import md2task, BenchmarkTask
 
 
 def main(input_raw_benchmark_path: str = "benchmark", output_path: str = "tfb.json"):
+    """Process pre-extracted tasks from Markdown to JSON"""
 
     # read in all files ending with .md in the input_raw_benchmark_path
     tasks: list[BenchmarkTask] = []
-    for file in os.listdir(input_raw_benchmark_path):
+    files = os.listdir(input_raw_benchmark_path)
+    files_w_order = sorted(files)
+    for file in files_w_order:
         if not file.endswith(".hs.md"):
             continue
         with open(os.path.join(input_raw_benchmark_path, file), "r") as f:

@@ -1,6 +1,6 @@
 import pytest
 from hypothesis import given, strategies as st
-from src.common import BenchmarkTask, md2task, task2md
+from tfbench.common import BenchmarkTask, md2task, task2md
 
 
 # Strategy for generating BenchmarkTask instances

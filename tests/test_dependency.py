@@ -1,7 +1,7 @@
-from src.common import BenchmarkTask
-from src.add_dependency import get_func_calls
 from dacite import from_dict
 import traceback
+from tfbench.common import BenchmarkTask
+from tfbench.add_dependency import get_func_calls
 
 
 def test_len():

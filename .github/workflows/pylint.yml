@@ -1,6 +1,9 @@
 name: Pylint Linting
 
-on: [pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
   linting:
@@ -16,6 +19,9 @@ jobs:
 
       - name: Set up Python
         run: uv sync
+      
+      - name: Install Pylint
+        run: uv pip install pylint
 
       - name: Lint Source Code
         run: uv run pylint src

@@ -1,23 +1,25 @@
 # importing the requests library
 from io import TextIOWrapper
-from src.hs_parser.ast_util import AST
 import json
+from functools import lru_cache
+from urllib.parse import quote
+
+import requests
 from dacite import from_dict
 import fire
-from funcy_chain import Chain
-import requests
-from urllib.parse import quote
-from src.common import BenchmarkTask, extract_function_name
-from src.hs_parser import HASKELL_LANGUAGE
-from functools import lru_cache
 from tree_sitter import Node
 from funcy import lmap
-from src.manual import MANUAL_TASKS
+from funcy_chain import Chain
+
+from tfbench.common import BenchmarkTask, extract_function_name
+from tfbench.hs_parser import AST
+from tfbench.manual import MANUAL_TASKS
 
 
-def get_all_first_child(ast: AST, type: str) -> list[Node]:
+def get_all_first_child(ast: AST, node_type: str) -> list[Node]:
+    """Extract the first nodes of a specific type"""
     children: list[Node] = lmap(
-        lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, type)
+        lambda node: node.child(0), ast.get_all_nodes_of_type(ast.root, node_type)
     )
     return children
 
@@ -26,7 +28,7 @@ def generate_variable_banlist(code: str):
     """
     Generates list of variables that are already defined in the code
     """
-    ast = AST(code, HASKELL_LANGUAGE)
+    ast = AST(code)
     root = ast.root
 
     # Remove variables that are already defined in the code
@@ -58,7 +60,7 @@ def get_where_blacklist(task: BenchmarkTask) -> set[str]:
     where_index = task.code.index("where")
     where_code = task.code[(where_index + 5) :].strip()
 
-    ast = AST(where_code, HASKELL_LANGUAGE)
+    ast = AST(where_code)
     root = ast.root
 
     ban_list: list[str] = generate_variable_banlist(where_code)
@@ -84,7 +86,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     assert fn_name is not None
     print(f"Function: {fn_name}")
 
-    ast = AST(task.code, HASKELL_LANGUAGE)
+    ast = AST(task.code)
     root = ast.root
 
     variables: list[str] = (
@@ -141,7 +143,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     filtered_final_list = (
         Chain(final_list)
         .filter(lambda d: not (len(d.strip("'")) == 1 and d.strip("'").isalnum()))
-        .filter(lambda d: not (len(d) == 0))
+        .filter(lambda d: len(d) != 0)
         .filter(
             lambda d: d not in ["(:)", "otherwise", "[]", "_", "xs", "ys", "return"]
         )
@@ -171,7 +173,7 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper) -> Benchmark
         str_sig = str(sig)
         if (
             depedencies[i] == fn_name
-            or sig == None
+            or sig is None
             or "::" not in str_sig
             or "data " in str_sig
         ):
@@ -188,7 +190,7 @@ def add_dependencies(task: BenchmarkTask, banned_fp: TextIOWrapper) -> Benchmark
         # Set the type signature
         type_signature[i] = str_sig
     task.dependencies = list(set(type_signature))
-    print(f"Status: Valid\n")
+    print("Status: Valid\n")
     return task
 
 
@@ -201,10 +203,10 @@ def get_type_signature(name: str) -> str | None:
     # Format using quote and strip
     url_string = quote(name.strip("()"))
     # api-endpoint
-    URL = f"https://hoogle.haskell.org?mode=json&format=text&hoogle={url_string}+is%3Aexact&start=1&count=1"
+    url = f"https://hoogle.haskell.org?mode=json&format=text&hoogle={url_string}+is%3Aexact&start=1&count=1"
 
     # sending get request to get hoogle result
-    r = requests.get(url=URL)
+    r = requests.get(url=url, timeout=60)
 
     # extracting data in json format
     data = r.json()
@@ -222,7 +224,7 @@ def main(
     output_file: str = "out.json",
     banned_file: str = "banned.txt",
 ):
-    banned_fp = open(banned_file, "w")
+    """mean script for dependency-solving using Hoogle"""
     # For reading json files (Benchmark-F.json)
     with open(input_file, "r") as fp:
         tasks: Chain = Chain(json.load(fp)).map(
@@ -238,7 +240,8 @@ def main(
     #     )
 
     # Generate dependencies
-    tasks_w_dep = tasks.map(lambda d: add_dependencies(d, banned_fp))
+    with open(banned_file, "w") as banned_fp:
+        tasks_w_dep = tasks.map(lambda d: add_dependencies(d, banned_fp))
 
     # Remove any tasks with dependencies that could not be found
     # Also transform them back into dictionaries for json format

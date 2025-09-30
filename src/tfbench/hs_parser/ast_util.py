@@ -1,9 +1,13 @@
-from tree_sitter import Language, Parser, Tree, Node
-from returns.maybe import Maybe, Nothing, Some
+from typing import Optional
 from dataclasses import dataclass
+
+from tree_sitter import Language, Parser, Tree, Node
+import tree_sitter_haskell as ts_haskell
+from returns.maybe import Maybe, Nothing, Some
 from funcy_chain import Chain
 from funcy import lmap
-from typing import Optional
+
+HASKELL_LANGUAGE = Language(ts_haskell.language())
 
 
 @dataclass
@@ -34,7 +38,7 @@ class HaskellFunction:
 class AST:
     """Helper class to build, read, and manipulate ASTs using tree-sitter."""
 
-    def __init__(self, source_code: str, lang: Language) -> None:
+    def __init__(self, source_code: str) -> None:
         """
         Initializes an AST object with the given source code and language.
 
@@ -44,7 +48,7 @@ class AST:
         """
         self.src = source_code
         self.parser = Parser()
-        self.parser.language = lang  # Directly assign the language
+        self.parser.language = HASKELL_LANGUAGE
         self.tree: Tree = self.parser.parse(bytes(self.src, "utf8"))
 
     @property
@@ -94,19 +98,6 @@ class AST:
             case _:
                 return Nothing
         return Some(fn_name.strip())
-
-    def get_fn_docstring(self, node: Node) -> Maybe[str]:
-        """
-        Retrieves the docstring associated with a function node.
-
-        Args:
-            node (Node): The AST node representing a function.
-
-        Returns:
-            Maybe[str]: A Maybe containing the docstring if found, or Nothing otherwise.
-        """
-        # todo: implement docstring finder
-        raise NotImplementedError
 
     def func2src(self, func: HaskellFunction) -> tuple[str, str]:
         """
@@ -202,10 +193,10 @@ class AST:
         nodes: list[Node] = []
         if max_level == 0:
             return nodes
+        if node_type is None or root.type == node_type:
+            nodes.append(root)
 
         for child in root.children:
-            if node_type is None or child.type == node_type:
-                nodes.append(child)
             nodes += AST.get_all_nodes_of_type(
                 child, node_type, max_level=max_level - 1
             )
@@ -240,6 +231,7 @@ class AST:
 
     @staticmethod
     def get_nodes_start_bytes(nodes: list[Node]) -> dict[str, int]:
+        """Get the start byte positions of nodes by their names."""
         start_bytes: dict[str, int] = {}
 
         for node in nodes:

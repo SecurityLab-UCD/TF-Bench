@@ -1,6 +1,9 @@
 name: Unit Testing
 
-on: [pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
   unittest:
@@ -18,4 +21,4 @@ jobs:
         run: uv sync
 
       - name: Run Unit Tests
-        run: uv run pytest
+        run: uv run pytest -n auto

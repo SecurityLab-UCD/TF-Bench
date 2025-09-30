@@ -1,5 +1,5 @@
 import unittest
-from src.common import remove_comments
+from tfbench.common import remove_comments
 
 
 class TestRemoveHaskellComments(unittest.TestCase):

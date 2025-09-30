@@ -1,4 +1,4 @@
-from src.evaluation import alpha_equiv
+from tfbench.evaluation import alpha_equiv
 
 
 def test_simple():

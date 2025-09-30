@@ -1,9 +1,4 @@
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST, ASTLoc, HaskellFunction
-from hypothesis import given
-import hypothesis.strategies as st
-from funcy_chain import Chain
-from src.hs_parser.polymorphism import get_polymorphic_type, PolymorphicType
+from tfbench.hs_parser import get_polymorphic_type, PolymorphicType, AST
 
 
 def test_polymorphism():
@@ -15,7 +10,7 @@ elem :: (Eq a) => a -> [a] -> Bool
 f1 :: forall a b. a -> b -> a
 """
 
-    ast = AST(types, HASKELL_LANGUAGE)
+    ast = AST(types)
     fn_addInt, fn_map, fn_id, fn_elem, fn_f1 = ast.get_functions()
 
     assert get_polymorphic_type(fn_addInt.type_signature) == PolymorphicType.MONO

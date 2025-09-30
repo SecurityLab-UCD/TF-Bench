@@ -1,15 +1,14 @@
 import json
-import fire
-import os
 from os.path import join as pjoin, abspath, exists
+
+import fire
 from funcy import lmap
 from funcy_chain import Chain
 from dacite import from_dict
 
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST
-from src.add_dependency import add_dependencies
-from src.common import clean_tab_spaces, BenchmarkTask, task2md
+from tfbench.hs_parser import AST
+from tfbench.add_dependency import add_dependencies
+from tfbench.common import clean_tab_spaces, BenchmarkTask, task2md
 
 
 def main(
@@ -17,6 +16,7 @@ def main(
     ghc_internal: str = "data/source/ghc-internal-9.1001.0.jsonl",
     output_dir: str = "benchmark",
 ):
+    """extract tasks from Haskell prelude"""
     ghc_internal = abspath(ghc_internal)
     prelude = abspath(prelude)
     assert exists(ghc_internal) and exists(prelude)
@@ -24,7 +24,7 @@ def main(
     with open(prelude, "r") as fp:
         prelude_code = fp.read()
 
-    ast = AST(prelude_code, HASKELL_LANGUAGE)
+    ast = AST(prelude_code)
     root = ast.root
     prelude_vars = lmap(
         ast.get_src_from_node, ast.get_all_nodes_of_type(root, "variable")

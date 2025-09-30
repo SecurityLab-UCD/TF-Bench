@@ -1,17 +1,17 @@
-import fire
-import funcy
-from funcy_chain import Chain
-import logging
 import json
-from dacite import from_dict
-from src.common import extract_function_name
-from src.hs_parser import HASKELL_LANGUAGE
-from src.hs_parser.ast_util import AST
-from src.common import BenchmarkTask
 from typing import Iterable
+
+import fire
+from funcy_chain import Chain
+from dacite import from_dict
+
+from tfbench.common import extract_function_name
+from tfbench.hs_parser import AST
+from tfbench.common import BenchmarkTask
 
 
 def build_dependency_dict(tasks: list[BenchmarkTask]) -> dict[str, str]:
+    """dependency mapping from function names to their signatures"""
     return {
         fn_name: t.signature
         for t in tasks
@@ -24,7 +24,7 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
     fn_name = extract_function_name(task)
     assert fn_name is not None
 
-    ast = AST(task.code, HASKELL_LANGUAGE)
+    ast = AST(task.code)
     root = ast.root
 
     calls: list[str] = (
@@ -48,10 +48,11 @@ def get_func_calls(task: BenchmarkTask) -> set[str]:
 
 
 def _is_input(code: str, call: str) -> bool:
+    """check if a function call is an input to the task"""
     inputs: list[list[str]] = (
         Chain(code.splitlines())
-        .filter(lambda l: "=" in l)
-        .map(lambda l: l.split("=")[0])
+        .filter(lambda line: "=" in line)
+        .map(lambda line: line.split("=")[0])
         .map(str.strip)
         .map(str.split)
         .value
@@ -60,6 +61,8 @@ def _is_input(code: str, call: str) -> bool:
 
 
 def add_dependencies(dependency_dict: dict[str, str]):
+    """add dependencies to benchmark tasks"""
+
     def add_for_task(task: BenchmarkTask) -> BenchmarkTask:
         calls: Iterable[str] = get_func_calls(task)
         calls = filter(lambda c: not _is_input(task.code, c), calls)
@@ -73,6 +76,7 @@ def main(
     input_file: str = "data/source/base-4.20.0.0.jsonl",
     output_file: str = "out.jsonl",
 ):
+    """add dependency to a task json file"""
     with open(input_file, "r") as fp:
         tasks: list[BenchmarkTask] = (
             Chain(fp.readlines())

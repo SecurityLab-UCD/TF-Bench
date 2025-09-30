@@ -7,7 +7,7 @@ Ad-hoc
 
 # signature
 ```haskell
-quot :: Integral => a -> a -> a
+quot :: Integral a => a -> a -> a
 ```   
 
 # code

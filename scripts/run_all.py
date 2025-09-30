@@ -2,9 +2,9 @@
 Script to run all experiments
 """
 
-from src.experiment import GPT_MODELS, CLAUDE_MODELS, O1_MODELS
-from src.experiment_ollama import OLLAMA_MODELS, OLLAMA_OSS, OLLAMA_CODE
-from src.common import SEED, TEMPERATURE
+from tfbench.experiment import GPT_MODELS, CLAUDE_MODELS, O1_MODELS
+from tfbench.experiment_ollama import OLLAMA_MODELS, OLLAMA_OSS, OLLAMA_CODE
+from tfbench.common import SEED, TEMPERATURE
 from main import main as run_experiment
 import fire
 import sys
