@@ -35,7 +35,6 @@ def main(
                 client,
                 pure=pure,
                 output_file=result_file,
-                effort=effort,
             )
             results.append(r)
         return analysis_multi_runs(results)

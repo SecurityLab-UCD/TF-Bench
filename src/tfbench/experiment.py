@@ -7,7 +7,7 @@ from orjsonl import orjsonl
 
 from .common import get_prompt
 from .evaluation import prover_evaluate, EvalResult
-from .lm import router, LMAnswer, LM
+from .lm import LMAnswer, LM
 from .load import load_tfb_from_hf
 
 
@@ -15,7 +15,6 @@ def run_one_model(
     client: LM,
     pure: bool = False,
     output_file: str | None = None,
-    effort: str | None = None,
 ) -> EvalResult:
     """Running the generation & evaluation pipeline for one pre-supported model
 

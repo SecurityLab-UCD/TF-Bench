@@ -41,6 +41,7 @@ __all__ = [
     "GeminiReasoning",
     "ClaudeChat",
     "ClaudeReasoning",
+    "OllamaChat",
     "HFChat",
     "router",
     "extract_response",
