@@ -1,7 +1,7 @@
 [project]
 name = "tfbench"
 version = "1.0.0"
-description = "Add your description here"
+description = "Evaluating Program Semantics Reasoning with Type Inference in System F"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -83,7 +83,7 @@ extension-pkg-whitelist = [
 generated-members = ["cv2.*", "skimage.metrics.*"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
