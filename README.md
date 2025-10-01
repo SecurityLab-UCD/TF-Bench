@@ -8,6 +8,7 @@ Evaluating Program Semantics Reasoning with Type Inference in System _F_
 ![evaluation workflow](./imgs/tfb.png)
 
 If you find this work useful, please cite us as:
+
 ```bibtex
 @inproceedings{he2025tfbench,
     author = {He, Yifeng and Yang, Luning and Gonzalo, Christopher and Chen, Hao},
@@ -22,7 +23,7 @@ If you find this work useful, please cite us as:
 
 ### Python
 
-We use Python 3.11.
+We use Python 3.12.
 We recommend using [uv](https://docs.astral.sh/uv/getting-started/installation/) to manage your Python dependencies.
 
 ```sh
@@ -71,7 +72,7 @@ For details, please check out the README of [alpharewrite](https://github.com/Se
 
 ## Download pre-built benchmark
 
-You can also use TF-Bench on HuggingFace datasets.
+You can also use TF-Bench via HuggingFace datasets.
 
 ```python
 from datasets import load_dataset
@@ -96,10 +97,9 @@ cd TF-Bench
 uv sync
 ```
 
-Please have your API key ready in `.env`.
-
 ### Proprietary models
 
+Please have your API key ready in `.env`.
 We use each provider's official SDK to access their models.
 You can check our pre-supported models in `tfbench.lm` module.
 
@@ -111,7 +111,7 @@ print(supported_models)
 To run single model, which runs both `base` and `pure` splits:
 
 ```sh
-uv run main.py -m gpt-5-2025-08-07
+uv run src/main.py -m gpt-5-2025-08-07
 ```
 
 ### Open-weights models with Ollama
@@ -153,7 +153,7 @@ uv run src/main.py Qwen/Qwen3-4B-Instruct-2507 # or other models
 Note that our `main.py` uses a pre-defined model router,
 which routes all un-recognized model names to HuggingFace.
 We use the `</think>` token to parse thinking process,
-if the model do it differently, please see the next section.
+if the model do it differently, please see [Supporting other customized models].
 
 ### Running your own model
 
@@ -190,14 +190,14 @@ from tfbench.lm import OpenAIResponse
 from tfbench import run_one_model
 
 model = "gpt-4.1"
-split = "pure"
-client = OpenAIResponses(model_name=model, pure=split == "pure", effort=None)
-eval_result = run_one_model(client, pure=split == "pure", effort=None)
+pure = True
+client = OpenAIResponses(model_name=model, pure=pure, effort=None)
+eval_result = run_one_model(client, pure=pure)
 ```
 
-### Support other customized models
+### Supporting other customized models
 
-You may implement an `LM` instance.
+Implementing an `LM` instance is all your need.
 
 ```python
 from tfbench.lm._types import LM, LMAnswer
@@ -211,4 +211,7 @@ class YourLM(LM):
     def _gen(self, prompt: str) -> LMAnswer:
         """your generation logic here"""
         return LMAnswer(answer=content, reasoning_steps=thinking_content)
+
+client = YourLM("xxx")
+eval_result = run_one_model(client)
 ```
