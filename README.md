@@ -186,7 +186,7 @@ you can still use it by specifying the SDK client directly.
 We take OpenAI GPT-4.1 as and example here.
 
 ```python
-from tfbench.lm import OpenAIResponse
+from tfbench.lm import OpenAIResponses
 from tfbench import run_one_model
 
 model = "gpt-4.1"
